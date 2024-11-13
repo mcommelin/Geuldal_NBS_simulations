@@ -7,3 +7,4 @@ data/*
 ext_data/*
 images/*
 lisem_runs/*
+*.html
