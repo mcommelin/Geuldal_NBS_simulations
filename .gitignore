@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+literature/*
 archive/*
 data/*
 ext_data/*
