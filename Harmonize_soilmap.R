@@ -32,3 +32,17 @@ dat <- soils %>%
 #' cohesion
 #' 
 
+#load staring reeks series:
+staring <- read_delim("data/StaringReeks.txt", delim = ";") %>%
+  rename(bouwsteen = 'Staring Series')
+
+BtoStaring <- read_csv("data/BOFEKtoStaring.csv", col_types = paste0(c("ii"),strrep("c", 36))) %>%
+  pivot_longer(cols = B01:O18, names_to = "bouwsteen", values_to = "val") %>%
+  filter(dominant == 1) %>%
+  filter(!is.na(val))
+
+# only link for the topsoil
+BtoStaring_top <- BtoStaring %>%
+  filter(str_detect(bouwsteen, "^B")) %>%
+  select(cluster1, bouwsteen) %>%
+  left_join(staring, by = "bouwsteen")
