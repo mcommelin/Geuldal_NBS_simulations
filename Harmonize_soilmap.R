@@ -34,15 +34,27 @@ dat <- soils %>%
 
 #load staring reeks series:
 staring <- read_delim("data/StaringReeks.txt", delim = ";") %>%
-  rename(bouwsteen = 'Staring Series')
+  rename(staring_code = 'Staring Series')
 
 BtoStaring <- read_csv("data/BOFEKtoStaring.csv", col_types = paste0(c("ii"),strrep("c", 36))) %>%
-  pivot_longer(cols = B01:O18, names_to = "bouwsteen", values_to = "val") %>%
+  pivot_longer(cols = B01:O18, names_to = "staring_code", values_to = "val") %>%
   filter(dominant == 1) %>%
   filter(!is.na(val))
 
-# only link for the topsoil
+# only for the topsoil
 BtoStaring_top <- BtoStaring %>%
-  filter(str_detect(bouwsteen, "^B")) %>%
-  select(cluster1, bouwsteen) %>%
-  left_join(staring, by = "bouwsteen")
+  filter(str_detect(staring_code, "^B")) %>%
+  select(cluster1, staring_code) %>%
+  left_join(staring, by = "staring_code") %>%
+  rename(CLUS_2020 = cluster1)
+
+#add staring to dutch clusters
+dat <- dat %>%
+  left_join(BtoStaring_top, by = "CLUS_2020")
+
+# translate german and french descriptions to dutch + english list
+soil_descr <- tibble(original = c(unique(dat$Textuurklasse), unique(dat$DESCRIPTION),
+                                  unique(dat$ART_TEXT), unique(dat$Omschrijving)))
+
+# write to csv and translate
+write_csv(soil_descr, "soil_descriptions_languages.csv")

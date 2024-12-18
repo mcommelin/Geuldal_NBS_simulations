@@ -1,0 +1,53 @@
+original,trans_nl,english,dutch,class_en
+stenige leem,stenige leem,,,
+lemig zand,lemig zand,,,
+leem,leem,,,
+zand,zand,,,
+zandleem,zandleem,,,
+klei,klei,,,
+licht zandleem,licht zandleem,,,
+stenige leem + zand,stenige leem + zand,,,
+veen,veen,,,
+"brongebieden: variatie van textuur, draingeringstoestand en profielontwikkeling op korte afstand","brongebieden: variatie van textuur, draingeringstoestand en profielontwikkeling op korte afstand",,,
+Sols sableux ou limono-sableux à drainage naturel excessif ou légèrement excessif,Zandige of zandige leemgronden met overmatige of licht overmatige natuurlijke drainage,,,
+Sols tourbeux ou tourbières,Veengronden of moerassen,,,
+Sols sableux ou limono-sableux à drainage naturel principalement modéré ou imparfait,Zandige of zandige leemgronden met overwegend matige of onvolmaakte natuurlijke drainage,,,
+Sols limoneux à drainage naturel favorable,Leemachtige bodems met gunstige natuurlijke drainage,,,
+Sols limoneux à drainage naturel modéré ou imparfait,Leemachtige bodems met matige of onvolmaakte natuurlijke drainage,,,
+Sols limoneux à drainage naturel assez pauvre à très pauvre,Leemachtige bodems met een tamelijk slechte tot zeer slechte natuurlijke afwatering,,,
+Sols limoneux peu caillouteux à drainage naturel favorable,Licht steenachtige leembodems met gunstige natuurlijke afwatering,,,
+Sols argileux à drainage naturel favorable ou imparfait,Kleigronden met gunstige of onvolmaakte natuurlijke drainage,,,
+Sols argileux à drainage naturel assez pauvre à très pauvre,Kleigronden met tamelijk slechte tot zeer slechte natuurlijke drainage,,,
+Sols limoneux peu caillouteux à drainage naturel principalement modéré à assez pauvre,Licht steenachtige leemgronden met overwegend matige tot tamelijk slechte natuurlijke drainage,,,
+Sols limono-caillouteux à charge schisto-gréseuse ou gréseuse et à drainage naturel modéré à assez pauvre,Leemachtige steenachtige bodems met een schalie-zandsteen- of zandsteenbelasting en matige tot tamelijk slechte natuurlijke drainage,,,
+Sols limono-caillouteux à charge schisto-gréseuse ou gréseuse et à drainage naturel favorable,Leemachtige steenachtige bodems met schalie-zandsteen- of zandsteenbelasting en gunstige natuurlijke drainage,,,
+Sols limono-caillouteux à charge psammitique ou schisto-psammitique et à drainage naturel principalement favorable,Leem-steenachtige bodems met een psammitische of schistopsammitische belasting en overwegend gunstige natuurlijke drainage,,,
+Sols limono-caillouteux à charge schisteuse et à drainage naturel principalement favorable,Leemachtige steenachtige bodems met een schaliebelasting en overwegend gunstige natuurlijke drainage,,,
+Sols limono-caillouteux à charge calcaire et à drainage naturel quasi-exclusivement favorable,Leemachtige steenachtige bodems met kalksteenbelasting en vrijwel uitsluitend gunstige natuurlijke drainage,,,
+Sols limono-caillouteux à charge de silexite ou de gravier ou de conglomérat et à drainage naturel principalement favorable,"Leemachtige steenachtige bodems met een belasting van vuursteen, grind of conglomeraat en met overwegend gunstige natuurlijke afwatering",,,
+Regroupement de complexes de sols de textures différentes ou sur fortes pentes et de sols de fonds de vallons limoneux ou rocailleux,Groepering van complexen van bodems met verschillende texturen of op steile hellingen en bodems van leemachtige of rotsachtige valleibodems,,,
+Sols artificiels ou non cartographiés,Kunstmatige of niet in kaart gebrachte bodems,,,
+tonig-schluffig,kleiachtig-siltig,clayey-silty,,
+sandig-schluffig,zandig-siltig,sandy-silty,,
+lehmig-sandig,leem-zandig,loamy-sandy,,
+sandig,zanderig,sandy,,sand
+organisch,organisch,organic,,peat
+feinbodenarm,arm aan fijne grond,poor in fine soil,,
+stark lehmig-sandig,zeer leemachtig zandig,very loamy-sandy,,sandy loam
+tonig-lehmig,kleiachtig-leemachtig,clayey-loamy,,
+lehmig-tonig,leemachtig-kleiachtig,loamy-clayey,,
+zware zavel,zware zavel,,zware zavel,clay loam
+siltige leem,siltige leem,,siltige leem,silt loam
+zandige leem,zandige leem,,zandige leem,loam
+matig lichte zavel,matig lichte zavel,,matig lichte zavel,
+"leemarm, zeer fijn tot matig fijn zand","leemarm, zeer fijn tot matig fijn zand",,"leemarm, zeer fijn tot matig fijn zand",sand
+"zwak lemig, zeer fijn tot matig fijn zand","zwak lemig, zeer fijn tot matig fijn zand",,"zwak lemig, zeer fijn tot matig fijn zand",loamy sand
+matig zware klei,matig zware klei,,matig zware klei,clay
+lichte klei,lichte klei,,lichte klei,clay loam
+venige klei,venige klei,,venige klei,peaty clay
+"sterk lemig, zeer fijn tot matig fijn zand","sterk lemig, zeer fijn tot matig fijn zand",,"sterk lemig, zeer fijn tot matig fijn zand",sandy loam
+grof zand,grof zand,,grof zand,sand
+zeer zware klei,zeer zware klei,,zeer zware klei,clay
+kleiig veen,kleiig veen,,kleiig veen,peaty clay
+venig zand,venig zand,,venig zand,peaty sand
+zandig veen en veen,zandig veen en veen,,zandig veen en veen,peat
