@@ -94,3 +94,4 @@ soil_map <- bind_rows(new_soil) %>%
 
 #write as new layer
 st_write(soil_map, "data/soil_layers.gpkg", layer = "soils_uniform", append = FALSE)
+
