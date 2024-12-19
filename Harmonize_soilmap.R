@@ -57,4 +57,40 @@ soil_descr <- tibble(original = c(unique(dat$Textuurklasse), unique(dat$DESCRIPT
                                   unique(dat$ART_TEXT), unique(dat$Omschrijving)))
 
 # write to csv and translate
-write_csv(soil_descr, "soil_descriptions_languages.csv")
+# DONT OVERWRITE!!! # write_csv(soil_descr, "soil_descriptions_languages.csv")
+# load after manual classification
+soil_descr <- read_csv("soil_descriptions_languages.csv")
+
+# Identifier per country:
+# Dutch: OBJECTID_1 BODEM1 CLUS_2020 (link naar staringreeks)
+# Flanders: gid Bodemtype Textuurklasse
+# Wallony:  OBJECTID CODE DESCRIPTION
+# Germany: name TYP_TEXT  (ART_TEXT)
+
+#reorganize map to link a harmonized soil texture class to each unit.
+id <- c("OBJECTID_1", "gid", "OBJECTID", "Name")
+country <- c("NL", "BEF", "BEW", "DE")
+original <- c("Omschrijving", "Textuurklasse", "DESCRIPTION", "ART_TEXT")
+
+#remove the OBJECTID for the NL dataset, we use OBJECTID_1 instead
+dat <- dat %>%
+  mutate(OBJECTID = if_else(is.na(OBJECTID_1), OBJECTID, NA))
+
+new_soil <- vector("list", length = length(id))
+
+for (i in seq_along(id)) {
+  new_soil[[i]] <- dat %>%
+    select(id[i], original[i]) %>%
+    mutate(country = country[i]) %>%
+    rename(id = id[i], original = original[i]) %>%
+    filter(!is.na(id)) %>%
+    mutate(id = as.character(id))
+}
+soil_map <- bind_rows(new_soil) %>%
+  left_join(soil_descr, by = "original")
+
+
+
+
+#write as new layer
+st_write(soil_map, "data/soil_layers.gpkg", layer = "soils_uniform", append = FALSE)
