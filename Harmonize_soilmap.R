@@ -57,4 +57,21 @@ soil_descr <- tibble(original = c(unique(dat$Textuurklasse), unique(dat$DESCRIPT
                                   unique(dat$ART_TEXT), unique(dat$Omschrijving)))
 
 # write to csv and translate
-write_csv(soil_descr, "soil_descriptions_languages.csv")
+# DONT OVERWRITE!!! # write_csv(soil_descr, "soil_descriptions_languages.csv")
+# load after manual classification
+soil_descr <- read_csv("soil_descriptions_languages.csv")
+
+# Identifier per country:
+# Dutch: OBJECTID_1 BODEM1 CLUS_2020 (link naar staringreeks)
+# Flanders: gid Bodemtype Textuurklasse
+# Wallony:  OBJECTID CODE DESCRIPTION
+# Germany: name TYP_TEXT  (ART_TEXT)
+
+#reorganize map to link a harmonized soil texture class to each unit.
+id <- c("OBJECTID_1", "gid", "OBJECTID", "Name")
+coutnry <- c("NL", "BEF", "BEW", "DE")
+original <- c("Omschrijving", "Textuurklasse", "DESCRIPTION", "ART_TEXT")
+
+
+
+
