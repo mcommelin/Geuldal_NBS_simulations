@@ -40,6 +40,11 @@ A DEM for Wallonia on 1 m resolution is not freely available, but can be accesse
 at:
 
 
+
+Step for AHN - create a VRT from all the separate tiles of the AHN4 with the function:
+'Build virtual raster'
+
+
 ### Topography
 For topography we use the QuickOSM pluging in QGIS. Attribution to OSM:
 © OpenStreetMap contributors. We download the preset Urban
@@ -78,6 +83,12 @@ https://maps.waterschaplimburg.nl/arcgis/rest/services/wib/wib_knelpunten/Featur
 For the Netherlands the agriculture cultivation history is available in the BRP,
 the history from 2009 to 2024 was downloaded from:
 https://service.pdok.nl/rvo/brpgewaspercelen/atom/v1_0/basisregistratie_gewaspercelen_brp.xml
+
+A LULC 10m raster based on OSM was downloaded from:
+OpenStreetMap land use for Europe "Research Data"
+Schultz, Michael; Li, Hao; Wu, Zhaoyhan; Wiell, Daniel; Auer, Michael; Zipf, Alexander, 2024, 
+"OpenStreetMap land use for Europe "Research Data"", https://doi.org/10.11588/data/IUTCDN, heiDATA, V2
+
 
 ### Soil and geography
 For the Netherlands the soil map was downloaded from:
