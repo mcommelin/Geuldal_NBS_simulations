@@ -108,8 +108,9 @@ https://www.geoportal.nrw/?activetab=map
 
 map name:  IS BK 50 Bodenkarte von NRW 1 : 50.000 - Datensatz
 
-Not all classification are the same within the soil maps, so these had to be 
-harmonized to be able to use these as one soil map in the model simulations.
+Not all classifications are the same within the soil maps, so these had to be 
+harmonized to be able to use these as one soil map in the model simulations. This
+is done in the script 'Harmonize_soilmap.R' which results in the layer 'soils_uniform'.
 
 ## Data processing
 For data processing from all these downloads see the models that are loaded in 
@@ -128,3 +129,14 @@ The initial DEM used was from OpenDEM, however the accuracy of this DEM is not
 very high and for example the valley bottom does not always align with the streams
 as loaded from the OSM data.
 
+The DEMs from different sources are reprojected, merged and clipped to the 'region_outline'.
+This is done with the project model 'Project models > Preprocessing > DEMprepare'
+This rough 1m resolution DEM will be the basis to further produce DTM of lower resolutions.
+
+This output has 0 as nodata value, by manually saving in QGIS and setting 0 as nodata value this is solved.
+This map is stored as 'DTM_region_1m_rough.tif' 
+
+Next the exact coordinate of the outlet point in the DTM has to be found. 
+This was done manually by running by running the r.fill.dir and r.watershed functions
+from GRASS GIS within QGIS, this was done for a small section of the DTM around 
+the outlet of the Geul close to the Juliana channel.
