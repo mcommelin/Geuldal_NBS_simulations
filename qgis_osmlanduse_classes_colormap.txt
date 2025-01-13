@@ -1,0 +1,14 @@
+0 58 31 0 0 0
+5 0 204 242 255 water bodies
+11 230 0 77 255 urban fabric
+12 204 77 242 255 industrial, commercial and transport units
+13 166 0 204 255 mine, dump and construction sites
+14 255 166 255 255 artificial, non-agricultural vegetated areas
+21 255 255 168 255 arable land
+22 230 128 0 255 permanent crops
+23 230 230 77 255 pastures
+31 77 255 0 255 forests
+32 204 242 77 255 shrub and/or herbaceous vegetation associations
+33 230 230 230 255 open spaces with little or no vegetation
+41 166 166 255 255 inland wetlands
+42 230 230 255 255 coastal wetlands
