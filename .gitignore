@@ -9,3 +9,5 @@ ext_data/*
 images/*
 lisem_runs/*
 *.html
+*.docx
+*.xlsx
