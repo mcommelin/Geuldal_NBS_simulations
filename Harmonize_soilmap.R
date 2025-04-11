@@ -59,7 +59,8 @@ soil_descr <- tibble(original = c(unique(dat$Textuurklasse), unique(dat$DESCRIPT
 # write to csv and translate
 # DONT OVERWRITE!!! # write_csv(soil_descr, "soil_descriptions_languages.csv")
 # load after manual classification
-soil_descr <- read_csv("soil_descriptions_languages.csv")
+soil_descr <- read_csv("soil_descriptions_languages.csv") %>%
+  mutate(class_num = as.numeric(factor(class_en)))
 
 # Identifier per country:
 # Dutch: OBJECTID_1 BODEM1 CLUS_2020 (link naar staringreeks)
@@ -88,6 +89,7 @@ for (i in seq_along(id)) {
 }
 soil_map <- bind_rows(new_soil) %>%
   left_join(soil_descr, by = "original")
+  
 
 
 
