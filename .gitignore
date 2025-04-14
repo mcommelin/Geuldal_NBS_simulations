@@ -8,6 +8,12 @@ data/*
 ext_data/*
 images/*
 lisem_runs/*
+documenten_en_literatuur/*
+LISEM_data/Geul_*
+images/*
 *.html
 *.docx
 *.xlsx
+*.map
+*.tbl
+

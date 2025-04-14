@@ -9,10 +9,10 @@ binding
 ### INPUT MAPS ### 
 
 dem = dem.map;              # digital elevation model, area must be <= clone
-lu = lu.map;           # field id's for landuse 
+lu = landuse.map;           # field id's for landuse 
 #roads = roads.map;         # location of roads value = 1
 # grass = grasswid.map;     # only if buffers are included
-soil = soil.map;         # field id's for texture/soil map
+soil = soils.map;         # field id's for texture/soil map
 # chanmask = chanmask.map;  # location of channels value = 1 (optional)
 
 ### INPUT TABLES ### 
