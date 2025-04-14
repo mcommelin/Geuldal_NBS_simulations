@@ -12,16 +12,23 @@
 #'    calibration of OpenLISEM.
 
 # Initialization ---------------------------------------------------------------
+library(tidyverse)
+library(gifski)
+library(hms)
+library(gdalUtilities)
+library(raster)
+
+
 
 # 1. Select events --------------------------------------------------------------
 
 # make file list
-q_file_dir = "data/GeulStroomgebied_Tijdreeksen/metingen"
+q_file_dir = "data/raw_data/waterhoogte_metingen/metingen"
 q_files <- dir(q_file_dir, recursive = TRUE,
                pattern = ".csv$")
 
 # load file with station names and characteristics
-station_names <- read_csv("data/GeulStroomgebied_Tijdreeksen/naam_meetpunten_Geuldal.csv")
+station_names <- read_csv("data/raw_data/waterhoogte_metingen/naam_meetpunten_Geuldal.csv")
 # add long name for each station
 station_names <- station_names %>%
   mutate(name_long = paste0(naam, "_", ondertitel)) %>%
@@ -46,18 +53,34 @@ for (i in seq_along(q_files)) {
 }
 q_all <- bind_rows(q_list)
 
-# trailing zeros are trimmed and decimal sign is removed - ad them back.
+# in the raw data trailing zeros are trimmed and decimal sign is removed - ad them back.
 q_all <- q_all %>%
   mutate(wh = if_else(wh < 40, wh * 10, wh)) %>%
   mutate(wh = if_else(wh > 40000, wh / 1000, wh)) %>%
   mutate(wh = if_else(wh > 4000, wh / 100, wh)) %>%
   mutate(wh = if_else(wh > 400, wh / 10, wh))
 
+# filter in the waterhieght datasets to find:
+# 1. the events with high discharges at the outlet of the Geul in Meersen
 b <- q_all %>%
-  filter(str_detect(code, "")) %>%
-  filter(timestamp > "2020-01-10 12:00:00" & timestamp < "2024-05-30 12:00:00")
+  filter(str_detect(name_long, "Maastrichterlaan")) %>%
+  filter(timestamp > "2019-01-01 12:00:00" & timestamp < "2024-12-30 12:00:00") %>%
+  filter(wh > 44.2)
+# 6 events with high discharge
+ggplot(b) +
+  geom_point(aes(x=timestamp, y = wh))
 
 
+# 2. shorter peaks in the Eyserbeek
+b <- q_all %>%
+  filter(str_detect(name_long, "meetgoot_Eys")) %>%
+  filter(timestamp > "2019-01-01 12:00:00" & timestamp < "2024-12-25 12:00:00") %>%
+  filter(wh > 101.7)
+
+ggplot(b) +
+  geom_point(aes(x=timestamp, y = wh))
+
+# the events + duration are added to 'sources/selected_events.csv'
 
 
 ### Discharge figure events ----------------------------------------------------
