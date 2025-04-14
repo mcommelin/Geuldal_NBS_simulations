@@ -17,8 +17,24 @@ library(gifski)
 library(hms)
 library(gdalUtilities)
 library(raster)
+library(sf)
+library(RColorBrewer)
 
+# load pcraster functions
+source("sources/pcrasteR.R")
+set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
 
+#functions
+add_suffix <- function(strings) {
+  # Use grepl to check if the string contains an underscore
+  sapply(strings, function(x) {
+    if (!grepl("_", x)) {
+      paste0(x, "_00")
+    } else {
+      x
+    }
+  })
+}
 
 # 1. Select events --------------------------------------------------------------
 
@@ -81,6 +97,69 @@ ggplot(b) +
   geom_point(aes(x=timestamp, y = wh))
 
 # the events + duration are added to 'sources/selected_events.csv'
+
+# 2&3 Precipitation and discharge during events --------------------------------
+
+#load selected events
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end))
+
+## GIF of precipitation events -------------------------------------------------
+for (k in seq_along(events$event_start)) {
+  event_start <- events$ts_start[k] 
+  event_end <- events$ts_end[k] 
+  hours <- seq(event_start, event_end, by = "hours")
+  
+  map_names <- str_remove(hours, ":.*") %>%
+    str_replace_all("-", "") %>%
+    str_replace_all(" ", "_") %>%
+    sapply(., add_suffix) 
+  
+  rain_gifs <- map_names %>%
+    paste0("rain_", ., ".png")
+  
+  map_names <- map_names %>%
+    paste0("NSL_", ., ".ASC")
+  
+  ev_name <- as.character(event_start) %>%
+    str_remove_all("-") %>%
+    str_extract("^([0-9]{8})") %>%
+    paste0("rain_", .)
+  
+  if (!dir.exists(paste0("images/neerslag/", ev_name))) {
+    dir.create(paste0("images/neerslag/", ev_name))
+  }
+  
+  colors <- brewer.pal(9, "Blues")
+  breakpoints <- c(0,1,3,5,10,18,26,40,60)
+  
+  # sum raster for total precipitation map
+  maxp <- 0
+  for (i in seq_along(map_names)) {
+    rain_map <- raster(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]))
+    png(filename = paste0("images/neerslag/", ev_name, "/", rain_gifs[i]))
+    a <- plot(rain_map, col = colors, breaks = breakpoints)
+    title(paste0(hours[i]))
+    dev.off()
+    mp <- max(as.data.frame(rain_map))
+    maxp <- if(mp > maxp) mp else maxp
+  }
+  
+  # make a gif
+  files <- paste0("images/neerslag/", ev_name, "/", rain_gifs)
+  gifski(
+    files,
+    gif_file = paste0("images/neerslag/", ev_name, ".gif"),
+    delay = 0.3
+  )
+}
+
+
+
+
+
+
 
 
 ### Discharge figure events ----------------------------------------------------
