@@ -88,6 +88,7 @@ ggplot(b) +
 
 
 # 2. shorter peaks in the Eyserbeek
+# from here we select 3 smaller events.
 b <- q_all %>%
   filter(str_detect(name_long, "meetgoot_Eys")) %>%
   filter(timestamp > "2019-01-01 12:00:00" & timestamp < "2024-12-25 12:00:00") %>%
@@ -100,12 +101,15 @@ ggplot(b) +
 
 # 2&3 Precipitation and discharge during events --------------------------------
 
+## setup loop over events -----------------------------------------------------
 #load selected events
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
          ts_end = ymd_hms(event_end))
 
-## GIF of precipitation events -------------------------------------------------
+event_summary <- tibble(pmax = c(),
+                        ptot = c())
+
 for (k in seq_along(events$event_start)) {
   event_start <- events$ts_start[k] 
   event_end <- events$ts_end[k] 
@@ -119,14 +123,24 @@ for (k in seq_along(events$event_start)) {
   rain_gifs <- map_names %>%
     paste0("rain_", ., ".png")
   
+  rain_maps <- map_names %>%
+    paste0("rain_", ., ".map")
+  
   map_names <- map_names %>%
     paste0("NSL_", ., ".ASC")
+
+  # calculate the mean total precipitation per eventfor the summary stats
+ rain_maps <- stack(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names))
+ sum_raster <- calc(rain_maps, sum, na.rm = TRUE)
+ ptot <- cellStats(sum_raster, stat = "mean", na.rm = TRUE)
   
   ev_name <- as.character(event_start) %>%
     str_remove_all("-") %>%
     str_extract("^([0-9]{8})") %>%
     paste0("rain_", .)
   
+  
+  ## GIF of precipitation events ------------------------------------------------- 
   if (!dir.exists(paste0("images/neerslag/", ev_name))) {
     dir.create(paste0("images/neerslag/", ev_name))
   }
@@ -153,9 +167,39 @@ for (k in seq_along(events$event_start)) {
     gif_file = paste0("images/neerslag/", ev_name, ".gif"),
     delay = 0.3
   )
+  
+  ## make LISEM input precipitation maps ---------------------------------------
+  
+  # general settings
+  srs = "EPSG:28992"
+  cell_size <- c(5, 20)
+  extent <- matrix(byrow = TRUE, nrow = 2,
+                   c(140000, 330000, 200000, 250000))
+  
+  for (j in seq_along(cell_size)) {
+    sub_dir <- paste0("Geul_", cell_size[j], "m/")
+
+  
+  # make folder for event
+    if (!dir.exists(paste0("LISEM_data/", sub_dir, "rain/", ev_name))) {
+      dir.create(paste0("LISEM_data/", sub_dir, "rain/", ev_name))
+    }
+  
+  # reproject raster with gdal warp
+  gdalwarp()
+  # convert to pcraster format
+  
+  # make corresponding rainfall file
+  
+  }
+  
+  
+  
+  # make a summary table of the events
+  sum_ev <- tibble(pmax = maxp,
+                   ptot = ptot)
+  event_summary <- bind_rows(event_summary, sum_ev)
 }
-
-
 
 
 
