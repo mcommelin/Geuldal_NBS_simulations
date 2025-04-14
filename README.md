@@ -1,7 +1,8 @@
 # Geuldal_NBS_simulations
-Code to setup a database and simulate the impact of NBS measures on flood and droughts  
+Code to setup a database and simulate the impact of NBS measures on floods in the Geul catchment.
 [![CC BY 4.0][cc-by-shield]][cc-by]
 
+For the simulations the OpenLISEM model is used.
 
 
 This work is licensed under a
