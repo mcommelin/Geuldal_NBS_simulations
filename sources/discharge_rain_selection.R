@@ -40,8 +40,7 @@ add_suffix <- function(strings) {
 
 # make file list
 q_file_dir = "data/raw_data/waterhoogte_metingen/metingen"
-q_files <- dir(q_file_dir, recursive = TRUE,
-               pattern = ".csv$")
+q_files <- dir(q_file_dir, recursive = TRUE, pattern = ".csv$")
 
 # load file with station names and characteristics
 station_names <- read_csv("data/raw_data/waterhoogte_metingen/naam_meetpunten_Geuldal.csv")
@@ -51,17 +50,22 @@ station_names <- station_names %>%
   mutate(name_long = str_replace_all(name_long, " ", "_"))
 
 # load all files
-q_list <- vector("list", length= length(q_files))
+q_list <- vector("list", length = length(q_files))
 
 for (i in seq_along(q_files)) {
-  
-  col_names_a <- names(read_delim(paste0(q_file_dir, "/", q_files[i]), 
-                                  delim = ";"))
-  a <- read_delim(paste0(q_file_dir, "/", q_files[i]), delim = ";", col_names = col_names_a,
-                  skip = 2) %>%
+  col_names_a <- names(read_delim(paste0(q_file_dir, "/", q_files[i]), delim = ";"))
+  a <- read_delim(
+    paste0(q_file_dir, "/", q_files[i]),
+    delim = ";",
+    col_names = col_names_a,
+    skip = 2
+  ) %>%
     rename(timestamp = 'GMT+1') %>%
-    pivot_longer(cols = (col_names_a[2]:col_names_a[length(col_names_a)]),
-                 names_to = "code", values_to = "wh") %>%
+    pivot_longer(
+      cols = (col_names_a[2]:col_names_a[length(col_names_a)]),
+      names_to = "code",
+      values_to = "wh"
+    ) %>%
     mutate(wh = if_else(wh < 0, NaN, wh)) %>%
     filter(!is.na(wh)) %>%
     left_join(station_names, by = "code")
@@ -80,22 +84,24 @@ q_all <- q_all %>%
 # 1. the events with high discharges at the outlet of the Geul in Meersen
 b <- q_all %>%
   filter(str_detect(name_long, "Maastrichterlaan")) %>%
-  filter(timestamp > "2019-01-01 12:00:00" & timestamp < "2024-12-30 12:00:00") %>%
+  filter(timestamp > "2019-01-01 12:00:00" &
+           timestamp < "2024-12-30 12:00:00") %>%
   filter(wh > 44.2)
 # 6 events with high discharge
 ggplot(b) +
-  geom_point(aes(x=timestamp, y = wh))
+  geom_point(aes(x = timestamp, y = wh))
 
 
 # 2. shorter peaks in the Eyserbeek
 # from here we select 3 smaller events.
 b <- q_all %>%
   filter(str_detect(name_long, "meetgoot_Eys")) %>%
-  filter(timestamp > "2019-01-01 12:00:00" & timestamp < "2024-12-25 12:00:00") %>%
+  filter(timestamp > "2019-01-01 12:00:00" &
+           timestamp < "2024-12-25 12:00:00") %>%
   filter(wh > 101.7)
 
 ggplot(b) +
-  geom_point(aes(x=timestamp, y = wh))
+  geom_point(aes(x = timestamp, y = wh))
 
 # the events + duration are added to 'sources/selected_events.csv'
 
@@ -107,18 +113,17 @@ events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
          ts_end = ymd_hms(event_end))
 
-event_summary <- tibble(pmax = c(),
-                        ptot = c())
+event_summary <- tibble(pmax = c(), ptot = c())
 
 for (k in seq_along(events$event_start)) {
-  event_start <- events$ts_start[k] 
-  event_end <- events$ts_end[k] 
+  event_start <- events$ts_start[k]
+  event_end <- events$ts_end[k]
   hours <- seq(event_start, event_end, by = "hours")
   
   map_names <- str_remove(hours, ":.*") %>%
     str_replace_all("-", "") %>%
     str_replace_all(" ", "_") %>%
-    sapply(., add_suffix) 
+    sapply(., add_suffix)
   
   rain_gifs <- map_names %>%
     paste0("rain_", ., ".png")
@@ -128,11 +133,11 @@ for (k in seq_along(events$event_start)) {
   
   map_names <- map_names %>%
     paste0("NSL_", ., ".ASC")
-
+  
   # calculate the mean total precipitation per eventfor the summary stats
- rain_maps <- stack(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names))
- sum_raster <- calc(rain_maps, sum, na.rm = TRUE)
- ptot <- cellStats(sum_raster, stat = "mean", na.rm = TRUE)
+  rain_maps <- stack(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names))
+  sum_raster <- calc(rain_maps, sum, na.rm = TRUE)
+  ptot <- cellStats(sum_raster, stat = "mean", na.rm = TRUE)
   
   ev_name <- as.character(event_start) %>%
     str_remove_all("-") %>%
@@ -140,13 +145,13 @@ for (k in seq_along(events$event_start)) {
     paste0("rain_", .)
   
   
-  ## GIF of precipitation events ------------------------------------------------- 
+  ## GIF of precipitation events -------------------------------------------------
   if (!dir.exists(paste0("images/neerslag/", ev_name))) {
     dir.create(paste0("images/neerslag/", ev_name))
   }
   
   colors <- brewer.pal(9, "Blues")
-  breakpoints <- c(0,1,3,5,10,18,26,40,60)
+  breakpoints <- c(0, 1, 3, 5, 10, 18, 26, 40, 60)
   
   # sum raster for total precipitation map
   maxp <- 0
@@ -157,7 +162,10 @@ for (k in seq_along(events$event_start)) {
     title(paste0(hours[i]))
     dev.off()
     mp <- max(as.data.frame(rain_map))
-    maxp <- if(mp > maxp) mp else maxp
+    maxp <- if (mp > maxp)
+      mp
+    else
+      maxp
   }
   
   # make a gif
@@ -173,31 +181,71 @@ for (k in seq_along(events$event_start)) {
   # general settings
   srs = "EPSG:28992"
   cell_size <- c(5, 20)
-  extent <- matrix(byrow = TRUE, nrow = 2,
-                   c(140000, 330000, 200000, 250000))
+  method = "near"
+  
+  # give the extent of the masks for both resolutions
+  # set options to enough digits for accuracy extent
+  options(digits = 10)
+  extent <- matrix(
+    byrow = TRUE,
+    nrow = 2,
+    c(
+      178004.155600000,295805.049200000,207444.155600000,325845.049200000,
+      178008.314700000,295800.098400000,207448.314700000,325840.098400000
+    )
+  )
   
   for (j in seq_along(cell_size)) {
     sub_dir <- paste0("Geul_", cell_size[j], "m/")
-
-  
-  # make folder for event
+    
+    # make folder for event
     if (!dir.exists(paste0("LISEM_data/", sub_dir, "rain/", ev_name))) {
       dir.create(paste0("LISEM_data/", sub_dir, "rain/", ev_name))
     }
-  
-  # reproject raster with gdal warp
-  gdalwarp()
-  # convert to pcraster format
-  
-  # make corresponding rainfall file
-  
+    
+    for (i in seq_along(map_name)) {
+      # reproject raster with gdal warp
+      gdalwarp(
+        srcfile = paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]),
+        dstfile = "data/tmp_rain.asc",
+        s_srs = srs,
+        t_srs = srs,
+        te_srs = srs,
+        tr = rep(cell_size[j], 2),
+        of = "AAIgrid",
+        te = extent[j, ],
+        r = method,
+        dryrun = F,
+        overwrite = T
+      )
+      # convert to pcraster format
+      asc2map(clone = paste0("LISEM_data/", sub_dir, "maps/mask.map"),
+              map_in = "data/tmp_rain.asc",
+              map_out = paste0("LISEM_data/", sub_dir, "rain/", ev_name, "/", rain_maps[i]))
+    }
+    # remove tmp rainfall file
+    file.remove("data/tmp_rain.asc")
+    file.remove("data/tmp_rain.prj")
+    
+    # make corresponding rainfall file
+    t <- tibble(ts = hours,
+                maps = rain_maps) %>%
+      mutate(mins = as.numeric((hours - hours[1]) / 60),
+             t_str = str_pad(as.character(mins), width = 4,
+                             side = "left", pad = "0"),
+             t_str = paste0("001:", t_str, " ", maps))
+    
+    # write the header
+    writeLines(paste0("# KNMI radar, resampled with GDAL warp, method = ", 
+                      method, "\n2\ntime\nmaps"),
+               paste0("LISEM_data/", sub_dir, "rain/", ev_name, "/rain.txt"))
+    #append timeseries
+    write(t$t_str, file = paste0("LISEM_data/", sub_dir, "rain/", ev_name, "/rain.txt"),
+          append = T)
   }
   
-  
-  
   # make a summary table of the events
-  sum_ev <- tibble(pmax = maxp,
-                   ptot = ptot)
+  sum_ev <- tibble(pmax = maxp, ptot = ptot)
   event_summary <- bind_rows(event_summary, sum_ev)
 }
 
@@ -212,7 +260,7 @@ for (k in seq_along(events$event_start)) {
 # q_dir <- "data/raw_data/debiet_ruwe_data/"
 # q_files <- dir(q_dir, recursive = TRUE, pattern = ".csv$")
 # qlist <- vector("list", length = length(q_files))
-# 
+#
 # for (i in seq_along(q_files)) {
 #   q_code <- names(read_delim(paste0(q_dir, q_files[i]), delim = ";", n_max = 1))[2]
 #   qlist[[i]] <- read_delim(
@@ -223,9 +271,9 @@ for (k in seq_along(events$event_start)) {
 #   ) %>%
 #     rename(timestamp = '...1') %>%
 #     mutate(code = q_code)
-#   
+#
 # }
-# 
+#
 # #combine discharge from all stations to 1 list
 # qall <- bind_rows(qlist)
 
@@ -263,5 +311,5 @@ for (i in seq_along(events$event_start)) {
 
 # save the event summary data to a csv file
 event_summary <- bind_cols(events, event_summary)
-write_csv(event_summary, "data/processed_data/stats_selected_events.csv")
-
+write_csv(event_summary,
+          "data/processed_data/stats_selected_events.csv")
