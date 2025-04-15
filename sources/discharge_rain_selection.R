@@ -235,24 +235,20 @@ for (k in seq_along(events$event_start)) {
                              side = "left", pad = "0"),
              t_str = paste0("001:", t_str, " ", maps))
     
+   rain_file <- paste0("LISEM_data/", sub_dir, "rain/", ev_name, "/rain.txt")
+    
     # write the header
     writeLines(paste0("# KNMI radar, resampled with GDAL warp, method = ", 
                       method, "\n2\ntime\nmaps"),
-               paste0("LISEM_data/", sub_dir, "rain/", ev_name, "/rain.txt"))
+               rain_file)
     #append timeseries
-    write(t$t_str, file = paste0("LISEM_data/", sub_dir, "rain/", ev_name, "/rain.txt"),
-          append = T)
+    write(t$t_str, file = rain_file, append = T)
   }
   
   # make a summary table of the events
   sum_ev <- tibble(pmax = maxp, ptot = ptot)
   event_summary <- bind_rows(event_summary, sum_ev)
 }
-
-
-
-
-
 
 ### Discharge figure events ----------------------------------------------------
 
