@@ -135,8 +135,8 @@ for (k in seq_along(events$event_start)) {
     paste0("NSL_", ., ".ASC")
   
   # calculate the mean total precipitation per eventfor the summary stats
-  rain_maps <- stack(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names))
-  sum_raster <- calc(rain_maps, sum, na.rm = TRUE)
+  rain_knmi <- stack(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names))
+  sum_raster <- calc(rain_knmi, sum, na.rm = TRUE)
   ptot <- cellStats(sum_raster, stat = "mean", na.rm = TRUE)
   
   ev_name <- as.character(event_start) %>%
@@ -203,7 +203,7 @@ for (k in seq_along(events$event_start)) {
       dir.create(paste0("LISEM_data/", sub_dir, "rain/", ev_name))
     }
     
-    for (i in seq_along(map_name)) {
+    for (i in seq_along(map_names)) {
       # reproject raster with gdal warp
       gdalwarp(
         srcfile = paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]),
@@ -221,7 +221,8 @@ for (k in seq_along(events$event_start)) {
       # convert to pcraster format
       asc2map(clone = paste0("LISEM_data/", sub_dir, "maps/mask.map"),
               map_in = "data/tmp_rain.asc",
-              map_out = paste0("LISEM_data/", sub_dir, "rain/", ev_name, "/", rain_maps[i]))
+              map_out = paste0("LISEM_data/", sub_dir, "rain/", ev_name, "/", rain_maps[i]),
+              options = "-S")
     }
     # remove tmp rainfall file
     file.remove("data/tmp_rain.asc")
@@ -250,7 +251,7 @@ for (k in seq_along(events$event_start)) {
   event_summary <- bind_rows(event_summary, sum_ev)
 }
 
-### Discharge figure events ----------------------------------------------------
+## Discharge figure events ----------------------------------------------------
 
 # # load raw discharge data
 # q_dir <- "data/raw_data/debiet_ruwe_data/"
