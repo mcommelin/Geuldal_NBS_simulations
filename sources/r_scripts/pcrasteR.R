@@ -145,14 +145,13 @@ newmap <- function(mapname = "mask.map", nrows = NULL, ncols = NULL,
 # https://pcraster.geo.uu.nl/pcraster/4.4.0/documentation/pcraster_manual/sphinx/app_resample.html
 
 #clone: name of clone map
-#asc_header: (TRUE) if true the option '-a' will be passed which sets all other options from the ASCII header
 #options: a string with all other options separated by " ". With asc_header = TRUE these are neglected.
 #map_in: name of input ASCII map
 #map_out: name of output map
 #sub_dir: if the clone, map_in and map_out are in a subdirectory add here as a string. If only some of these are in a subdirectory,
 # add this to the name itself.
 
-resample_location <- function(clone = "mask.map", map_in = "in.map", map_out = "out.map",
+resample <- function(clone = "mask.map", map_in = "in.map", map_out = "out.map",
                     dir = "") {
   # check if pcr_dir exists
   if (!exists("pcr_dir")) {
@@ -191,7 +190,31 @@ col2map <- function(clone = "mask.map", options = "", col_in = "in.txt", map_out
   system(command)
 }
 
+# map2asc
 
+# this function assumes 'set_pcraster()' is already used.
+# for explanation of function see pcraster documentation
+# https://pcraster.geo.uu.nl/pcraster/4.4.1/documentation/pcraster_manual/sphinx/app_map2asc.html
+#asc_header: (TRUE) if true the option '-a' will be passed which creates a ASCII header
+#options: a string with all other options separated by " ". With asc_header = TRUE these are neglected.
+#map_in: name of input pcraster map
+#map_out: name of output ASCII map
+#sub_dir: map_in and map_out are in a subdirectory add here as a string. If only some of these are in a subdirectory,
+# add this to the name itself.
+
+map2asc <- function(asc_header = TRUE, options = "", map_in = "in.map", map_out = "out.asc",
+                    sub_dir = "") {
+  # check if pcr_dir exists
+  if (!exists("pcr_dir")) {
+    stop("Please set PCraster installation with 'set_pcraster()")
+  }
+  sys_type <- Sys.info()['sysname']
+  exe <- ifelse(sys_type == "Windows", ".exe", "")
+  asc_option = ifelse(asc_header == T, "-a ", " ") 
+  command <- paste0(pcr_dir, "map2asc", exe, " ", asc_option,
+                    options, " ", sub_dir, map_in, " ", sub_dir, map_out)
+  system(command)
+}
 
 
 ## test -------------

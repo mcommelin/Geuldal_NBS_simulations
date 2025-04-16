@@ -14,7 +14,7 @@ lu = landuse.map;           # field id's for landuse
 # grass = grasswid.map;     # only if buffers are included
 soil = soils.map;         # field id's for texture/soil map
 # chanmask = chanmask.map;  # location of channels value = 1 (optional)
-outpoint = outpoints.map; # location of outlets and checkpoints
+#outpoint = outpoints.map; # location of outlets and checkpoints
 
 ### INPUT TABLES ### 
 
@@ -135,7 +135,7 @@ report grad = max(sin(atan(slope(dem))),0.001);
 report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
 report outlet = pit(Ldd);
 #report outpoint = pit(Ldd);
-report subcatch = subcatchment(Ldd, outpoint); # subcatchments based on outlet points
+#report subcatch = subcatchment(Ldd, outpoint); # subcatchments based on outlet points
 ##################### 
 ### LAND USE MAPS ### 
 ##################### 
