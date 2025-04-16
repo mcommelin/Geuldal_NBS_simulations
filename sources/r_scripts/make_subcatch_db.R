@@ -5,7 +5,7 @@ library(gdalUtilities)
 library(terra)
 library(tidyverse)
 
-source("sources/pcrasteR.R")
+source("sources/r_scripts/pcrasteR.R")
 set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
 
 # load subcatchment points csv file

@@ -71,7 +71,7 @@ rain_id = id.map; #
 grad = grad.map; # slope gradient
 Ldd = ldd.map; # Local Drain Direction  
 outlet = outlet.map; # location outlets and checkpoints 
-subcatch = subcatch.map; # subcatchments based on outlet points
+catchment = catchment.map; # catchment based on outlet point
 ### landuse maps ###
 per = per.map; # surface cover by vegetation
 lai= lai.map; # leaf area index
@@ -134,8 +134,7 @@ report rain_id = area; # only 1 rainfall zone
 report grad = max(sin(atan(slope(dem))),0.001); 
 report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
 report outlet = pit(Ldd);
-#report outpoint = pit(Ldd);
-#report subcatch = subcatchment(Ldd, outpoint); # subcatchments based on outlet points
+report catchment = catchment(Ldd, outlet); 
 ##################### 
 ### LAND USE MAPS ### 
 ##################### 
