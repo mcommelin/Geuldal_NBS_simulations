@@ -166,6 +166,32 @@ resample_location <- function(clone = "mask.map", map_in = "in.map", map_out = "
   system(command)
 }
 
+# col2map
+
+# this function assumes 'set_pcraster()' is already used.
+# for explanation of function see pcraster documentation
+# https://pcraster.geo.uu.nl/pcraster/4.4.1/documentation/pcraster_manual/sphinx/app_col2map.html
+#clone: name of clone map
+#col_in: columnfile iput in ASCII format
+#options: a string with all other options separated by " ". With asc_header = TRUE these are neglected.
+#map_out: name of output map
+#sub_dir: if the clone, map_in and map_out are in a subdirectory add here as a string. If only some of these are in a subdirectory,
+# add this to the name itself.
+
+col2map <- function(clone = "mask.map", options = "", col_in = "in.txt", map_out = "out.map",
+                    sub_dir = "") {
+  # check if pcr_dir exists
+  if (!exists("pcr_dir")) {
+    stop("Please set PCraster installation with 'set_pcraster()")
+  }
+  sys_type <- Sys.info()['sysname']
+  exe <- ifelse(sys_type == "Windows", ".exe", "")
+  command <- paste0(pcr_dir, "col2map", exe, " --clone ", sub_dir, clone, " ",
+                    options, " ", sub_dir, col_in, " ", sub_dir, map_out)
+  system(command)
+}
+
+
 
 
 ## test -------------

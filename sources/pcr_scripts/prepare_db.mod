@@ -15,6 +15,7 @@ lu = landuse.map;           # field id's for landuse
 soil = soils.map;         # field id's for texture/soil map
 # chanmask = chanmask.map;  # location of channels value = 1 (optional)
 
+
 ### INPUT TABLES ### 
 
 soiltbl = soil.tbl; 
@@ -39,6 +40,7 @@ lutbl = lu.tbl;
 # 05 ksat (mm/h)
 # 06 thetas (cm3/cm3) = porosity   
 # 07 soildepth (cm)
+
 
 ####################### 
 ### INPUT CONSTANTS ###
