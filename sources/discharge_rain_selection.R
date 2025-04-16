@@ -91,14 +91,13 @@ b <- q_all %>%
 ggplot(b) +
   geom_point(aes(x = timestamp, y = wh))
 
-
 # 2. shorter peaks in the Eyserbeek
 # from here we select 3 smaller events.
 b <- q_all %>%
-  filter(str_detect(name_long, "meetgoot_Eys")) %>%
-  filter(timestamp > "2019-01-01 12:00:00" &
-           timestamp < "2024-12-25 12:00:00") %>%
-  filter(wh > 101.7)
+  filter(str_detect(name_long, "meetgeet_Eys")) %>%
+  filter(timestamp > "2024-05-02 12:00:00" &
+           timestamp < "2024-05-05 18:00:00") %>%
+  filter(wh > 40.7)
 
 ggplot(b) +
   geom_point(aes(x = timestamp, y = wh))
@@ -310,3 +309,5 @@ for (i in seq_along(events$event_start)) {
 event_summary <- bind_cols(events, event_summary)
 write_csv(event_summary,
           "data/processed_data/stats_selected_events.csv")
+
+# 4. Discharge tables for LISEM ---------------------------------------------
