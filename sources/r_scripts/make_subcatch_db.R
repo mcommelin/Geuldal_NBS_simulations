@@ -8,21 +8,26 @@ library(tidyverse)
 source("sources/r_scripts/pcrasteR.R")
 set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
 
+# Function to create subcatchment base maps -----------------------------------
+base_maps_subcatchment <- function(
+    cell_size = NULL,
+    sub_catch_number = NULL # adjust the number to select the subcatchment you want
+    ) {
+
+  
 # load subcatchment points csv file
 points <- read_csv("LISEM_data/tables/outpoints_description.csv")
-cell_size <- c(5, 20)
 
-j = 2 # to test code
-
+res = cell_size
 
 # select subcatchment
 subcatch <- points %>%
-  filter(point == 12) %>% # adjust the number to select the subcatchment you want
-  filter(cell_size == cell_size[j])
-subcatch_name <- "Lemiers" # give best describing name for the subcatchment
+  filter(point == sub_catch_number) %>% 
+  filter(cell_size == res)
+subcatch_name <- subcatch$subcatch_name # give best describing name for the subcatchment
 # create dir for subcatch
-sub_catch_dir <- paste0("LISEM_data/subcatchments/", subcatch_name, "_", cell_size[j], "m/")
-main_dir <- paste0("LISEM_data/Geul_", cell_size[j], "m/maps/")
+sub_catch_dir <- paste0("LISEM_data/subcatchments/", subcatch_name, "_", res, "m/")
+main_dir <- paste0("LISEM_data/Geul_", res, "m/maps/")
 
 
 if (!dir.exists(sub_catch_dir)) {
@@ -68,7 +73,7 @@ gdalwarp(
   dstfile = paste0(sub_catch_dir, "/catchment.asc"),
   s_srs = srs,
   t_srs = srs,
-  tr = rep(cell_size[j], 2),
+  tr = rep(res, 2),
   cutline = paste0(sub_catch_dir, "/sub.shp"),
   crop_to_cutline = T,
   of = "AAIgrid",
@@ -89,8 +94,8 @@ newmap(
   nrows = as.numeric(subcatch_header[2]),
   ncols = as.numeric(subcatch_header[1]),
   xulc = as.numeric(subcatch_header[3]),
-  yulc = as.numeric(subcatch_header[4]) + as.numeric(subcatch_header[2]) * cell_size[j],
-  cellsize = cell_size[j],
+  yulc = as.numeric(subcatch_header[4]) + as.numeric(subcatch_header[2]) * res,
+  cellsize = res,
   dir = sub_catch_dir,
 )
 
@@ -119,3 +124,5 @@ file.remove(
     full.names = TRUE
   )
 )
+
+}
