@@ -12,16 +12,16 @@
 #'    calibration of OpenLISEM.
 
 # Initialization ---------------------------------------------------------------
-library(tidyverse)
 library(gifski)
 library(hms)
 library(gdalUtilities)
 library(raster)
 library(sf)
 library(RColorBrewer)
+library(tidyverse)
 
 # load pcraster functions
-source("sources/pcrasteR.R")
+source("sources/r_scripts/pcrasteR.R")
 set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
 
 #functions
@@ -104,7 +104,7 @@ ggplot(b) +
 
 # the events + duration are added to 'sources/selected_events.csv'
 
-# 2&3 Precipitation and discharge during events --------------------------------
+# 2 Visualize precipitation and discharge during events ------------------------
 
 ## setup loop over events -----------------------------------------------------
 #load selected events
@@ -112,7 +112,25 @@ events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
          ts_end = ymd_hms(event_end))
 
-event_summary <- tibble(pmax = c(), ptot = c())
+event_summary <- tibble(pmax = c(), ptot = c(), maxQ = c())
+
+# load discharge data - load hourly data from WL
+qall <- read_csv("data/raw_data/debiet_uur_data/debietgegevensgeul_VERKORT.csv",
+                 skip = 8) %>%
+  pivot_longer(cols = '12.Q.31':'10.Q.36',
+               values_to = "Q",
+               names_to = "code") %>%
+  mutate(timestamp = mdy_hm(timestamp))
+
+# load point locations of the discharge
+q_points <- st_read("data/rainfall_discharge.gpkg", layer = "discharge_locations")
+
+#filter discharge on location and event times
+qall <- qall %>%
+  filter(code %in% q_points$code)
+
+# filter per event and make figure
+qevent <- vector("list", length = nrow(events))
 
 for (k in seq_along(events$event_start)) {
   event_start <- events$ts_start[k]
@@ -175,9 +193,65 @@ for (k in seq_along(events$event_start)) {
     delay = 0.3
   )
   
-  ## make LISEM input precipitation maps ---------------------------------------
+## Discharge figure events ----------------------------------------------------
+  qevent[[k]] <- qall %>%
+    filter(timestamp > events$ts_start[k] &
+             timestamp < events$ts_end[k]) %>%
+    left_join(q_points, by = "code")
   
-  # general settings
+  ggplot(qevent[[k]]) +
+    geom_line(aes(x = timestamp, y = Q, color = naam)) +
+    theme_classic()
+  
+  ggsave(paste0("images/discharge", events$event_start[k], ".png"))
+  
+  # get max discharge at Meersen
+  qmeersen <- qevent[[k]] %>%
+    filter(naam == "Meersen")
+  maxq <- max(qmeersen$Q, na.rm = TRUE)
+
+  # make a summary table of the events
+  sum_ev <- tibble(pmax = maxp, ptot = ptot, maxQ = maxq)
+  event_summary <- bind_rows(event_summary, sum_ev)
+  
+}
+
+# save the event summary data to a csv file
+event_summary <- bind_cols(events, event_summary)
+write_csv(event_summary,
+          "data/processed_data/stats_selected_events.csv")
+
+#3. make LISEM input precipitation maps ---------------------------------------
+
+# function that
+# selects event
+# selects resolution
+# selects catchment
+# and then makes the precipitation input
+
+#load only the events that will be used for calibration events
+events <- read_csv("sources/selected_events.csv") %>%
+  filter(use == "cal") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end))
+
+for (k in seq_along(events$event_start)) {  
+  event_start <- events$ts_start[k]
+  event_end <- events$ts_end[k]
+  hours <- seq(event_start, event_end, by = "hours")
+  
+   map_names <- str_remove(hours, ":.*") %>%
+    str_replace_all("-", "") %>%
+    str_replace_all(" ", "_") %>%
+    sapply(., add_suffix)
+  
+  rain_maps <- map_names %>%
+    paste0("rain_", ., ".map")
+  
+  map_names <- map_names %>%
+    paste0("NSL_", ., ".ASC")
+  
+   # general settings
   srs = "EPSG:28992"
   cell_size <- c(5, 20)
   method = "near"
@@ -245,69 +319,8 @@ for (k in seq_along(events$event_start)) {
     write(t$t_str, file = rain_file, append = T)
   }
   
-  # make a summary table of the events
-  sum_ev <- tibble(pmax = maxp, ptot = ptot)
-  event_summary <- bind_rows(event_summary, sum_ev)
 }
 
-## Discharge figure events ----------------------------------------------------
 
-# # load raw discharge data
-# q_dir <- "data/raw_data/debiet_ruwe_data/"
-# q_files <- dir(q_dir, recursive = TRUE, pattern = ".csv$")
-# qlist <- vector("list", length = length(q_files))
-#
-# for (i in seq_along(q_files)) {
-#   q_code <- names(read_delim(paste0(q_dir, q_files[i]), delim = ";", n_max = 1))[2]
-#   qlist[[i]] <- read_delim(
-#     paste0(q_dir, q_files[i]),
-#     delim = ";",
-#     skip = 1,
-#     locale = locale(decimal_mark = ",")
-#   ) %>%
-#     rename(timestamp = '...1') %>%
-#     mutate(code = q_code)
-#
-# }
-#
-# #combine discharge from all stations to 1 list
-# qall <- bind_rows(qlist)
-
-# alternative approach - load hourly data from WL
-qall <- read_csv("data/raw_data/debiet_uur_data/debietgegevensgeul_VERKORT.csv",
-                 skip = 8) %>%
-  pivot_longer(cols = '12.Q.31':'10.Q.36',
-               values_to = "Q",
-               names_to = "code") %>%
-  mutate(timestamp = mdy_hm(timestamp))
-
-# load point locations of the discharge
-q_points <- st_read("data/rainfall_discharge.gpkg", layer = "discharge_locations")
-
-#filter discharge on location and event times
-qall <- qall %>%
-  filter(code %in% q_points$code)
-
-# filter per event and make figure
-qevent <- vector("list", length = nrow(events))
-
-for (i in seq_along(events$event_start)) {
-  qevent[[i]] <- qall %>%
-    filter(timestamp > events$ts_start[i] &
-             timestamp < events$ts_end[i]) %>%
-    left_join(q_points, by = "code")
-  
-  ggplot(qevent[[i]]) +
-    geom_line(aes(x = timestamp, y = Q, color = naam)) +
-    theme_classic()
-  
-  ggsave(paste0("images/discharge", events$event_start[i], ".png"))
-  
-}
-
-# save the event summary data to a csv file
-event_summary <- bind_cols(events, event_summary)
-write_csv(event_summary,
-          "data/processed_data/stats_selected_events.csv")
 
 # 4. Discharge tables for LISEM ---------------------------------------------
