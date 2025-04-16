@@ -29,7 +29,7 @@ for (j in seq_along(cell_size)) {
             col_names = FALSE)
   # run col2map
   col2map(col_in = "outpoints.txt", map_out = "outpoints.map",
-          sub_dir = subdir, options = "-S")
+          sub_dir = subdir, options = "-N")
   
   #copy landuse and soil tables to subdir
   lutbl <- read_csv("LISEM_data/tables/lu_tbl.csv") %>%
@@ -60,7 +60,6 @@ for (j in seq_along(cell_size)) {
   file.remove(paste0(subdir, "outpoints.txt"))
   file.remove(paste0(subdir, "lu.tbl"))
   file.remove(paste0(subdir, "soil.tbl"))
-  
 }
 
 
