@@ -15,7 +15,7 @@ lu = landuse.map;           # field id's for landuse
 soil = soils.map;         # field id's for texture/soil map
 # chanmask = chanmask.map;  # location of channels value = 1 (optional)
 #outpoint = outpoints.map; # location of outlets and checkpoints
-
+catchment = catchment.map; #
 ### INPUT TABLES ### 
 
 soiltbl = soil.tbl; 
@@ -71,7 +71,6 @@ rain_id = id.map; #
 grad = grad.map; # slope gradient
 Ldd = ldd.map; # Local Drain Direction  
 outlet = outlet.map; # location outlets and checkpoints 
-catchment = catchment.map; # catchment based on outlet point
 ### landuse maps ###
 per = per.map; # surface cover by vegetation
 lai= lai.map; # leaf area index
@@ -119,6 +118,9 @@ initial
 ####################
 ### PROCESS MAPS ###
 ####################
+report dem = if(boolean(catchment), dem);
+report soil = if(boolean(catchment), soil);
+report lu = if(boolean(catchment), lu); 
 area = dem * 0 + 1;
 ###########################
 ### MAPS WITH RAINFALL  ### 
@@ -134,7 +136,6 @@ report rain_id = area; # only 1 rainfall zone
 report grad = max(sin(atan(slope(dem))),0.001); 
 report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
 report outlet = pit(Ldd);
-report catchment = catchment(Ldd, outlet); 
 ##################### 
 ### LAND USE MAPS ### 
 ##################### 

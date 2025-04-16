@@ -26,7 +26,7 @@ subcatch <- points %>%
   filter(cell_size == res)
 subcatch_name <- subcatch$subcatch_name # give best describing name for the subcatchment
 # create dir for subcatch
-sub_catch_dir <- paste0("LISEM_data/subcatchments/", subcatch_name, "_", res, "m/")
+sub_catch_dir <- paste0("LISEM_data/subcatchments/", subcatch_name, "_", res, "m/maps/")
 main_dir <- paste0("LISEM_data/Geul_", res, "m/maps/")
 
 

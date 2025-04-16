@@ -39,10 +39,10 @@ for (j in seq_along(cell_size)) {
     filter(cell_size == res) %>%
     select(x, y, point)
   # write csv table
-  write_csv(points_res, file = paste0(subdir, "outpoints.txt"),
+  write_csv(points_res, file = paste0(subdir, "outpoint.txt"),
             col_names = FALSE)
   # run col2map
-  col2map(col_in = "outpoints.txt", map_out = "outpoints.map",
+  col2map(col_in = "outpoint.txt", map_out = "outpoint.map",
           sub_dir = subdir, options = "-N")
   # make the subcatchment map
   pcrcalc(
