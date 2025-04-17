@@ -189,7 +189,11 @@ catch_name <- points %>%
   }
   
 
-
-
-
 # 2. Discharge tables for LISEM ---------------------------------------------
+
+# start time,
+# end time
+# location of discharge
+# type of discharge (wh or Q)
+# which discharge points to include?
+
