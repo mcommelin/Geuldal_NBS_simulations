@@ -10,6 +10,7 @@ images/*
 LISEM_runs/*
 documenten_en_literatuur/*
 LISEM_data/Geul_*
+LISEM_data/subcatchments/*
 images/*
 *.html
 *.docx
