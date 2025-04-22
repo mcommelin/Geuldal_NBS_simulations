@@ -1,6 +1,9 @@
-# mkae rainfall and discharge dat for selected event for LISEM
+# make rainfall and discharge dat for selected event for LISEM
 # !before running this code make the subcatchment db
 #' 1. create input precipitation data for OpenLISEM for each event
+#' this is a combination of an ID.map at both resolutions and an input table
+#' These tables can be used for all the subcatchments, so only on input table per 
+#' event is needed.
 #' 2. make easily readable discharge/waterheigt tables for the
 #'    calibration of OpenLISEM.
 
@@ -9,8 +12,6 @@ library(hms)
 library(gdalUtilities)
 library(raster)
 library(sf)
-library(foreach)
-library(doParallel)
 library(tidyverse)
 
 # load pcraster functions
@@ -29,85 +30,40 @@ add_suffix <- function(strings) {
   })
 }
 
-n_cores <- detectCores() # number of cores
-registerDoParallel(cores = n_cores - 2) # register the cluster
+#1. make LISEM input precipitation data ---------------------------------------
 
-#1. make LISEM input precipitation maps ---------------------------------------
+## Raster with ID zones ------------------------------------------------------- 
+# make a map with numbers per cell as ID zones
 
-# function that
-# selects event
-# selects resolution
-# selects catchment
-# and then makes the precipitation input
+# give numbers to cells
+a <- raster(paste0("data/raw_data/neerslag/KNMI_radar_1uur/NSL_20200310_00.ASC"))
+n_rows <- nrow(a)
+n_cols <- ncol(a)
+matrix_data <- matrix(1:(n_rows * n_cols), nrow = n_rows, ncol = n_cols)
+a$ID_zones <- matrix_data
 
-# settings on resolution, event and catchment
-resolution = 20 # 5 or 20
-event_num = 2 # 1, 2, or 3
-catch_num = 12 # 1 = Geul 2 - 12 = subcatchments see points table
+# write the ID zones to a asc map
+writeRaster(a$ID_zone, paste0("data/processed_data/ID_zones_KNMI_radar.asc"), 
+            overwrite = T)
 
+#' We Assume that the extent of the input KNMI radar data is the same everywhere
+#' checked with the current events and that is correct. When switching to 5 min
+#' temporal resolution, check again.
 
-rain_maps_lisem <- function(
-    event_num = event_num,
-  resolution = resolution,
-  catch_num = catch_num
-) {
-  
-#load only the events that will be used for calibration events
-events <- read_csv("sources/selected_events.csv") %>%
-  filter(use == "cal") %>%
-  mutate(ts_start = ymd_hms(event_start),
-         ts_end = ymd_hms(event_end))
+## ID maps for 5 and 20 m ------------------------------------------------------
 
-#read catchment information
-points <- read_csv("LISEM_data/tables/outpoints_description.csv")
+resolution = c(5, 20) # 5 or 20
 
-# set options to enough digits for accuracy extent
-options(digits = 10)
-
-# get the catchment name
-catch_name <- points %>%
-  filter(point == catch_num) %>%
-  filter(cell_size == resolution) %>%
-  select(subcatch_name)
-
-
- k = event_num
-  
-  event_start <- events$ts_start[k]
-  event_end <- events$ts_end[k]
-  hours <- seq(event_start, event_end, by = "hours")
-  
-  map_names <- str_remove(hours, ":.*") %>%
-    str_replace_all("-", "") %>%
-    str_replace_all(" ", "_") %>%
-    sapply(., add_suffix)
-  
-  rain_maps <- map_names %>%
-    paste0("rain_", ., ".map")
-  
-  map_names <- map_names %>%
-    paste0("NSL_", ., ".ASC")
-  
-  # get the correct directories
-  if (catch_num == 1) {
-    # Geul
-    main_dir <- paste0("LISEM_data/Geul_", resolution, "m/")
-  } else {
-    # subcatchments
-    main_dir <- paste0("LISEM_data/subcatchments/", catch_name, "_", resolution, "m/")
-  }
-  
-  # event name
-  ev_name <- as.character(event_start) %>%
-    str_remove_all("-") %>%
-    str_extract("^([0-9]{8})") %>%
-    paste0("rain_", .)
+for (i in seq_along(resolution)) {
+  # get the resolution
+  res <- resolution[i]
+  # set the correct directories
+  main_dir <- paste0("LISEM_data/Geul_", res, "m/")
   
   # general settings
   srs = "EPSG:28992"
   method = "near"
   
-
   # get the extent of the mask.map
   map2asc(
     map_in = paste0(main_dir, "maps/mask.map"),
@@ -134,60 +90,104 @@ catch_name <- points %>%
   #remove the mask.asc
   file.remove(paste0(main_dir, "mask.asc"))
   
-    # make folder for rainfall event
-    if (!dir.exists(paste0(main_dir, "rain/", ev_name))) {
-      dir.create(paste0(main_dir, "rain/", ev_name), recursive = T)
-    }
-    
-  # parallel loop to make the rainfall maps
-    foreach(i = seq_along(map_names)) %dopar% {
-      
-     tempfile <- paste0("data/tmp_", Sys.getpid(), ".asc")
-       
-      # reproject raster with gdal warp
-      gdalwarp(
-        srcfile = paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]),
-        dstfile = tempfile,
-        s_srs = srs,
-        t_srs = srs,
-        te_srs = srs,
-        tr = rep(resolution, 2),
-        of = "AAIgrid",
-        te = extent,
-        r = method,
-        dryrun = F,
-        overwrite = T
-      )
-      # convert to pcraster format
-      asc2map(clone = paste0(main_dir, "maps/mask.map"),
-              map_in = tempfile,
-              map_out = paste0(main_dir, "rain/", ev_name, "/", rain_maps[i]),
-              options = "-S")
-      # remove tmp rainfall file
-      file.remove(tempfile)
-      file.remove(paste0("data/tmp_", Sys.getpid(), ".prj"))
-    }
-
-    
-    
-    # make corresponding rainfall file
-    t <- tibble(ts = hours,
-                maps = rain_maps) %>%
-      mutate(mins = as.numeric((hours - hours[1]) / 60),
-             t_str = str_pad(as.character(mins), width = 4,
-                             side = "left", pad = "0"),
-             t_str = paste0("001:", t_str, " ", maps))
-    
-    rain_file <- paste0(main_dir, "rain/", ev_name, "/rain.txt")
-    
-    # write the header
-    writeLines(paste0("# KNMI radar, resampled with GDAL warp, method = ", 
-                      method, "\n2\ntime\nmaps"),
-               rain_file)
-    #append timeseries
-    write(t$t_str, file = rain_file, append = T)
-  }
+  # reproject ID raster with gdal warp
+  gdalwarp(
+    srcfile = paste0("data/processed_data/ID_zones_KNMI_radar.asc"),
+    dstfile = paste0(main_dir, "maps/ID.asc"),
+    s_srs = srs,
+    t_srs = srs,
+    te_srs = srs,
+    tr = rep(res, 2),
+    of = "AAIgrid",
+    te = extent,
+    r = method,
+    dryrun = F,
+    overwrite = T
+  )
   
+  a <- raster(paste0(main_dir, "maps/ID.asc"))
+  
+  # convert to pcraster format
+  asc2map(clone = paste0(main_dir, "maps/mask.map"),
+          map_in = paste0(main_dir, "maps/ID.asc"),
+          map_out = paste0(main_dir, "maps/ID.map"),
+          options = "-S")
+  # remove tmp rainfall file
+  file.remove(paste0(main_dir, "maps/ID.asc"))
+  file.remove(paste0(main_dir, "maps/ID.prj"))
+}
+
+## Rain tables per event -------------------------------------------------------
+
+  #load the events
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end))
+
+# set options to enough digits for accuracy extent
+options(digits = 10)
+
+for (k in seq_along(events$ts_start)) {
+  event_start <- events$ts_start[k]
+  event_end <- events$ts_end[k]
+  hours <- seq(event_start, event_end, by = "hours")
+  
+  map_names <- str_remove(hours, ":.*") %>%
+    str_replace_all("-", "") %>%
+    str_replace_all(" ", "_") %>%
+    sapply(., add_suffix)
+  
+  map_names <- map_names %>%
+    paste0("NSL_", ., ".ASC")
+  
+  # event name
+  ev_name <- as.character(event_start) %>%
+    str_remove_all("-") %>%
+    str_extract("^([0-9]{8})") %>%
+    paste0("rain_", .)
+  
+  # find the number of idzones in the radar map
+  id_raster <- raster(paste0("data/processed_data/ID_zones_KNMI_radar.asc"))
+  n_cols_rain <- max(as.matrix(id_raster)) + 1 # add 1 colum for the timestamp
+  
+  # loop over rainfall maps and make rain input table
+  rain_file <- paste0("LISEM_data/rain/", ev_name, ".txt")
+  ev_date <- date(event_start)
+  # write the header
+   writeLines(paste0("# KNMI radar for ", ev_date, "\n", n_cols_rain, "\ntime"),
+             rain_file)
+ # add all gauges in the header
+   idn <- seq(1, n_cols_rain-1)
+   header_part <- paste0("gauge ", idn)
+   write(header_part, rain_file, append = T)
+   
+  # make the rain table 
+   t <- tibble()
+   # loop over teh rainfall maps and add them row per row to a table
+  for (i in seq_along(hours)) {
+    # read the rainfall raster and convert to array
+        x <- raster(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]))
+    x <- as.matrix(x)
+    x <- round(as.vector(x), digits = 2)
+    d <- t(data.frame(x))
+    e <- as_tibble(d) %>%
+      mutate(timestamp = hours[i])
+  t <- bind_rows(t, e)
+  }
+  # add the timestamp to the table
+  precip <- t %>%
+   mutate(mins = as.numeric((timestamp - timestamp[1]) / 60),
+          t_str = str_pad(as.character(mins), width = 4,
+                          side = "left", pad = "0"),
+          t_str = paste0("001:", t_str)) %>%
+    select(t_str, everything()) %>%
+    select(-mins, - timestamp)
+  # append the table to the header
+  write.table(precip, file = rain_file, append = T, col.names = F,
+              row.names = F, sep = " ", quote = F)
+}
+  
+
 
 # 2. Discharge tables for LISEM ---------------------------------------------
 

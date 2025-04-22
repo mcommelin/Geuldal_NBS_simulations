@@ -47,7 +47,7 @@ for (dir in dirs) {
   }
 }
 
-base_maps <- c("dem.map", "mask.map", "landuse.map", "soils.map", "catchment.map")
+base_maps <- c("dem.map", "mask.map", "landuse.map", "soils.map", "catchment.map", "ID.map")
 # copy the maps to the run_dir
 subdir <- paste0(run_dir, "maps/")
 for (map in base_maps) {
