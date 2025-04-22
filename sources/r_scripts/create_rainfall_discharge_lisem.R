@@ -197,3 +197,19 @@ for (k in seq_along(events$ts_start)) {
 # type of discharge (wh or Q)
 # which discharge points to include?
 
+points <- read_csv("LISEM_data/tables/outpoints_description.csv")
+
+# load discharge data - load hourly data from WL
+qall <- read_csv("data/raw_data/debiet_uur_data/debietgegevensgeul_VERKORT.csv",
+                 skip = 8) %>%
+  pivot_longer(cols = '12.Q.31':'10.Q.36',
+               values_to = "Q",
+               names_to = "code") %>%
+  mutate(timestamp = mdy_hm(timestamp))
+
+# load point locations of the discharge
+q_points <- st_read("data/rainfall_discharge.gpkg", layer = "discharge_locations")
+
+#filter discharge on location and event times
+qall <- qall %>%
+  filter(code %in% q_points$code)

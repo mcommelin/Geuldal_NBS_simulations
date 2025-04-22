@@ -23,3 +23,13 @@ x,y,point,cell_size,name,description,subcatch_name
 180676.299,321568.214,10,5,Watervalderbeek,"Watervalderbeek, voor ondergrondse aansluiting Geul",x
 185051.29,320233.15,11,5,Strabeek,Strabeek 200m voordat deze in Geul stroomt,x
 198011.358,310942.38,12,5,Selzerbeek,"Selzerbeek, bij Lemiers",Lemiers
+190538.56,313912.57,13,20,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp
+190546.532,313922.935,13,5,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp
+193199.18,315191.48,14,20,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek
+193204.77,315192.64,14,5,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek
+192665.616,313550.405,15,20,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij
+192666.26,313552.645,15,5,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij
+192116.32,313152.83,16,20,Hommerich,Geul meetpunt code = 10.Q.30,Hommerich
+192111.578,313158.032,16,5,Hommerich,Geul meetpunt code = 10.Q.30,Hommerich
+193598.35,307731.26,17,20,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen
+193596.5,307733.01,17,5,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen
