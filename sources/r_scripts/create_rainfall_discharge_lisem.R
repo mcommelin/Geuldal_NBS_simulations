@@ -6,7 +6,8 @@
 #' event is needed.
 #' 2. make easily readable discharge/waterheigt tables for the
 #'    calibration of OpenLISEM.
-
+#' 3. make a function to compare the observed and simulated discharge
+#' 
 # Initialization --------------------------------------------------------------
 library(hms)
 library(gdalUtilities)
@@ -212,4 +213,30 @@ q_points <- st_read("data/rainfall_discharge.gpkg", layer = "discharge_locations
 
 #filter discharge on location and event times
 qall <- qall %>%
-  filter(code %in% q_points$code)
+  filter(code %in% q_points$code) %>%
+  left_join(q_points, by = "code")
+
+#load the events
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end))
+
+
+# filter per event
+qevent <- vector("list", length = nrow(events))
+
+for (k in seq_along(events$event_start)) {
+  event_start <- events$ts_start[k]
+  event_end <- events$ts_end[k]
+  
+  qevent[[k]] <- qall %>%
+    filter(timestamp > events$ts_start[k] &
+             timestamp < events$ts_end[k]) %>%
+    mutate(ev_num = k)
+}
+# combine to tabe and save
+qtable <- bind_rows(qevent)
+write_csv(qtable, "LISEM_data/tables/observed_discharge_hourly.csv")
+
+# 3. function to compare discharge ---------------------------------------------
+
