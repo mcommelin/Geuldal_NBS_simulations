@@ -165,13 +165,23 @@ for (k in seq_along(events$event_start)) {
   colors <- brewer.pal(9, "Blues")
   breakpoints <- c(0, 1, 3, 5, 10, 18, 26, 40, 60)
   
+  # add catchment outline
+  gpx_line <- st_read("data/line_catchment.gpx", layer = "tracks") 
+  # Reproject the GPX line to match the raster CRS (EPSG:28992)
+  gpx_line <- st_transform(gpx_line, crs = 28992)
+  
+  
   # sum raster for total precipitation map
   maxp <- 0
   for (i in seq_along(map_names)) {
     rain_map <- raster(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]))
     png(filename = paste0("images/neerslag/", ev_name, "/", rain_gifs[i]))
-    a <- plot(rain_map, col = colors, breaks = breakpoints)
-    title(paste0(hours[i]))
+    # Plot the raster
+    plot(rain_map, col = colors, breaks = breakpoints, main = paste0(hours[i]))
+    
+    # Overlay the GPX line
+    plot(st_geometry(gpx_line), add = TRUE, col = "black", lwd = 2) # Adjust color and line width as needed
+    
     dev.off()
     mp <- max(as.data.frame(rain_map))
     maxp <- if (mp > maxp)
