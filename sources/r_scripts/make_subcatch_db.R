@@ -31,7 +31,7 @@ main_dir <- paste0("LISEM_data/Geul_", res, "m/maps/")
 
 
 if (!dir.exists(sub_catch_dir)) {
-  dir.create(sub_catch_dir)
+  dir.create(sub_catch_dir, recursive = TRUE)
 }
 
 # copy base maps from main_dir to new subcatch dir
