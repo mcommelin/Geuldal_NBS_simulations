@@ -16,6 +16,7 @@ soil = soils.map;         # field id's for texture/soil map
 # chanmask = chanmask.map;  # location of channels value = 1 (optional)
 #outpoint = outpoints.map; # location of outlets and checkpoints
 catchment = catchment.map; #
+buildings = buildings.map; # fraction of buildings in cell.
 ### INPUT TABLES ### 
 
 soiltbl = soil.tbl; 
@@ -118,10 +119,15 @@ initial
 ####################
 ### PROCESS MAPS ###
 ####################
+
+# remove data outside catchment area
 report dem = if(boolean(catchment), dem);
 report soil = if(boolean(catchment), soil);
 report lu = if(boolean(catchment), lu); 
+report buildings = if(boolean(catchment), buildings);
 area = dem * 0 + 1;
+report one = dem * 0 + 1; # map with value 1
+report zero = dem * 0; # map with value 0
 ###########################
 ### MAPS WITH RAINFALL  ### 
 ########################### 
