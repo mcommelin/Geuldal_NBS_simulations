@@ -130,6 +130,11 @@ qall <- qall %>%
 # filter per event and make figure
 qevent <- vector("list", length = nrow(events))
 
+# add catchment outline
+gpx_line <- st_read("data/line_catchment.gpx", layer = "tracks") 
+# Reproject the GPX line to match the raster CRS (EPSG:28992)
+gpx_line <- st_transform(gpx_line, crs = 28992)
+
 for (k in seq_along(events$event_start)) {
   event_start <- events$ts_start[k]
   event_end <- events$ts_end[k]
@@ -164,12 +169,6 @@ for (k in seq_along(events$event_start)) {
   
   colors <- brewer.pal(9, "Blues")
   breakpoints <- c(0, 1, 3, 5, 10, 18, 26, 40, 60)
-  
-  # add catchment outline
-  gpx_line <- st_read("data/line_catchment.gpx", layer = "tracks") 
-  # Reproject the GPX line to match the raster CRS (EPSG:28992)
-  gpx_line <- st_transform(gpx_line, crs = 28992)
-  
   
   # sum raster for total precipitation map
   maxp <- 0
