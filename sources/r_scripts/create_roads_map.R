@@ -23,10 +23,10 @@ road_surfaces <- road_types %>%
   select(surface) %>%
   distinct()
 
-#write_csv(road_surfaces, "data/processed_data/road_surface_types.csv")
+#write_csv(road_surfaces, "sources/GIS_manual/road_surface_types.csv")
 
 # read manual assigned road surfaces
-road_surfaces <- read_csv("data/processed_data/road_surface_types.csv")
+road_surfaces <- read_csv("sources/GIS_manual/road_surface_types.csv")
 
 # add new surface to road types
 road_types <- road_types %>%
@@ -34,7 +34,7 @@ road_types <- road_types %>%
 
 # write road types and manually add hard and compacted surfaces for the road types
 # with NA for surface
-#write_csv(road_types, "data/processed_data/road_types.csv")
+#write_csv(road_types, "sources/GIS_manual/road_types.csv")
 
 # check for all NA surfaces if a class can visually be assigned.
 a <- osm_data %>%
@@ -44,7 +44,7 @@ a <- osm_data %>%
 st_write(a, "data/temp.gpkg", layer = "temp", delete_layer = TRUE)
 
 # read the new road types with all surfaces assigned
-road_types <- read_csv("data/processed_data/road_types.csv")
+road_types <- read_csv("sources/GIS_manual/road_types.csv")
 
 # add new hard and compacted surfaces to osm data
 osm_data <- osm_data %>%
@@ -89,14 +89,17 @@ road_widths <- osm_data %>%
   summarise(m_width = mean(width, na.rm = TRUE))
 
 # write the road width and adjust manually
-#write_csv(road_widths, "data/processed_data/road_widths.csv")
+#write_csv(road_widths, "sources/GIS_manual/road_widths.csv")
 
 # read the road widths with manual adjustments
-road_widths <- read_csv("data/processed_data/road_widths.csv")
+road_widths <- read_csv("sources/GIS_manual/road_widths.csv")
 
 # add road widths to osm data
 osm_data <- osm_data %>%
-  #left_join(road_widths, by = "highway") %>%
-  select(highway, hard_surface, compacted, m_width)
+  left_join(road_widths, by = "highway") %>%
+  select(highway, hard_surface, compacted, m_width, width) %>%
+  mutate(width = as.numeric(width)) %>%
+  mutate(m_width = if_else(is.na(width), m_width, width))
+
 # save the roads data
 st_write(osm_data, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = "roads_region", delete_layer = TRUE)
