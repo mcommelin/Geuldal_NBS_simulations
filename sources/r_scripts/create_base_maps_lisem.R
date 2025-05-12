@@ -164,3 +164,15 @@ osm_data <- osm_data %>%
 
 # save the roads data
 st_write(osm_data, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = "roads_region", delete_layer = TRUE)
+
+# 3. channels and culverts -----------------------------------------------------
+
+# load osm data culverst and waterways
+osm_waterways <- st_read("data/osm_data.gpkg", layer = "waterways")
+osm_culverts <- st_read("data/osm_data.gpkg", layer = "culverts")
+
+a <- osm_waterways %>%
+  select(waterway, width, intermittent)
+
+b <- osm_culverts %>%
+  select(waterway, width, intermittent)
