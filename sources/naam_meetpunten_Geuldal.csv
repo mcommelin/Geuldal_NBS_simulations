@@ -1,0 +1,65 @@
+naam,ondertitel,code,type
+Buffer Beekstraat,Valkenburg,10.H.209,buffer
+Buffer Etenaken,Etenaken,10.H.217,buffer
+Buffer Grachtstraat,Valkenburg,10.H.210,buffer
+Buffer Hekerbeekweg,Valkenburg,10.H.216,buffer
+Buffer Koulen,Klimmen,10.H.211,buffer
+Buffer Molenbroekerbeek,Vaals,12.H.220,buffer
+Buffer Oude Veiling Partij,Wittem,12.H.219,buffer
+Buffer Ransdalerstraat,Ransdaal,10.H.214,buffer
+Buffer Sibbergrubbe,Valkenburg,10.H.212,buffer
+Buffer St. Gillisstraat 1,Ransdaal,10.H.213,buffer
+Eyserbeek,Simpelveld,11.H.227,Eyserbeek
+Eyserbeek,Simpelveld Oude Molen,11.H.226,Eyserbeek
+Eyserbeek,Eys,11.H.225,Eyserbeek
+Eyserbeek,meetgoot Eys,11.H.61,Eyserbeek
+Geul,Kelmis Belgie,GEUL_WATHTE_202,Geul
+Geul,Blieberg Belgie,GEUL_WATHTE_201,Geul
+Geul,Sippenaeken Belgie,Sippenaeken_H,Geul
+Geul,Cottessen,10.H.56,Geul
+Geul,Epenermolen,10.H.12,Geul
+Geul,Volmolen Hurpesch,10.H.198,Geul
+Geul,Commandeursmolen,10.H.13,Geul
+Geul,Mechelen,10.H.197,Geul
+Geul,Hommerich,10.H.58,Geul
+Geul,Wijlre Brand bierbrouwerij,10.H.14,Geul
+Geul,Wijlre,10.H.19,Geul
+Geul,Panhuis,GEUL_WATHTE_004,Geul
+Geul,Schin op Geul,10.H.199,Geul
+Geul,Valkenburg Burgemeester Henssingel,10.H.16,Geul
+Geul,Valkenburg Hertenkamp,10.H.87,Geul
+Geul,Valkenburg Polfermolen,10.H.222,Geul
+Geul,Geulhem,10.H.17,Geul
+Geul,Geulhemmermolen,10.H.90,Geul
+Geul,Grote Molen,10.H.18,Geul
+Geul,Meersen Maastrichterlaan,10.H.60,Geul
+Geul,Bovenstrooms sifon Julianakanaal,10.H.223,Geul
+Geul bij samenvloeiing Geul Gulp Selzerbeek Eyserbeek,meting vanaf 97.16 mNAP,10.H.196,Geul
+Geulke,Rothemermolen,10.H.140,Geulke
+Gulp,Teuven,13.H.159,Gulp
+Gulp,Slenaken,13.H.25,Gulp
+Gulp,Instroom molentak Broekermolen,13.H.26,Gulp
+Gulp,Beutenaken backup meting,13.H.299_REDUN,Gulp
+Gulp,Euverem,13.H.230,Gulp
+Gulp,Gulpen Azijnfabriek,13.H.66,Gulp
+Kanjel,benedenstrooms duiken Rothemermolen,10.H.142,Kanjel
+Selzerbeek,Lemiers,12.H.228,Selzerbeek
+Selzerbeek,"Buffer Nijswiller, waterstand bovenstrooms",12.H.33,Selzerbeek
+Selzerbeek,"Buffer Nijswiller, waterstand benedenstrooms",12.H.34,Selzerbeek
+Selzerbeek,waterverdeling Selzerbeek-Vistraat Partij,SELZ_WATHTE_001,Selzerbeek
+Selzerbeek,benedenstrooms stuw Selzerbeek,SELZ_WATHTE_003,Selzerbeek
+Selzerbeek,bovenstrooms stuw Afslagtak Selzerbeek,SELZ_WATHTE_002,Selzerbeek
+Selzerbeek,Partij,12.H.62,Selzerbeek
+Selzerbeek Molentak,Wittem,12.H.63,Selzerbeek Molentak
+Watervalderbeek,bovenstrooms rooster buffer Pletsmolen,WATE_WATHTE_005,buffer
+Watervalderbeek,buffer Watervalderbeek,WATE_WATHTE_002,buffer
+Watervalderbeek,Buffer Watervalderbeek instroom,WATE_WATHTE_001,buffer
+Eyserbeek,meetgoot Eys_debiet,11.Q.32,Eyserbeek
+Geul,Cottessen_debiet,10.Q.29,Geul
+Geul,Hommerich_debiet,10.Q.30,Geul
+Geul,Kelmis_debiet,KELMIS_Q_001,Geul
+Geul,Meersen_debiet,10.Q.36,Geul
+Geul,Sippenaeken_debiet,Sippenaeken_Q,Geul
+Gulp,Azijnfabriek_debiet,13.Q.34,Gulp
+Selzerbeek,Molentak_debiet,12.Q.46,Selzerbeek
+Selzerbeek,Partij_debiet,12.Q.31,Selzerbeek
