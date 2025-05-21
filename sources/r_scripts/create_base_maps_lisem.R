@@ -170,9 +170,32 @@ st_write(osm_data, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = 
 # load osm data culverst and waterways
 osm_waterways <- st_read("data/osm_data.gpkg", layer = "waterways")
 osm_culverts <- st_read("data/osm_data.gpkg", layer = "culverts")
+osm_nat_water <- st_read("data/osm_data.gpkg", layer = "natural_water")
+# load waterboard data
+wl_legger1 <- st_read("data/wl_data.gpkg", layer = "Watergang - primair")
+wl_legger2 <- st_read("data/wl_data.gpkg", layer = "Watergang - secundair")
+wl_buffers <- st_read("data/wl_data.gpkg", layer = "Regenwaterbuffer")
 
-a <- osm_waterways %>%
-  select(waterway, width, intermittent)
+# reproject to EPSG:28992
+osm_w <- osm_waterways %>%
+  st_transform(28992)
+osm_c <- osm_culverts %>%
+  st_transform(28992)
+osm_nw <- osm_nat_water %>%
+  st_transform(28992)
+
+#' steps to create a channels layer including culverts
+#' culverts -> give a culvert diameter as overlay for the channel
+#' diameter depends on the width or class of the underlying channel.
+#' 
+#' channels.
+#' merge the osm waterways, and legger layers.
+#' make connections over natural water. 
+#' always connect a buffer via channels to the network.
+#' in rural area use channel with dimension 30cm deep, 100 wide
+#' in urban (residential osm) areas use culvert with diameter = 60 cm?
+#' 
+
 
 b <- osm_culverts %>%
   select(waterway, width, intermittent)
