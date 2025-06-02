@@ -173,6 +173,7 @@ st_write(osm_data, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = 
 # load the qgis channels layer
 ranked_chan <- st_read("data/processed_data/GIS_data/channels.gpkg", layer = "rank_attributes")
 
+# clean up and assign baseflow
 chan <- ranked_chan %>%
   mutate(waterway = if_else(!is.na(STATUS) & is.na(waterway), "ditch", waterway),
          waterway = if_else(waterway == "fish_pass", "stream", waterway),
@@ -181,6 +182,27 @@ chan <- ranked_chan %>%
          intermittent = if_else(is.na(intermittent), "no", intermittent),
          baseflow = if_else(waterway == "stream", 1, 0),
          baseflow = if_else(intermittent == "yes", 0, baseflow))
+
+#histogram of Shreve order to make classes for width
+# see sources/GIS_manual/Schreve_width_channels.csv
+shreve_lookup <- read_csv("sources/GIS_manual/Shreve_width_channels.csv")
+
+# teh channel width from OSM only covers a few features and does not seem usefull
+# so for now we neglect it.
+
+# add shape and dimensions.
+chanshape <- chan %>%
+  mutate(shape = if_else(waterway == "drain", "rectangle", "trapezium"),
+         shape = if_else(waterway == "stream", "rectangle", shape),
+         tunnel = if_else(tunnel == "yes", "culvert", tunnel),
+         tunnel = if_else(is.na(tunnel), "no", tunnel),
+         shape = if_else(tunnel == "culvert", "round", shape)) %>%
+  rename(width_osm = width)
+
+chandim <- left_join(chanshape, shreve_lookup, 
+                     join_by(closest(ValueShreve >= ClassShreve))) %>%
+  mutate(width = if_else(tunnel == "culvert", diameter, width))
+
 
 
 st_write(chan, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
