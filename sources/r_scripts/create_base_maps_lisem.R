@@ -167,6 +167,24 @@ st_write(osm_data, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = 
 
 # 3. channels and culverts -----------------------------------------------------
 
+# the channel layer are digitized to 1 connected network in QGIS.
+# with Lines Ranking plugin additional statistics are calculated.
+
+# load the qgis channels layer
+ranked_chan <- st_read("data/processed_data/GIS_data/channels.gpkg", layer = "rank_attributes")
+
+chan <- ranked_chan %>%
+  mutate(waterway = if_else(!is.na(STATUS) & is.na(waterway), "ditch", waterway),
+         waterway = if_else(waterway == "fish_pass", "stream", waterway),
+         waterway = if_else(waterway == "canal", "ditch", waterway),
+         waterway = if_else(waterway == "river", "stream", waterway),
+         intermittent = if_else(is.na(intermittent), "no", intermittent),
+         baseflow = if_else(waterway == "stream", 1, 0),
+         baseflow = if_else(intermittent == "yes", 0, baseflow))
+
+
+st_write(chan, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
+
 # load osm data culverst and waterways
 osm_waterways <- st_read("data/osm_data.gpkg", layer = "waterways")
 osm_culverts <- st_read("data/osm_data.gpkg", layer = "culverts")
@@ -193,8 +211,9 @@ osm_nw <- osm_nat_water %>%
 #' make connections over natural water. 
 #' always connect a buffer via channels to the network.
 #' in rural area use channel with dimension 30cm deep, 100 wide
-#' in urban (residential osm) areas use culvert with diameter = 60 cm?
-#' 
+#' in urban areas use culvert with diameter = 60 cm?
+#' urban is made as follows:
+#' combine residential, religious, commercial, industrial, retail, education
 
 
 b <- osm_culverts %>%
