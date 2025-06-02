@@ -201,11 +201,11 @@ chanshape <- chan %>%
 
 chandim <- left_join(chanshape, shreve_lookup, 
                      join_by(closest(ValueShreve >= ClassShreve))) %>%
-  mutate(width = if_else(tunnel == "culvert", diameter, width))
+  mutate(width = if_else(tunnel == "culvert", diameter, width)) %>%
+  select(waterway, width, depth, shape, tunnel, baseflow) %>%
+  mutate(culvert_bool = if_else(tunnel == "culvert", 1, 0))
 
-
-
-st_write(chan, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
+st_write(chandim, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
 
 # load osm data culverst and waterways
 osm_waterways <- st_read("data/osm_data.gpkg", layer = "waterways")
