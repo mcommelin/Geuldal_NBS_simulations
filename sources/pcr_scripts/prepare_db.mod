@@ -1,7 +1,7 @@
 #! --matrixtable --lddin --clone mask.map
 
 # PCRASTER script to build a LISEM input database 
-# made by Meindert Commelin 09/01/2025            
+# made by Meindert Commelin 03/06/2025            
 ###################################################
 
 binding 
@@ -10,13 +10,14 @@ binding
 
 dem = dem.map;              # digital elevation model, area must be <= clone
 lu = landuse.map;           # field id's for landuse 
-#roads = roads.map;         # location of roads value = 1
-# grass = grasswid.map;     # only if buffers are included
-soil = soils.map;         # field id's for texture/soil map
-# chanmask = chanmask.map;  # location of channels value = 1 (optional)
-#outpoint = outpoints.map; # location of outlets and checkpoints
-catchment = catchment.map; #
-buildings = buildings.map; # fraction of buildings in cell.
+catchment = catchment.map;  #
+soil = soils.map;           # field id's for texture/soil map
+roads = roads_fraction.map; # fraction road coverage (optional)
+chanmask = chanmask.map;    # location of channels value = 1 (optional)
+#outpoint = outpoints.map;  # location of outlets and checkpoints
+buildings = buildings.map;  # fraction of buildings in cell. (optional)
+#grass = grasswid.map;      # only if buffers are included
+
 ### INPUT TABLES ### 
 
 soiltbl = soil.tbl; 
@@ -50,11 +51,12 @@ lutbl = lu.tbl;
 # NOTE: if channels with different parameters, use a table as with landuse.
 # Chanwidth = 2; # width of channels in meters 
 # Chanside = 0; # tan of angle between side and surface (0 = rectangular)
-# Chanman = 0.2; # Manning's n in channel
+Chanman = 0.1; # Manning's n in channel
 # Chancoh = 10; # high cohesion, kPa 
 # ChanKsat = 20; # channel ksat for infiltration
-# roads:
-#widthroads = 6; # width of roads in meters
+
+
+
 ###################
 ### PROCES MAPS ###
 ###################
@@ -76,7 +78,7 @@ outlet = outlet.map; # location outlets and checkpoints
 per = per.map; # surface cover by vegetation
 lai= lai.map; # leaf area index
 ch = ch.map;  # crop height
-#roadwidth = roadwidth.map;
+roadwidth = roadwidth.map;
 # grass = grasswid.map; # width of grass strips (optional)
 # smax = smax.map; # max canopy storage (optional)
 ### surface maps ###
@@ -106,11 +108,11 @@ soildep= soildep1.map;
 # thetai2= thetai2.map; 
 # soildep2= soildep2.map;
 ### channel maps ### (optional)
-# lddchan = lddchan.map; 
+lddchan = lddchan.map; 
 # chanwidth = chanwidt.map; 
 # chanside = chanside.map;
-# changrad = changrad.map; 
-# chanman = chanman.map; 
+changrad = changrad.map; 
+chanman = chanman.map; 
 # chancoh = chancoh.map;
 ### channel infiltration ### (optional)
 # chanksat = chanksat.map;
@@ -128,6 +130,7 @@ report buildings = if(boolean(catchment), buildings);
 area = dem * 0 + 1;
 report one = dem * 0 + 1; # map with value 1
 report zero = dem * 0; # map with value 0
+
 ###########################
 ### MAPS WITH RAINFALL  ### 
 ########################### 
@@ -147,12 +150,8 @@ report outlet = pit(Ldd);
 ##################### 
 report per = lookupscalar(lutbl, 4, lu); # fraction soil cover 
 report ch = lookupscalar(lutbl, 6, lu); # crop height (m)
-# choose method for lai:
 report lai = lookupscalar(lutbl, 5, lu); # leaf area index
-# or: (explained on page 71-72 from LISEMdocumentation6_170215)
-# per = min(per, 0.95); 
-# lai = ln(1-coverc)/-0.4;
-# report lai = if(per gt 0, lai/per, 0); # leaf area index
+
 ####################
 ### SURFACE MAPS ### 
 ####################
@@ -160,7 +159,7 @@ report rr = lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm)
 report mann = lookupscalar(lutbl, 2, lu); # Manning's n
 # report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
 report stone = lookupscalar(soiltbl, 1, soil); # stone fraction 
-#report roadwidth = roads * scalar(widthroads);
+report roadwidth = roads * celllength();
 ####################
 ### EROSION MAPS ### 
 ####################
@@ -184,11 +183,14 @@ report soildep = lookupscalar(soiltbl, 7, soil);
 #################### 
 ### CHANNEL MAPS ###
 ####################
-# report lddchan= lddcreate(dem*chanmask,1e20,1e20,1e20,1e20); 
-# report chanwidth=chanmask*scalar(Chanwidth); 
-# report chanside=chanmask*scalar(Chanside);
-# report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
-# report chanman=chanmask*scalar(Chanman); 
+# when channel feature are too close to each other on the map, small side channels of length = 1
+# are created, we remove these first.
+lddchan= lddcreate(dem*chanmask,1e20,1e20,1e20,1e20); 
+chanclean = accuflux(lddchan, 1);
+chanclean = if(chanclean >1, 1);
+report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20); 
+report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
+report chanman=chanmask*scalar(Chanman); 
 # report chancoh=chanmask*scalar(Chancoh);
 ############################
 ### CHANNEL INFILTRATION ###

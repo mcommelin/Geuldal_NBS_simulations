@@ -12,8 +12,8 @@ set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
 points <- read_csv("LISEM_data/tables/outpoints_description.csv")
 
 # settings
-resolution <- 20 # fill resolution here
-catch_num <- 3 # fill catchment number here (see points table)
+resolution <- 5 # fill resolution here
+catch_num <- 14 # fill catchment number here (see points table)
 
 # function create_lisem_run
 create_lisem_run <- function(

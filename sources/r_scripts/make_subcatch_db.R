@@ -36,7 +36,10 @@ if (!dir.exists(sub_catch_dir)) {
 
 # copy base maps from main_dir to new subcatch dir
 base_maps <- c("dem.map", "mask.map", "landuse.map", "soils.map", 
-               "catchment.map", "ID.map", "buildings.map", "subcatch.map")
+               "catchment.map", "ID.map", "buildings.map", "subcatch.map",
+               "roads_fraction.map",
+               "chanmask.map", "chanwidth.map", "chandepth.map",
+               "culvertmask.map")
 # add "base" suffix to the base maps names in the subcatch dir
 for (i in seq_along(base_maps)) {
   file.copy(
