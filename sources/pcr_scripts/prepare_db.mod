@@ -159,7 +159,8 @@ report rr = lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm)
 report mann = lookupscalar(lutbl, 2, lu); # Manning's n
 # report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
 report stone = lookupscalar(soiltbl, 1, soil); # stone fraction 
-report roadwidth = roads * celllength();
+roadwidth = roads * celllength();
+report roadwidth = if(boolean(catchment), roadwidth);
 ####################
 ### EROSION MAPS ### 
 ####################
@@ -188,6 +189,7 @@ report soildep = lookupscalar(soiltbl, 7, soil);
 lddchan= lddcreate(dem*chanmask,1e20,1e20,1e20,1e20); 
 chanclean = accuflux(lddchan, 1);
 chanclean = if(chanclean >1, 1);
+chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20); 
 report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
 report chanman=chanmask*scalar(Chanman); 
