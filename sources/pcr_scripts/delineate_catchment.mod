@@ -1,4 +1,3 @@
-# code not yet working WIP !!!
 #! --matrixtable --lddin
 
 # PCRASTER script to delineate a subcatchment within the Geul.

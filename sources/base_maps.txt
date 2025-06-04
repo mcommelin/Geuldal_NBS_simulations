@@ -1,7 +1,7 @@
 dem.map
 mask.map
 landuse.map
-soils.map,
+soils.map
 catchment.map
 ID.map
 buildings.map

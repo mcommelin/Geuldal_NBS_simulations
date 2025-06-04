@@ -115,6 +115,10 @@ asc2map(
   sub_dir = sub_catch_dir
 )
 
+#remove ldd map because cannot be resampled.
+base_maps <- gsub("^ldd\\.map$", "", base_maps)
+base_maps <- base_maps[base_maps != ""]  # Remove empty lines
+
 # resample the base maps to the new mask.map
 for (i in seq_along(base_maps)) {
   resample(
