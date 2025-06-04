@@ -16,7 +16,7 @@ base_maps_subcatchment <- function(
 
   
 # load subcatchment points csv file
-points <- read_csv("LISEM_data/tables/outpoints_description.csv")
+points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
 res = cell_size
 
@@ -117,6 +117,8 @@ asc2map(
 
 #remove ldd map because cannot be resampled.
 base_maps <- gsub("^ldd\\.map$", "", base_maps)
+# remove catchment because it is already correct size
+base_maps <- gsub("^catchment\\.map$", "", base_maps)
 base_maps <- base_maps[base_maps != ""]  # Remove empty lines
 
 # resample the base maps to the new mask.map

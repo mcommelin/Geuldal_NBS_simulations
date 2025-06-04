@@ -34,6 +34,7 @@ options(digits = 10)
 #1.3 preparation of precipitation data
 # with the script 'create_rainfall_discharge_lisem.R' the radar precipitation
 # is processed to input for OpenLISEM, including a ID.map with 1km2 grid.
+# this script should also include preparation of observed discharge - WIP!
 
 #1.4 convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
 
@@ -74,11 +75,28 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i]
     )
+    
   }
 }
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
+
+# TODO: make code to calculate average precipitation for subbasins.
+# combine with visualization of model performance etc.
+
+# load functions to make lisem run
+source("sources/r_scripts/create_lisem_run.R")
+
+for (i in seq_along(points_id)) {
+  for (j in seq_along(reso)) {
+    create_lisem_run(
+      resolution = reso[j], 
+      catch_num = points_id[i]
+      )
+  }
+}
+
 
 
 # 3. Calibration ---------------------------------------------------------------

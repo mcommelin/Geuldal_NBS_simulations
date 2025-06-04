@@ -14,6 +14,8 @@ catchment = catchment.map;  #
 soil = soils.map;           # field id's for texture/soil map
 roads = roads_fraction.map; # fraction road coverage (optional)
 chanmask = chanmask.map;    # location of channels value = 1 (optional)
+culvert = culvertmask.map;  # location of culverts
+chanwidth = chanwidth.map;  # width of channels and culverts
 #outpoint = outpoints.map;  # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
 #grass = grasswid.map;      # only if buffers are included
@@ -61,6 +63,8 @@ Chanman = 0.1; # Manning's n in channel
 ### PROCES MAPS ###
 ###################
 area = area.map; # value = 1
+
+
 ###################
 ### OUTPUT MAPS ### 
 ###################
@@ -107,10 +111,12 @@ soildep= soildep1.map;
 # pore2= thetas2.map;
 # thetai2= thetai2.map; 
 # soildep2= soildep2.map;
+
 ### channel maps ### (optional)
 lddchan = lddchan.map; 
 # chanwidth = chanwidt.map; 
 # chanside = chanside.map;
+chandiam = chandiameter.map;
 changrad = changrad.map; 
 chanman = chanman.map; 
 # chancoh = chancoh.map;
@@ -193,6 +199,7 @@ chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20); 
 report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
 report chanman=chanmask*scalar(Chanman); 
+report chandiam = if(culvert eq 1, chanwidth * 1000);
 # report chancoh=chanmask*scalar(Chancoh);
 ############################
 ### CHANNEL INFILTRATION ###

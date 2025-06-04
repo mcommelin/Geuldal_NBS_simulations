@@ -8,12 +8,76 @@ library(tidyverse)
 source("sources/r_scripts/pcrasteR.R")
 set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
 
-#1. Run pcraster db script----------------------------------------------------
-points <- read_csv("LISEM_data/tables/outpoints_description.csv")
+#1. Fill runfile template ------------------------------------------------------
+
+make_runfile_lisem <- function(work_dir = NULL,
+                               rain_dir = NULL,
+                               infil_dir = NULL,
+                               evdate = NULL,
+                               dt = 5,
+                               start_time = 0,
+                               end_time = 100) {
+  # Adjust runfile lisem 
+  run_template <- readLines("LISEM_data/setup/runfile_template.run")
+  
+    #load template
+    run_temp <- run_template
+    proj_wd <- getwd()
+    
+    # adjust paths based on system
+    # home directory
+    run_temp <- str_replace_all(run_temp, "^Map Directory=<<map_dir>>", 
+                                paste0("Map Directory=", proj_wd, "/", work_dir, "maps"))
+    # result directory
+    run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
+                                paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
+    # rain files
+    rain_file <- paste0("rain_",str_remove_all(as.character(evdate), "-"), ".txt")
+    run_temp <- str_replace_all(run_temp, "<<rain_dir>>", 
+                                paste0(proj_wd, "/", rain_dir))
+    run_temp <- str_replace_all(run_temp, "<<rain_file>>", 
+                                rain_file)
+    
+    # infiltration files
+    run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
+                                paste0(proj_wd, "/", infil_dir))
+    
+    # set timestep
+    ts <- str_pad(as.character(dt), width = 3,
+            side = "left", pad = "0")
+    run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model 
+    
+    # set start time
+    run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0("0000")) # 
+    
+    # set end time
+    run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
+    
+    runname <- str_remove_all(as.character(evdate), "-")
+    writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
+  
+  
+} # end function make_runfile_lisem()
+
+# # temp code
+# # check if lisem result directory exists, otherwise make
+# if (!dir.exists(paste0(main_dirs[i], "res"))) {
+#   dir.create(paste0(main_dirs[i], "res"))
+# }
+# # if it exists, remove and make new
+# if (dir.exists(paste0(main_dirs[i], "res"))) {
+#   unlink(paste0(main_dirs[i], "res"), recursive = TRUE)
+#   dir.create(paste0(main_dirs[i], "res"))
+# }
+
+
+
+#2. Run pcraster db script----------------------------------------------------
+points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
 # settings
-resolution <- 5 # fill resolution here
-catch_num <- 14 # fill catchment number here (see points table)
+# <- 5 # fill resolution here
+#catch_num <- 18 # fill catchment number here (see points table)
 
 # function create_lisem_run
 create_lisem_run <- function(
@@ -47,11 +111,7 @@ for (dir in dirs) {
   }
 }
 
-base_maps <- c("dem.map", "mask.map", "landuse.map", "soils.map", 
-               "catchment.map", "ID.map", "buildings.map",
-               "roads_fraction.map",
-               "chanmask.map", "chanwidth.map", "chandepth.map",
-               "culvertmask.map")
+base_maps <- readLines("sources/base_maps.txt")
 # copy the maps to the run_dir
 subdir <- paste0(run_dir, "maps/")
 for (map in base_maps) {
@@ -77,12 +137,33 @@ for (map in base_maps) {
               sep = " ", row.names = FALSE,
               quote = FALSE)
   
+  # run pcraster script to finalize run database.
   pcr_script(
     script = "prepare_db.mod",
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
   
+  # add runfiles for 4 events
+  events <- read_csv("sources/selected_events.csv") %>%
+    filter(use != "none") %>%
+    mutate(ts_start = ymd_hms(event_start),
+           ts_end = ymd_hms(event_end),
+           event_length = as.numeric(events$ts_end - events$ts_start) * 1440)
+  dt <- ceiling(resolution * 0.75)
+  
+  for (i in seq_along(events$event_start)) {
+  make_runfile_lisem(
+    work_dir = run_dir,
+    rain_dir = "LISEM_data/rain/",
+    infil_dir = "LISEM_data/",
+    evdate = date(events$ts_start[i]),
+    start_time = 0,
+    end_time = events$event_length[i],
+    dt = dt
+  )
+  }
+    
   #delete intermediate files
   file.remove(paste0(subdir, "lu.tbl"))
   file.remove(paste0(subdir, "soil.tbl"))
