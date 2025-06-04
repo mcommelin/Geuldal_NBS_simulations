@@ -35,11 +35,7 @@ if (!dir.exists(sub_catch_dir)) {
 }
 
 # copy base maps from main_dir to new subcatch dir
-base_maps <- c("dem.map", "mask.map", "landuse.map", "soils.map", 
-               "catchment.map", "ID.map", "buildings.map", "subcatch.map",
-               "roads_fraction.map",
-               "chanmask.map", "chanwidth.map", "chandepth.map",
-               "culvertmask.map")
+base_maps <- readLines("sources/base_maps.txt")
 # add "base" suffix to the base maps names in the subcatch dir
 for (i in seq_along(base_maps)) {
   file.copy(
@@ -49,10 +45,18 @@ for (i in seq_along(base_maps)) {
   )
 }
 
-# pcraster filter subcatch
+# delineate the subcatchment
+
+# pcraster create map with selected outpoint
 pcrcalc(
   work_dir = sub_catch_dir,
-  options = paste0("'sub.map=boolean(if(base_subcatch.map eq ", subcatch$point, ", 1))'")
+  options = paste0("'sub_point.map=boolean(if(base_outpoints.map eq ", subcatch$point, ", 1))'")
+)
+# delineate the subcatchment
+pcr_script(
+  script = "delineate_catchment.mod",
+  script_dir = "sources/pcr_scripts",
+  work_dir = sub_catch_dir
 )
 
 # map2asc
