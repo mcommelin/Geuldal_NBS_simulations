@@ -19,6 +19,7 @@ chanwidth = chanwidth.map;  # width of channels and culverts
 #outpoint = outpoints.map;  # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
 #grass = grasswid.map;      # only if buffers are included
+id = ID.map;                # rainfall id grid
 
 ### INPUT TABLES ### 
 
@@ -72,8 +73,6 @@ area = area.map; # value = 1
 one = one.map; #with scalar value 1
 zero = zero.map; #with scalar value 0
 
-### rainfall map ###
-rain_id = id.map; # 
 ### basic topography related maps ###
 grad = grad.map; # slope gradient
 Ldd = ldd.map; # Local Drain Direction  
@@ -140,7 +139,7 @@ report zero = dem * 0; # map with value 0
 ###########################
 ### MAPS WITH RAINFALL  ### 
 ########################### 
-report rain_id = area; # only 1 rainfall zone
+report id = if(boolean(catchment), id); # only 1 rainfall zone
 # for >1 rainfall zones based on points use ArcGIS or:
 # report id = spreadzone(points, 0, friction);
 # with; points = boolean map with locations of rainfall stations

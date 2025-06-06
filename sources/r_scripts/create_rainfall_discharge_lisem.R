@@ -164,7 +164,7 @@ for (k in seq_along(events$ts_start)) {
    
   # make the rain table 
    t <- tibble()
-   # loop over teh rainfall maps and add them row per row to a table
+   # loop over the rainfall maps and add them row per row to a table
   for (i in seq_along(hours)) {
     # read the rainfall raster and convert to array
         x <- raster(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]))
@@ -238,5 +238,54 @@ for (k in seq_along(events$event_start)) {
 qtable <- bind_rows(qevent)
 write_csv(qtable, "LISEM_data/tables/observed_discharge_hourly.csv")
 
-# 3. function to compare discharge ---------------------------------------------
+# 3. subcatch precipitation graph ----------------------------------------------
+
+# get subcatch name, events and resolution
+# make loop
+
+# id.map to catchment size - is now included in stadard db script
+wdir <- "LISEM_runs/Watervalderbeek_5m/maps/"
+
+pcrcalc(
+  options = "ID.map=ID.map*catchment.map",
+  work_dir = wdir
+)
+
+# map2asc
+map2asc(
+  map_in = "ID.map",
+  map_out = "rain_ID.asc",
+  sub_dir = wdir
+)
+# find unique grid id's
+rainIDs <- raster(paste0(wdir, "rain_ID.asc"))
+id <- as.vector(rainIDs)
+freq <- as_tibble(table(id)) %>%
+  mutate(id_nm = paste0("gauge_", id))
+
+# load rainfile
+pfile <- "LISEM_data/rain/rain_20230622.txt"
+skipval <- as.numeric(readLines(pfile)[2]) + 2
+rain_txt <- readLines(pfile)[-(1:skipval)]
+nms <- readLines(pfile)[3:(skipval)] %>%
+  str_replace_all(., " ", "_")
+# make a tibble with numbers and row names
+a <- str_split(rain_txt, " ")
+b <- as_tibble(do.call(rbind, a)) %>%
+  rename_with(~ nms) %>%
+  mutate(across(-time, as.numeric)) %>%
+  mutate(time_min = str_remove(time, "001:"),
+         time_min = as.numeric(time_min)) %>%
+  select(time_min, all_of(freq$id_nm))
+
+c <- b %>%
+  pivot_longer(cols = gauge_286:gauge_487, values_to = "P",
+               names_to = "id_nm") %>%
+  left_join(freq, by = "id_nm")
+
+# filter grid id colums
+
+# make figure
+
+# 4. function to compare discharge ---------------------------------------------
 
