@@ -46,3 +46,51 @@ v3 <- (103.6/30) * 0.2520 + 0.006
 vmean <- (v1 + v2 + v3) / 3
 Q2 <- a2 * vmean
 
+# Mannings flow calculation
+n = 0.1
+b = 2.0
+h = 0.3
+S = 0.007
+
+eq_mannings <- function(n = 0.1,
+                        b = 1.0,
+                        h = 0.1,
+                        S = 0.001) {
+  R = b + 2 * h
+  A = b * h
+  
+  Q = (1 / n) * A * R^(2 / 3) * S^(1 / 2)
+  return(Q)
+}
+
+
+# load params per measuring point
+Q_pars <- read_csv("sources/height_to_Q_mannings.csv")
+
+# load height observations.
+h_data <- q_all %>%
+  filter(code %in% Q_pars$code)
+
+# find lowest waterdepth
+bed_level <- h_data %>%
+  group_by(code) %>%
+  summarise(wh = min(wh, na.rm = T))
+
+Q_pars <- Q_pars %>%
+  left_join(bed_level, by = "code") %>%
+  rename(bed_lvl = wh) %>%
+  mutate(bed_lvl = bed_lvl+0.05) # assume minimum of x waterlevel
+
+q_data <- h_data %>%
+  left_join(Q_pars, by = "code") %>%
+  mutate(h = wh - bed_lvl,
+         Q = eq_mannings(n = n, S = S, b = b, h = h))
+
+q_eys <- q_data %>%
+  filter(code == "11.H.225")
+
+ggplot(q_eys) + geom_point(aes(x = timestamp, y = Q))
+
+
+# first filter events
+
