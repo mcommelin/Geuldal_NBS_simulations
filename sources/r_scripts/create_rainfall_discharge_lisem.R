@@ -281,11 +281,16 @@ b <- as_tibble(do.call(rbind, a)) %>%
 c <- b %>%
   pivot_longer(cols = gauge_286:gauge_487, values_to = "P",
                names_to = "id_nm") %>%
-  left_join(freq, by = "id_nm")
-
-# filter grid id colums
-
+  left_join(freq, by = "id_nm") %>%
+  mutate(Ptmp = P * n) %>%
+  group_by(time_min) %>%
+  summarize(P = round(sum(Ptmp) / sum(n), digits = 2))
+  
+  
 # make figure
+ggplot(c) +
+  geom_bar(aes(x = time_min, y = P), stat = "identity") +
+  theme_classic()
 
 # 4. function to compare discharge ---------------------------------------------
 
