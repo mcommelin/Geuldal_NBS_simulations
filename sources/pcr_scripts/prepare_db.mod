@@ -139,7 +139,7 @@ report zero = dem * 0; # map with value 0
 ###########################
 ### MAPS WITH RAINFALL  ### 
 ########################### 
-report id = if(boolean(catchment), id); # only 1 rainfall zone
+report id = if(boolean(catchment), id); 
 # for >1 rainfall zones based on points use ArcGIS or:
 # report id = spreadzone(points, 0, friction);
 # with; points = boolean map with locations of rainfall stations
@@ -189,11 +189,11 @@ report soildep = lookupscalar(soiltbl, 7, soil);
 #################### 
 ### CHANNEL MAPS ###
 ####################
-# when channel feature are too close to each other on the map, small side channels of length = 1
-# are created, we remove these first.
+# when channel feature are too close to each other on the map, small side channels of length = 1 cell
+# are created, we remove these first 
 lddchan= lddcreate(dem*chanmask,1e20,1e20,1e20,1e20); 
-chanclean = accuflux(lddchan, 1);
-chanclean = if(chanclean >1, 1);
+chanclean = accuflux(lddchan, 5); # 5 choosen by trial and error to get good channels on 5 and 20 m resolution.
+chanclean = if(chanclean > celllength(), 1);
 chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20); 
 report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
