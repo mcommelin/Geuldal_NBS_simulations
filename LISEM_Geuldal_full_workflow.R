@@ -85,6 +85,9 @@ for (i in seq_along(points_id)) {
 # TODO: make code to calculate average precipitation for subbasins.
 # combine with visualization of model performance etc.
 
+
+
+
 # load functions to make lisem run
 source("sources/r_scripts/create_lisem_run.R")
 
