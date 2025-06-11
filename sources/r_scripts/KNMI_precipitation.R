@@ -78,17 +78,17 @@ df <- read.table("sources/radarcoordinaten_NL25_1km2_RD.txt", col.names = c("row
 coordinates(df) <- ~ latitude + longitude
 proj4string(df) = CRS("+init=epsg:28992")
 df <- st_as_sf(df)
-# load shapefile of catchment
+# load raster of cell ids
 ras <- rast("data/processed_data/ID_zones_KNMI_radar.asc")
+ras <- ras * 0 + 1
 pol <- as.polygons(ras)
-ca_map <- st_as_sf(pol)
-
-ca_map <- st_read("data/geuldal_layers.gpkg", "region_outline") %>%
-  mutate(id = 1)
+crs(pol) <- "epsg:28992"
+ca_map <- st_as_sf(pol) %>%
+  rename(id = ID_zones_KNMI_radar) 
 # check which radar pixels fall in catchment
 pixels <- st_join(df, ca_map) %>%
   filter(!is.na(id))
-st_write(pixels, "data/processed_data/GIS_data/KNMI_radar_points.gpkg", "pixels", append = T)
+st_write(pixels, "data/processed_data/GIS_data/KNMI_radar_points.gpkg", "pixels", append = F)
 
 # plot the catchment with points the radar pixels that fall inside the catchment
 p <- mapView(pixels, color="red")
@@ -109,10 +109,11 @@ for(i in seq_along(files)){
 }
 P[P == 65535] = NA
 P <- P/100 # change data to mm KNMI data is given in accumulations of 0.01mm
+
 rain <- as_tibble(P, .name_repair = "unique")
-names(rain) <- str_extract(names(rain), "\\d")
+names(rain) <- str_extract(names(rain), "\\d.*")
 timestmp <- as_tibble_col(datetime, column_name = "timestamp")
 rain <- bind_cols(rain, timestmp) %>%
   mutate(timestamp = ymd_hm(timestamp))
 
-write_csv(rain, "data/KNMI_rain.csv")
+write_csv(rain, "data/raw_data/neerslag/KNMI_rain_5min.csv")
