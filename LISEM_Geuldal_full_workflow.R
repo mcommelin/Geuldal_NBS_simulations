@@ -66,6 +66,9 @@ for (i in seq_along(chanmaps)) {
 points_id <- c(10, 14, 18)
 reso <- c(5, 20)
 
+# load subcatchment points csv file
+points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+
 # load the function for subcatchment preparation
 source("sources/r_scripts/make_subcatch_db.R")
 
@@ -84,8 +87,53 @@ for (i in seq_along(points_id)) {
 
 # TODO: make code to calculate average precipitation for subbasins.
 # combine with visualization of model performance etc.
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end)) %>%
+  filter(use != "none")
 
+# Prepare all combinations of points, events, and temporal resolutions
+Tres <- c("hour", "min")
+combos <- expand.grid(
+  point = points_id,
+  event = events$ts_start,
+  tres = Tres,
+  stringsAsFactors = FALSE
+)
 
+rain_list <- vector("list", nrow(combos))
+
+for (x in seq_len(nrow(combos))) {
+  point_id <- combos$point[x]
+  event_idx <- combos$event[x]
+  tres_val <- combos$tres[x]
+  
+  # select subcatchment
+  subcatch <- points %>%
+    filter(point == point_id) %>%
+    filter(cell_size == 5)
+  subcatch_name <- subcatch$subcatch_name
+  wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
+  evdate <- date(combos$event[x])
+  
+  rain_list[[x]] <- subcatch_observed(
+    wdir = wdir,
+    ev_date = evdate,
+    tres = tres_val
+  )
+}
+
+# combine the plots
+# Extract total values from rain_list (assuming total is in the 2nd position)
+combos$total <- sapply(rain_list, function(x) x[[2]])
+
+for (i in 1:12) {
+  
+plot_grid(rain_list[[i]][[1]], rain_list[[i+12]][[1]],
+          nrow = 2, align = "hv")
+ggsave(paste0("images/rain_compare_", date(combos$event[i]), "_", combos$point[i], ".png"))
+
+}
 
 
 # load functions to make lisem run

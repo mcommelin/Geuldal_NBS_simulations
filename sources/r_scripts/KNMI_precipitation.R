@@ -114,6 +114,7 @@ rain <- as_tibble(P, .name_repair = "unique")
 names(rain) <- str_extract(names(rain), "\\d.*")
 timestmp <- as_tibble_col(datetime, column_name = "timestamp")
 rain <- bind_cols(rain, timestmp) %>%
-  mutate(timestamp = ymd_hm(timestamp))
+  mutate(timestamp = ymd_hm(timestamp)) %>% 
+  mutate(across(-timestamp, ~ .*12)) # change to mm/h
 
 write_csv(rain, "data/raw_data/neerslag/KNMI_rain_5min.csv")

@@ -188,6 +188,58 @@ for (k in seq_along(events$ts_start)) {
               row.names = F, sep = " ", quote = F)
 }
   
+## 5 min rain ------------------------------------------------------------------
+# rain tables for the 4 events for calibration and control with 5 minute interval
+#load the events
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end)) %>%
+  filter(use != "none")
+
+rain_5min <- read_csv("data/raw_data/neerslag/KNMI_rain_5min.csv")
+
+# set options to enough digits for accuracy extent
+options(digits = 10)
+
+for (k in seq_along(events$ts_start)) {
+  event_start <- events$ts_start[k]
+  event_end <- events$ts_end[k]
+  minutes <- seq(event_start, event_end, by = "5 min")
+  
+  # event name
+  ev_name <- as.character(event_start) %>%
+    str_remove_all("-") %>%
+    str_extract("^([0-9]{8})") %>%
+    paste0("rain_5min_", .)
+  
+  # find the number of idzones in the radar map
+  id_raster <- raster(paste0("data/processed_data/ID_zones_KNMI_radar.asc"))
+  n_cols_rain <- max(as.matrix(id_raster)) + 1 # add 1 colum for the timestamp
+  
+  # loop over rainfall maps and make rain input table
+  rain_file <- paste0("LISEM_data/rain/", ev_name, ".txt")
+  ev_date <- date(event_start)
+  # write the header
+  writeLines(paste0("# 5min KNMI radar for ", ev_date, "\n", n_cols_rain, "\ntime"),
+             rain_file)
+  # add all gauges in the header
+  idn <- seq(1, n_cols_rain-1)
+  header_part <- paste0("gauge ", idn)
+  write(header_part, rain_file, append = T)
+  
+  # make the rain table 
+  precip <- rain_5min %>%
+    filter(timestamp >= event_start & timestamp <= event_end) %>%
+    mutate(mins = as.numeric((timestamp - timestamp[1]) / 60),
+           t_str = str_pad(as.character(mins), width = 4,
+                           side = "left", pad = "0"),
+           t_str = paste0("001:", t_str)) %>%
+    select(t_str, everything()) %>%
+    select(-mins, - timestamp)
+  # append the table to the header
+  write.table(precip, file = rain_file, append = T, col.names = F,
+              row.names = F, sep = " ", quote = F)
+}
 
 
 # 2. Discharge tables for LISEM ---------------------------------------------
@@ -250,13 +302,15 @@ ev_date <- "2023-06-22"
 
 
 subcatch_observed <- function(wdir = NULL,
-                              ev_date = NULL) {
-  pcrcalc(options = "ID.map=ID.map*catchment.map", work_dir = wdir)
+                              ev_date = NULL,
+                              tres = "hour") {
+ 
+ # pcrcalc(options = "ID.map=ID.map*catchment.map", work_dir = wdir)
   
   # map2asc
-  map2asc(map_in = "ID.map",
-          map_out = "rain_ID.asc",
-          sub_dir = wdir)
+  # map2asc(map_in = "ID.map",
+  #         map_out = "rain_ID.asc",
+  #         sub_dir = wdir)
   # find unique grid id's
   rainIDs <- raster(paste0(wdir, "rain_ID.asc"))
   id <- as.vector(rainIDs)
@@ -265,8 +319,12 @@ subcatch_observed <- function(wdir = NULL,
   
   # load rainfile
   date_str <- str_remove_all(ev_date, "-")
-  pfile <- paste0("LISEM_data/rain/rain_", date_str, ".txt")
-  skipval <- as.numeric(readLines(pfile)[2]) + 2
+  if (tres == "min") {
+    pfile <- paste0("LISEM_data/rain/rain_5min_", date_str, ".txt")
+  } else {
+    pfile <- paste0("LISEM_data/rain/rain_", date_str, ".txt")
+  }
+    skipval <- as.numeric(readLines(pfile)[2]) + 2
   rain_txt <- readLines(pfile)[-(1:skipval)]
   nms <- readLines(pfile)[3:(skipval)] %>%
     str_replace_all(., " ", "_")
@@ -280,7 +338,7 @@ subcatch_observed <- function(wdir = NULL,
     select(time_min, all_of(freq$id_nm))
   
   c <- b %>%
-    pivot_longer(cols = gauge_286:gauge_487,
+    pivot_longer(cols = -time_min,
                  values_to = "P",
                  names_to = "id_nm") %>%
     left_join(freq, by = "id_nm") %>%
@@ -289,17 +347,27 @@ subcatch_observed <- function(wdir = NULL,
     summarize(P = round(sum(Ptmp) / sum(n), digits = 2))
   
   #TODO include discharge and add to figure
-  
-  
-  
+
   #TODO redefine begin and end times for subcatch events based on P and Q observed
   
   
   # make figure
-  ggplot(c) +
+ if (tres == "min") {
+   total = round(sum(c$P) / 12, digits = 2)
+ } else {
+   total = round(sum(c$P), digits = 2)
+ }
+  plot <- ggplot(c) +
     geom_bar(aes(x = time_min, y = P), stat = "identity") +
-    theme_classic()
+    theme_classic() +
+    labs(x = "Minutes", y = "P mm/h", 
+         title = paste0("Event total = ", total, " in ", subcatch_name, " on ", ev_date))
   
+  rain_info <- vector("list", length = 2)
+  rain_info[[1]] <- plot
+  rain_info[[2]] <- total
+  
+  return(rain_info)
 } # end function subcatchment observations
 
 # 4. function to compare discharge ---------------------------------------------
