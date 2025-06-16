@@ -62,7 +62,7 @@ for (i in seq_along(chanmaps)) {
 # the used subcatchments are (ID number points table):
 # Watervalderbeek (10), Eyserbeek (14), Kelmis (18)
 
-# prepare the databases for the subcatchments
+#2.1 prepare the databases for the subcatchments
 points_id <- c(10, 14, 18)
 reso <- c(5, 20)
 
@@ -85,7 +85,7 @@ for (i in seq_along(points_id)) {
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
 
-# TODO: make code to calculate average precipitation for subbasins.
+#2.2 Precipitation and discharge subcatchments
 # combine with visualization of model performance etc.
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
@@ -126,17 +126,22 @@ for (x in seq_len(nrow(combos))) {
 # combine the plots
 # Extract total values from rain_list (assuming total is in the 2nd position)
 combos$total <- sapply(rain_list, function(x) x[[2]])
-
+# with cowplot combine the figures and save
 for (i in 1:12) {
   
-plot_grid(rain_list[[i]][[1]], rain_list[[i+12]][[1]],
-          nrow = 2, align = "hv")
-ggsave(paste0("images/rain_compare_", date(combos$event[i]), "_", combos$point[i], ".png"))
-
+  plot_grid(rain_list[[i]][[1]], rain_list[[i + 12]][[1]], nrow = 2, align = "hv")
+  
+  ggsave(
+    paste0("images/rain_compare_", date(combos$event[i]), "_", combos$point[i],".png")
+    )
 }
 
+# 
 
-# load functions to make lisem run
+
+#2.3 load functions to make lisem run
+
+# TODO: adjust runfile template.
 source("sources/r_scripts/create_lisem_run.R")
 
 for (i in seq_along(points_id)) {
