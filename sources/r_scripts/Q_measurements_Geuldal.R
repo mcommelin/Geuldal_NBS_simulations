@@ -5,6 +5,31 @@
 
 # 2. Load data --------------------------------------------------------------------
 
+# load selected events  
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end)) %>%
+  filter(use != "none")
+
+# load own cross-section data
+cs <- read_csv("data/cross_sections_streams.csv") %>%
+  mutate(cs_elev = cs_depth * -1 + ceiling(max(cs_depth))) %>%
+  arrange(cs_length)
+
+# load point info
+Q_pars <- read_csv("sources/height_to_Q_mannings.csv")
+
+# load data and filter for only for the selected events and measurement points
+# load wh data
+h_data <- q_all %>% # load data from file 'dicharge_rain_selection.R
+  filter(code %in% Q_pars$code)
+h_data <- map2_dfr(events$ts_start, events$ts_end,
+                   ~filter(h_data, timestamp >= .x & timestamp <= .y))
+# measured q's y waterboard
+# load data from file 'dicharge_rain_selection.R
+qwb <- map2_dfr(events$ts_start, events$ts_end,
+                ~filter(qall, timestamp >= .x & timestamp <= .y))
+
 # 3. All required functions -------------------------------------------------------
 
 # these functions are made by Claude AI and adjusted where needed.
@@ -89,6 +114,143 @@ calc_channel_area <- function(stations, elevations, water_level) {
     max_depth = max(depths)
   ))
 }
+
+# Vectorized version of discharge calculation functions
+
+# Vectorized channel area calculation
+calc_channel_area_vectorized <- function(stations, elevations, water_levels) {
+  # Input validation
+  if (length(stations) != length(elevations)) {
+    stop("Stations and elevations must have same length")
+  }
+  
+  if (length(stations) < 2) {
+    stop("Need at least 2 stations")
+  }
+  
+  # Sort stations and elevations by station order (CRITICAL!)
+  sorted_order <- order(stations)
+  stations <- stations[sorted_order]
+  elevations <- elevations[sorted_order]
+  
+  # Initialize result vectors
+  n_levels <- length(water_levels)
+  areas <- numeric(n_levels)
+  wetted_perimeters <- numeric(n_levels)
+  top_widths <- numeric(n_levels)
+  hydraulic_radii <- numeric(n_levels)
+  max_depths <- numeric(n_levels)
+  
+  # Loop through each water level
+  for (j in 1:n_levels) {
+    water_level <- water_levels[j]
+    
+    # Calculate water depths at each station
+    depths <- pmax(0, water_level - elevations)
+    
+    # Find wetted stations
+    wetted <- depths > 0
+    
+    if (sum(wetted) == 0) {
+      areas[j] <- 0
+      wetted_perimeters[j] <- 0
+      top_widths[j] <- 0
+      hydraulic_radii[j] <- 0
+      max_depths[j] <- 0
+      next
+    }
+    
+    # Calculate area using trapezoidal rule
+    area <- 0
+    wetted_perimeter <- 0
+    
+    for (i in 1:(length(stations) - 1)) {
+      station_width <- stations[i + 1] - stations[i]
+      
+      if (depths[i] > 0 || depths[i + 1] > 0) {
+        avg_depth <- (depths[i] + depths[i + 1]) / 2
+        segment_area <- station_width * avg_depth
+        area <- area + segment_area
+        
+        # Wetted perimeter calculation
+        elev_diff <- elevations[i + 1] - elevations[i]
+        segment_length <- sqrt(station_width^2 + elev_diff^2)
+        
+        if (avg_depth > 0) {
+          wetted_perimeter <- wetted_perimeter + segment_length
+        }
+      }
+    }
+    
+    # Safety checks
+    wetted_perimeter <- max(wetted_perimeter, 0)
+    
+    # Calculate other properties
+    wetted_stations <- stations[wetted]
+    top_width <- ifelse(length(wetted_stations) > 0, 
+                        max(wetted_stations) - min(wetted_stations), 0)
+    
+    hydraulic_radius <- ifelse(wetted_perimeter > 0 && area > 0, 
+                               area / wetted_perimeter, 0)
+    
+    # Store results
+    areas[j] <- area
+    wetted_perimeters[j] <- wetted_perimeter
+    top_widths[j] <- top_width
+    hydraulic_radii[j] <- hydraulic_radius
+    max_depths[j] <- max(depths)
+  }
+  
+  return(data.frame(
+    water_level = water_levels,
+    area = areas,
+    wetted_perimeter = wetted_perimeters,
+    top_width = top_widths,
+    hydraulic_radius = hydraulic_radii,
+    max_depth = max_depths
+  ))
+}
+
+# Vectorized discharge calculation
+calc_discharge_vectorized <- function(stations, elevations, water_levels, slope, manning_n) {
+  # Get hydraulic properties for all water levels
+  hydraulic_props <- calc_channel_area_vectorized(stations, elevations, water_levels)
+  
+  # Calculate discharge using Manning's equation
+  # Q = (1/n) * A * R^(2/3) * S^(1/2)
+  discharges <- ifelse(hydraulic_props$area > 0 & 
+                         hydraulic_props$hydraulic_radius > 0 & 
+                         slope > 0,
+                       (1/manning_n) * hydraulic_props$area * 
+                         (hydraulic_props$hydraulic_radius^(2/3)) * (slope^0.5),
+                       0)
+  
+  velocities <- ifelse(hydraulic_props$area > 0, 
+                       discharges / hydraulic_props$area, 0)
+  
+  froude_numbers <- ifelse(hydraulic_props$hydraulic_radius > 0, 
+                           velocities / sqrt(9.81 * hydraulic_props$hydraulic_radius), 0)
+  
+  return(data.frame(
+    water_level = water_levels,
+    discharge = discharges,
+    area = hydraulic_props$area,
+    hydraulic_radius = hydraulic_props$hydraulic_radius,
+    velocity = velocities,
+    froude_number = froude_numbers,
+    wetted_perimeter = hydraulic_props$wetted_perimeter,
+    top_width = hydraulic_props$top_width,
+    max_depth = hydraulic_props$max_depth
+  ))
+}
+
+# Simple vectorized function that just returns discharge values
+calc_discharge_simple <- function(stations, elevations, water_levels, slope, manning_n) {
+  result <- calc_discharge_vectorized(stations, elevations, water_levels, slope, manning_n)
+  return(result$discharge)
+}
+
+
 
 # Function to calculate area for multiple water levels
 calc_stage_area_curve <- function(stations, elevations, water_level_range) {
@@ -342,6 +504,92 @@ calc_inlet_control_discharge <- function(headwater_depth, culvert_diameter,
   ))
 }
 
+# Vectorized inlet control discharge calculation
+calc_inlet_control_discharge_vectorized <- function(headwater_depths, culvert_diameter, 
+                                                    inlet_type = "square_edge") {
+  
+  # Convert diameter to meters if needed
+  D <- culvert_diameter  # diameter in meters
+  
+  # Inlet control coefficients for circular concrete culverts
+  # Based on FHWA HDS-5 Table 5-7
+  inlet_coefficients <- list(
+    square_edge = list(c = 0.0098, Y = 2.0, constant = 0.0398),
+    groove_end = list(c = 0.0078, Y = 2.0, constant = 0.0292),
+    headwall = list(c = 0.0078, Y = 2.0, constant = 0.0292)
+  )
+  
+  if (!inlet_type %in% names(inlet_coefficients)) {
+    stop("Invalid inlet type. Use: square_edge, groove_end, or headwall")
+  }
+  
+  coef <- inlet_coefficients[[inlet_type]]
+  
+  # Initialize result vectors
+  n_depths <- length(headwater_depths)
+  discharges <- numeric(n_depths)
+  velocities <- numeric(n_depths)
+  velocity_heads <- numeric(n_depths)
+  HW_D_ratios <- numeric(n_depths)
+  
+  # Cross-sectional area (constant)
+  A <- pi * (D/2)^2
+  
+  # Loop through each headwater depth
+  for (i in 1:n_depths) {
+    HW <- headwater_depths[i]
+    
+    # Skip if headwater depth is zero or negative
+    if (HW <= 0) {
+      discharges[i] <- 0
+      velocities[i] <- 0
+      velocity_heads[i] <- 0
+      HW_D_ratios[i] <- 0
+      next
+    }
+    
+    # Calculate HW/D ratio
+    HW_D_ratio <- HW / D
+    HW_D_ratios[i] <- HW_D_ratio
+    
+    # Calculate discharge based on headwater conditions
+    if (HW_D_ratio <= coef$constant) {
+      # Very low headwater - use orifice equation
+      Q <- 0.6 * A * sqrt(2 * 9.81 * HW)
+    } else {
+      # Standard inlet control equation
+      Q <- (A * sqrt(D)) * ((HW_D_ratio - coef$constant) / coef$c)^(1/coef$Y)
+    }
+    
+    # Calculate velocity and velocity head
+    velocity <- Q / A
+    velocity_head <- velocity^2 / (2 * 9.81)
+    
+    # Store results
+    discharges[i] <- Q
+    velocities[i] <- velocity
+    velocity_heads[i] <- velocity_head
+  }
+  
+  return(data.frame(
+    headwater_depth = headwater_depths,
+    discharge = discharges,
+    velocity = velocities,
+    velocity_head = velocity_heads,
+    HW_D_ratio = HW_D_ratios,
+    culvert_area = A,
+    inlet_type = inlet_type,
+    stringsAsFactors = FALSE
+  ))
+}
+
+# Simple vectorized function that just returns discharge values for culverts
+calc_inlet_control_discharge_simple <- function(headwater_depths, culvert_diameter, 
+                                                inlet_type = "square_edge") {
+  result <- calc_inlet_control_discharge_vectorized(headwater_depths, culvert_diameter, inlet_type)
+  return(result$discharge)
+}
+
 # Function to compare upstream channel vs inlet control discharge
 compare_discharge_methods <- function(stations, elevations, water_level, 
                                       culvert_diameter, slope, manning_n,
@@ -523,44 +771,80 @@ print(comparison[1:10, ])
 
 # 4. Apply functions to own data --------------------------------------------------
 
-# load own observations
-cs <- read_csv("data/cross_sections_streams.csv") %>%
-  mutate(cs_elev = cs_depth * -1 + ceiling(max(cs_depth))) %>%
-  arrange(cs_length)
+#select qwb data for points that are relevant.
+qwb <- qwb %>%
+  filter(code == "11.Q.32") %>%
+  mutate(point = 14) %>%
+  left_join(events, join_by(closest(timestamp >= ts_start))) %>%
+  rename(q = Q) %>%
+  dplyr::select(timestamp, ev_num, code, q, point)
 
-stations <- cs$cs_length
-elevations <- cs$cs_elev
-water_levels <- seq(1.0, 1.5, by = 0.1)
-
-
-# load params per measuring point
-Q_pars <- read_csv("sources/height_to_Q_mannings.csv") %>%
-  filter(river == "Eyserbeek" | river == "Watervalderbeek")
-
-# load height observations. for selected subcatch and events
-h_data <- q_all %>%
-  filter(code %in% Q_pars$code)
-h_data <- map2_dfr(events$ts_start, events$ts_end,
-                   ~filter(h_data, timestamp >= .x & timestamp <= .y))
-
-# find lowest waterdepth
-bed_level <- h_data %>%
-  group_by(code) %>%
-  summarise(wh = min(wh, na.rm = T))
-
+# select watervalderbeek and eyserbeek for now.
 Q_pars <- Q_pars %>%
-  left_join(bed_level, by = "code") %>%
-  rename(bed_lvl = wh) %>%
-  mutate(bed_lvl = bed_lvl-0.01) # assume minimum of x waterlevel
+  filter(river == "Watervalderbeek" | river == "Eyserbeek")
 
-qh_data <- h_data %>%
+#adjust the cross-section depth to elevation
+cs <- cs %>%
   left_join(Q_pars, by = "code") %>%
-  mutate(h = wh - bed_lvl)
+  group_by(code) %>%
+  mutate(elev = max(cs_depth) + bed_lvl - cs_depth)
 
-# measured q's y waterboard
-qwb <- map2_dfr(events$ts_start, events$ts_end,
-                ~filter(qall, timestamp >= .x & timestamp <= .y))
 
+h_data2 <- h_data %>%
+  left_join(Q_pars, by = "code") %>%
+  left_join(events, join_by(closest(timestamp >= ts_start)))
+
+# loop over locations to calculate q
+locs <- Q_pars$code
+hdat <- vector("list", length = length(locs))
+
+for (i in seq_along(locs)) {
+  # cross section info
+  cs_loc <- cs %>%
+    filter(code == locs[i])
+  stations <- cs_loc$cs_length
+  elevations <- cs_loc$elev
+  
+  pars <- Q_pars %>% filter(code == locs[i])
+  eq <- pars$equation
+  
+  if (eq == "manning" | eq == "both") {
+  # calculate discharge for cross-section
+  hdat[[i]] <- h_data2 %>%
+    filter(code == locs[i]) %>%
+    mutate(q = calc_discharge_simple(stations = stations, elevations = elevations,
+                              water_level = wh, slope = S, manning_n = n))
+  } else if (eq == "tube" | eq == "both") {
+  # calculate discharge for culvert
+  culvert_type <- "groove_end"
+    
+  hdat[[i]] <- h_data2 %>%
+    filter(code == locs[i]) %>%
+    mutate(q = calc_inlet_control_discharge_simple(headwater_depths = wh-bed_lvl, culvert_diameter = pars$b,
+                                                   inlet_type = culvert_type))
+  }
+
+}
+
+hdat <- bind_rows(hdat) %>%
+  dplyr::select(timestamp, ev_num, code, q, point)
+
+dat <- bind_rows(hdat, qwb)
+
+subcatch <- unique(dat$point)
+
+for (j in seq_along(subcatch)) {
+a <- dat %>%
+  filter(point == subcatch[j])
+  
+  
+ggplot(a) +
+  geom_line(aes(x = timestamp, y = q, color = code)) +
+  facet_wrap(~ ev_num, scales = "free_x") +
+  theme_classic()
+ggsave(paste0("images/discharge_wh_", subcatch[j], ".png"))
+
+}
 
 
 # make figures for eyserbeek and watervalderbeek.
