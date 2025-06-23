@@ -552,6 +552,11 @@ calc_inlet_control_discharge_vectorized <- function(headwater_depths, culvert_di
     HW_D_ratio <- HW / D
     HW_D_ratios[i] <- HW_D_ratio
     
+    qad_low <- 1.93
+    qad_high <- 2.21
+    
+    Qunsub <- (A * sqrt(D))
+    
     # Calculate discharge based on headwater conditions
     if (HW_D_ratio <= coef$constant) {
       # Very low headwater - use orifice equation
@@ -773,15 +778,15 @@ print(comparison[1:10, ])
 
 #select qwb data for points that are relevant.
 qwb <- qwb %>%
-  filter(code == "11.Q.32") %>%
-  mutate(point = 14) %>%
+  filter(code %in% c("11.Q.32", "13.Q.34")) %>%
+  mutate(point = if_else(code == "11.Q.32", 14, 4)) %>%
   left_join(events, join_by(closest(timestamp >= ts_start))) %>%
   rename(q = Q) %>%
   dplyr::select(timestamp, ev_num, code, q, point)
 
 # select watervalderbeek and eyserbeek for now.
 Q_pars <- Q_pars %>%
-  filter(river == "Watervalderbeek" | river == "Eyserbeek")
+  filter(river %in% c("Watervalderbeek", "Eyserbeek", "Gulp"))
 
 #adjust the cross-section depth to elevation
 cs <- cs %>%
@@ -838,9 +843,9 @@ a <- dat %>%
   filter(point == subcatch[j])
   
   
-ggplot(a) +
-  geom_line(aes(x = timestamp, y = q, color = code)) +
-  facet_wrap(~ ev_num, scales = "free_x") +
+ggplot(b) +
+  geom_line(aes(x = timestamp, y = wh-bed_lvl, color = code)) +
+  facet_wrap(~ ev_num, scales = "free") +
   theme_classic()
 ggsave(paste0("images/discharge_wh_", subcatch[j], ".png"))
 
