@@ -92,8 +92,24 @@ soil_map <- bind_rows(new_soil) %>%
   
 
 
-
-
 #write as new layer
 st_write(soil_map, "data/soil_layers.gpkg", layer = "soils_uniform", append = FALSE)
 
+# Buildup area map ------------------------------------------------------------
+
+# load the osm landuse data
+lu_osm <- st_read("data/osm_data.gpkg", layer = "landuse_fields")
+
+# based on inspection in QGIS the following landuse classes belong to build up area
+bua_classes <- c("cemetery", "civic_admin", "commercial", "construction",
+                 "education", "emergency", "flowerbed", "garages", "greenery",
+                 "industrial", "religious", "residential", "retail", 
+                 "static_caravan", "village_green")
+# filter these classes
+lu_bua <- lu_osm %>%
+  filter(landuse %in% bua_classes) %>%
+  select(landuse) %>%
+  mutate(bua = 1)
+
+# save to further process in QGIS
+st_write(lu_bua, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = "build_up_area", append = FALSE)
