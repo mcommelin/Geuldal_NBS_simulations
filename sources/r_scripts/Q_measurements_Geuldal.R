@@ -35,7 +35,7 @@ qwb <- map2_dfr(events$ts_start, events$ts_end,
 # these functions are made by Claude AI and adjusted where needed.
 
 # area and wetted perimeter circular culvert
-calc_culvert_area <- function(wh, D) {
+calc_culvert_area <- function(wh, D, return_par = "A") {
 
   # Handle to high water levels
   if (wh >= D) {
@@ -52,10 +52,13 @@ calc_culvert_area <- function(wh, D) {
   A <- (D^2/8) * (theta - sin(theta))
   P <- D * theta / 2
   
-  return(data.frame(
-    area = A,
-    wetted_perimeter = P
-    ))
+  # Store results
+  if (return_par == "A") {
+    return(A)
+  } else {
+    return(P)
+  }
+  
 }
 
 # area and wetted perimeter irregular cross section
@@ -112,124 +115,6 @@ calc_channel_area <- function(stations, elevations, water_level, return_par = "A
 }
 
 
-# Vectorized discharge calculation
-calc_discharge_vectorized <- function(stations, elevations, water_levels, slope, manning_n) {
-  # Get hydraulic properties for all water levels
-  hydraulic_props <- calc_channel_area_vectorized(stations, elevations, water_levels)
-  
-  # Calculate discharge using Manning's equation
-  # Q = (1/n) * A * R^(2/3) * S^(1/2)
-  discharges <- ifelse(hydraulic_props$area > 0 & 
-                         hydraulic_props$hydraulic_radius > 0 & 
-                         slope > 0,
-                       (1/manning_n) * hydraulic_props$area * 
-                         (hydraulic_props$hydraulic_radius^(2/3)) * (slope^0.5),
-                       0)
-  
-  velocities <- ifelse(hydraulic_props$area > 0, 
-                       discharges / hydraulic_props$area, 0)
-  
-  froude_numbers <- ifelse(hydraulic_props$hydraulic_radius > 0, 
-                           velocities / sqrt(9.81 * hydraulic_props$hydraulic_radius), 0)
-  
-  return(data.frame(
-    water_level = water_levels,
-    discharge = discharges,
-    area = hydraulic_props$area,
-    hydraulic_radius = hydraulic_props$hydraulic_radius,
-    velocity = velocities,
-    froude_number = froude_numbers,
-    wetted_perimeter = hydraulic_props$wetted_perimeter,
-    top_width = hydraulic_props$top_width,
-    max_depth = hydraulic_props$max_depth
-  ))
-}
-
-# Simple vectorized function that just returns discharge values
-calc_discharge_simple <- function(stations, elevations, water_levels, slope, manning_n) {
-  result <- calc_discharge_vectorized(stations, elevations, water_levels, slope, manning_n)
-  return(result$discharge)
-}
-
-
-## 3.3 Example cross section stream -------------------------------------------
-# Example usage with realistic channel data and discharge calculations
-# Your actual data
-stations <- c(1.10, 1.40, 1.60, 1.80, 2.60, 3.60, 3.10, 4.10, 4.70, 6.15, 6.30)
-elevations <- c(3.00, 1.05, 1.00, 0.65, 0.67, 0.75, 0.67, 0.77, 0.90, 1.14, 3.00)
-water_levels <- seq(0.7, 1.5, by = 0.05)  # Start from 0.7 to ensure water in channel
-
-# Channel parameters for discharge calculation
-channel_slope <- 0.0043  # 0.2% slope (typical for natural channels)
-manning_n <- 0.045      # Manning's roughness coefficient (natural channel)
-
-# Show Manning's n reference
-manning_roughness_guide()
-
-# Calculate stage-discharge curve
-stage_discharge_curve <- calc_stage_discharge_curve(stations, elevations, water_levels, 
-                                                    channel_slope, manning_n)
-
-# Display results
-cat("\nStage-Discharge Relationship:\n")
-print(stage_discharge_curve)
-
-# Plot comprehensive analysis
-plot_discharge_analysis(stage_discharge_curve, "Channel Hydraulic Analysis")
-
-# Plot cross-section with some water levels
-plot_cross_section(stations, elevations, c(0.8, 1.0, 1.2), 
-                   "Channel Cross-section with Water Levels")
-
-# Example calculations for specific conditions
-cat("\nExample Discharge Calculations:\n")
-cat("Water Level 1.0m: Discharge =", round(interpolate_discharge(1.0, stage_discharge_curve), 3), "m³/s\n")
-cat("Water Level 1.2m: Discharge =", round(interpolate_discharge(1.2, stage_discharge_curve), 3), "m³/s\n")
-
-# Find water level for specific discharge
-target_discharge <- 2.0  # m³/s
-corresponding_level <- find_water_level(target_discharge, stage_discharge_curve)
-cat("For discharge of", target_discharge, "m³/s, water level =", round(corresponding_level, 3), "m\n")
-
-# Detailed calculation for one water level
-wl_example <- 1.1
-detailed_result <- calc_discharge(stations, elevations, wl_example, channel_slope, manning_n)
-cat("\nDetailed results for water level", wl_example, "m:\n")
-cat("  Discharge:", round(detailed_result$discharge, 3), "m³/s\n")
-cat("  Area:", round(detailed_result$area, 3), "m²\n")
-cat("  Velocity:", round(detailed_result$velocity, 3), "m/s\n")
-cat("  Hydraulic Radius:", round(detailed_result$hydraulic_radius, 3), "m\n")
-cat("  Froude Number:", round(detailed_result$froude_number, 3), "\n")
-cat("  Flow Type:", ifelse(detailed_result$froude_number < 1, "Subcritical", "Supercritical"), "\n")
-
-
-
-
-## 3.4 Example culvert --------------------------------------------------------
-# Example usage:
-# Define your channel data
-stations <- c(0, 2, 4, 6, 8, 10, 12)
-elevations <- c(2.0, 1.5, 1.0, 0.8, 1.0, 1.5, 2.0)
-culvert_diameter <- 0.8  # 80 cm
-culvert_invert <- 0.8    # elevation of culvert bottom
-slope <- 0.002
-manning_n <- 0.035
-
-# Generate comparison
-water_levels <- seq(0.9, 2.0, by = 0.05)
-comparison <- calc_stage_discharge_comparison(stations, elevations, water_levels,
-                                              culvert_diameter, slope, manning_n,
-                                              culvert_invert, "square_edge")
-
-# Plot results
-plot_discharge_comparison(comparison)
-
-# Print some results
-print("Sample calculations:")
-print(comparison[1:10, ])
-
-
-
 # 4. Apply functions to own data --------------------------------------------------
 
 #select qwb data for points that are relevant.
@@ -237,19 +122,18 @@ qwb <- qwb %>%
   filter(code %in% c("11.Q.32", "13.Q.34")) %>%
   mutate(point = if_else(code == "11.Q.32", 14, 4)) %>%
   left_join(events, join_by(closest(timestamp >= ts_start))) %>%
-  rename(q = Q) %>%
-  dplyr::select(timestamp, ev_num, code, q, point)
+  dplyr::select(timestamp, ev_num, code, Q, point, use)
 
 # select watervalderbeek and eyserbeek for now.
 Q_pars <- Q_pars %>%
-  filter(river %in% c("Watervalderbeek", "Eyserbeek", "Gulp"))
+  filter(river %in% c("Watervalderbeek", "Eyserbeek", "Gulp")) %>%
+  filter(code != "WATE_WATHTE_001") # remove the buffer data because we dont have a good calculation for now
 
 #adjust the cross-section depth to elevation
 cs <- cs %>%
   left_join(Q_pars, by = "code") %>%
   group_by(code) %>%
   mutate(elev = max(cs_depth) + bed_lvl - cs_depth)
-
 
 h_data2 <- h_data %>%
   left_join(Q_pars, by = "code") %>%
@@ -269,32 +153,53 @@ for (i in seq_along(locs)) {
   pars <- Q_pars %>% filter(code == locs[i])
   eq <- pars$equation
   
-  if (eq == "manning" | eq == "both") {
   # calculate discharge for cross-section
   hdat[[i]] <- h_data2 %>%
     filter(code == locs[i]) %>%
     rowwise() %>%
-    mutate(A = calc_channel_area(stations = stats, elev = elevations,
+    mutate(A = calc_channel_area(stations = stats, elev = elev,
                               water_level = wh, return_par = "A"),
-           P = calc_channel_area(stations = stats, elev = elevations,
-                                 water_level = wh, return_par = "P"))
-  
-  } else if (eq == "tube" | eq == "both") {
-  # calculate discharge for culvert
-  culvert_type <- "groove_end"
+           P = calc_channel_area(stations = stats, elev = elev,
+                                 water_level = wh, return_par = "P"),
+           R = A/P,
+           Q = 1/pars$n * A * R^(2/3) * sqrt(pars$S))
     
-  hdat[[i]] <- h_data2 %>%
+  
+  if (eq == "tube") {
+  # calculate discharge for culvert at instroom Pletsmolen
+  nt <- 0.013 # typical Mannings n for concrete culvert
+  St <- (0.07 + 0.0047) / 2 # slope estimate at inlet culvert, bit of trial and error.
+  hdat[[i]] <- hdat[[i]] %>%
     filter(code == locs[i]) %>%
-    mutate(q = calc_inlet_control_discharge_simple(headwater_depths = wh-bed_lvl, culvert_diameter = pars$b,
-                                                   inlet_type = culvert_type))
+    rowwise() %>%
+    mutate(At = calc_culvert_area(wh = wh-bed_lvl, D = pars$b, return_par = "A"),
+           Pt = calc_culvert_area(wh = wh-bed_lvl, D = pars$b, return_par = "P"),
+           Rt = At/Pt,
+           Qt = 1/nt * At * Rt^(2/3) * sqrt(St))
+  # make a comparison between the culvert and channel calculations of Q
+  ggplot(hdat[[i]]) +
+    geom_point(aes(x = timestamp, y = Q, color = "Q-stream")) +
+    geom_point(aes(x = timestamp, y = Qt, color = "Q-culvert")) +
+    facet_wrap(~ ev_num, scales = "free", nrow = 3) +
+    theme_classic() +
+    labs(title = "comparison Q crosssection and Q culvert - Pletsmolen",
+         color = "",
+         y = "Q (m3/s)") +
+    scale_color_manual(values = c("Q-stream" = "blue", "Q-culvert" = "grey"))
+  ggsave(paste0("images/discharge_compare_watervalderbeek.png"))
+  
+  hdat[[i]] <- hdat[[i]] %>%
+    mutate(Q = (Q + Qt) / 2)
+  
   }
 
 }
 
 hdat <- bind_rows(hdat) %>%
-  dplyr::select(timestamp, ev_num, code, q, point)
+  dplyr::select(timestamp, ev_num, code, Q, use, point)
 
-dat <- bind_rows(hdat, qwb)
+dat <- bind_rows(hdat, qwb) %>%
+  filter(use != "control") # remove the control event
 
 subcatch <- unique(dat$point)
 
@@ -303,31 +208,30 @@ a <- dat %>%
   filter(point == subcatch[j])
   
   
-ggplot(b) +
-  geom_line(aes(x = timestamp, y = wh-bed_lvl, color = code)) +
-  facet_wrap(~ ev_num, scales = "free") +
+ggplot(a) +
+  geom_line(aes(x = timestamp, y = Q, color = code)) +
+  facet_wrap(~ ev_num, scales = "free", nrow = 3) +
+  labs(color = "Meetpunt") +
   theme_classic()
 ggsave(paste0("images/discharge_wh_", subcatch[j], ".png"))
 
 }
 
+c <- c %>%
+  mutate(timestamp = timestamp - minutes(65))
 
-# make figures for eyserbeek and watervalderbeek.
-combos <- expand.grid(
-  point = c(10, 14),
-  event = events$ts_start,
-  stringsAsFactors = FALSE
-)
+test <- full_join(a, c, by = c("timestamp", "ev_num")) %>%
+  filter(!is.na(Q) & P != 0.00)
 
-i = 7
+ggplot(c) +
+  geom_bar(aes(x = timestamp, y = P), stat = "identity") +
+  #geom_line(aes(x = timestamp, y = Q, color = code)) +
+  facet_wrap(~ ev_num, scales = "free", nrow = 3) +
+  labs(color = "Meetpunt") +
+  theme_classic()
 
-dat <- qh_data %>%
-  filter(point == 10) %>%
-  filter(timestamp >= events$ts_start[4] & timestamp <= events$ts_end[4]) %>%
-  
-  
-  #
-  ggplot(dat) + geom_point(aes(x = timestamp, y = h, color = code))
+
+
 
 # 5. Measurements with flow meter -------------------------------------------------
 #' Based on the book 'Hydrometry' by Boiten.

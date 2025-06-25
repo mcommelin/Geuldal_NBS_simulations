@@ -317,8 +317,8 @@ subcatch_observed <- function(wdir = NULL,
   freq <- as_tibble(table(id)) %>%
     mutate(id_nm = paste0("gauge_", id))
   
-  # load rainfile
-  date_str <- str_remove_all(ev_date, "-")
+  # load rain data
+    date_str <- str_remove_all(ev_date, "-")
   if (tres == "min") {
     pfile <- paste0("LISEM_data/rain/rain_5min_", date_str, ".txt")
   } else {
@@ -337,7 +337,7 @@ subcatch_observed <- function(wdir = NULL,
            time_min = as.numeric(time_min)) %>%
     select(time_min, all_of(freq$id_nm))
   
-  c <- b %>%
+    c <- b %>%
     pivot_longer(cols = -time_min,
                  values_to = "P",
                  names_to = "id_nm") %>%
@@ -371,4 +371,86 @@ subcatch_observed <- function(wdir = NULL,
 } # end function subcatchment observations
 
 # 4. function to compare discharge ---------------------------------------------
+
+
+
+# Precip and discharge for 10 & 14 --------------------------------------------
+
+# events
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end)) %>%
+  filter(use == "cal")
+# points
+points_id <- c(10, 14)
+points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+
+# rain all events
+rain_5min <- read_csv("data/raw_data/neerslag/KNMI_rain_5min.csv")
+
+## precipitation 5 minute resolution
+
+# make loop over subcatch
+rain_sub <- vector("list", length = length(points_id))
+for (i in seq_along(points_id)) {
+point_id <- points_id[i]
+# select subcatchment
+subcatch <- points %>%
+  filter(point == point_id) %>%
+  filter(cell_size == 5)
+subcatch_name <- subcatch$subcatch_name
+wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
+
+# load rain id's from discharge
+rainIDs <- raster(paste0(wdir, "rain_ID.asc"))
+id <- as.vector(rainIDs)
+freq <- as_tibble(table(id)) %>%
+  mutate(id_nm = paste0("gauge_", id))
+
+rain_sub[[i]] <- rain_5min %>%
+  select(timestamp, all_of(freq$id))  %>%
+  pivot_longer(cols = -timestamp,
+               values_to = "P",
+               names_to = "id") %>%
+  left_join(freq, by = "id") %>%
+  mutate(Ptmp = P * n) %>%
+  group_by(timestamp) %>%
+  summarize(P = round(sum(Ptmp) / sum(n), digits = 2)) %>%
+  mutate(point = point_id,
+         timestamp = timestamp - minutes(5)) # correct KNMI timestamp now data is for the coming 5 minutes
+
+}
+rain_sub <- bind_rows(rain_sub)
+
+rain <- map2_dfr(events$ts_start, events$ts_end,
+                   ~filter(rain_sub, timestamp >= .x & timestamp <= .y)) %>%
+  left_join(events, join_by(
+    closest(timestamp <= ts_end)
+  )) %>%
+  mutate(ev_name = as.character(date(ts_start)))
+
+# add discharge
+# first make 'dat' in Q_measurements_Geuldal
+q_obs <- dat %>%
+  mutate(timestamp = timestamp - minutes(60), # correct to GMT from GMT+1
+         ev_name = as.character(date(ts_start)))
+
+# make figures for both subcatch
+
+for (i in seq_along(points_id)) {
+  p <- filter(rain, point == points_id[i])
+  q <- filter(q_obs, point == points_id[i])
+
+coeff <- 6
+  
+ggplot() +
+  geom_bar(data = p, aes(x = timestamp, y = P/coeff), stat = "identity") +
+  geom_line(data = q, aes(x = timestamp, y = Q, color = code)) +
+  facet_wrap(~ ev_name, scales = "free", nrow = 3) +
+  labs(color = "Meetpunt") +
+  scale_y_continuous("Q m3/sec",
+                     sec.axis = sec_axis(~ . * coeff, name = "P mm/h")) +
+  theme_classic()
+ggsave(paste0("images/q_and_p_", points_id[i], ".png"))
+}
 
