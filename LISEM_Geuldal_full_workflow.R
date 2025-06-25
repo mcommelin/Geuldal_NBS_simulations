@@ -41,12 +41,12 @@ options(digits = 10)
 # load the list of base maps.
 base_maps <- readLines("sources/base_maps.txt")
 
-# convert the channel related maps
+# convert the required base maps
 source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
 
 chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
-            "culverts_bool.tif")
-outmaps <- c("chanmask", "chandepth", "chanwidth", "culvertmask")
+            "culverts_bool.tif", "build_up_area_5m.tif")
+outmaps <- c("chanmask", "chandepth", "chanwidth", "culvertmask", "bua")
 
 for (i in seq_along(chanmaps)) {
   source_to_base_maps(
@@ -55,7 +55,6 @@ for (i in seq_along(chanmaps)) {
     resample_method = "max"
   )
 }
-
 
 # 2. Subcatchment initial testing ----------------------------------------------
 # we use subcatchments to test the model setup and perform some pre-calibration
