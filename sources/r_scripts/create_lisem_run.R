@@ -143,13 +143,19 @@ for (map in base_maps) {
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
+  # run pcraster script to make storm drains.
+  pcr_script(
+    script = "storm_drains.mod",
+    script_dir = "sources/pcr_scripts",
+    work_dir = subdir
+  )
   
   # add runfiles for 4 events
   events <- read_csv("sources/selected_events.csv") %>%
     filter(use != "none") %>%
     mutate(ts_start = ymd_hms(event_start),
            ts_end = ymd_hms(event_end),
-           event_length = as.numeric(events$ts_end - events$ts_start) * 1440)
+           event_length = as.numeric(ts_end - ts_start) * 1440)
   dt <- ceiling(resolution * 0.75)
   
   for (i in seq_along(events$event_start)) {

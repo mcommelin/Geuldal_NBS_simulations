@@ -28,21 +28,22 @@ tilemask = tilemask.map;
 
 initial
 
-bua = if(catchment, bua);
+bua = if(boolean(catchment), bua);
 
-# simplify the network by removing very small branches 3 times.
+# simplify the network by removing very small branches.
 tilemask = if(bua == 1 and roads > 0, 1);
 tiledem = lddcreatedem(dem * tilemask, 1e20, 1e20, 1e20, 1e20);
 lddtile = lddcreate(tiledem, 1e20, 1e20, 1e20, 1e20);
-tilemask = if(accuflux(lddtile, 1) > 1, 1);
-lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
-tilemask = if(accuflux(lddtile, 1) > 1, 1);
-lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
-tilemask = if(accuflux(lddtile, 1) > 1, 1);
+tilemask = if(accuflux(lddtile, 1) > 2, 1);
+#lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
+#tilemask = if(accuflux(lddtile, 1) > 1, 1);
+#lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
+#tilemask = if(accuflux(lddtile, 1) > 1, 1);
 report lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
 
 report tiledepth = tilemask * 0;
 report tilegrad = sin(atan(slope(tilemask * dem)));
-report tilemann = tilemask * ntile;
+report tileman = tilemask * ntile;
 report tileaccu = accuflux(lddtile, 1);
+report tilediameter = tilemask * 0.7;
 
