@@ -16,7 +16,7 @@ roads = roads_fraction.map; # fraction road coverage (optional)
 chanmask = chanmask.map;    # location of channels value = 1 (optional)
 culvert = culvertmask.map;  # location of culverts
 chanwidth = chanwidth.map;  # width of channels and culverts
-#outpoint = outpoints.map;  # location of outlets and checkpoints
+outpoint = outpoints.map;  # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
 #grass = grasswid.map;      # only if buffers are included
 id = ID.map;                # rainfall id grid
@@ -132,6 +132,7 @@ report dem = if(boolean(catchment), dem);
 report soil = if(boolean(catchment), soil);
 report lu = if(boolean(catchment), lu); 
 report buildings = if(boolean(catchment), buildings);
+report outpoint = if(boolean(catchment), outpoint);
 area = dem * 0 + 1;
 report one = dem * 0 + 1; # map with value 1
 report zero = dem * 0; # map with value 0

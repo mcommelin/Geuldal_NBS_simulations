@@ -62,7 +62,7 @@ for (i in seq_along(chanmaps)) {
 # Watervalderbeek (10), Eyserbeek (14), Kelmis (18)
 
 #2.1 prepare the databases for the subcatchments
-points_id <- c(10, 14, 18)
+points_id <- c(10, 14)
 reso <- c(5, 20)
 
 # load subcatchment points csv file

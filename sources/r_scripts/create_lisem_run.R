@@ -115,7 +115,8 @@ base_maps <- readLines("sources/base_maps.txt")
 # copy the maps to the run_dir
 subdir <- paste0(run_dir, "maps/")
 for (map in base_maps) {
-  file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map))
+  file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
+            overwrite = TRUE)
 }
 
   #copy landuse and soil tables to subdir

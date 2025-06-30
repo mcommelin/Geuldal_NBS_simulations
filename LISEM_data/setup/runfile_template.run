@@ -254,7 +254,7 @@ dem=dem.map
 grad=grad.map
 ldd=ldd.map
 outlet=outlet.map
-outpoint=outlet.map
+outpoint=outpoints.map
 flowboundary=flowboundary.map
 
 [Landuse]
