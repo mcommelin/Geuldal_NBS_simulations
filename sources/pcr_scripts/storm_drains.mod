@@ -16,6 +16,7 @@ catchment = catchment.map;
 
 # input vars
 ntile = 0.012; # the mannings n of storm drains.
+diamtile = 0.7; # initial estimate storm drains.
 
 #output maps
 tiledepth = tiledepth.map;      # for stormdrains = 0, for soil drains > 0.
@@ -45,5 +46,9 @@ report tiledepth = tilemask * 0;
 report tilegrad = sin(atan(slope(tilemask * dem)));
 report tileman = tilemask * ntile;
 report tileaccu = accuflux(lddtile, 1);
-report tilediameter = tilemask * 0.7;
+report tilediam = tilemask * diamtile;
 
+# TODO: calculate storage capacity of the storm drian network
+# should be around 7 mm for the BUA.
+# vol_stormdrain / surface_area_BUA = 7mm
+# vol_stormdrain = length(storm_drain) * (pi * r^2) 

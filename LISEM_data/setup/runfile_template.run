@@ -97,6 +97,7 @@ Swatre profile file=profile.inp
 Swatre table directory=<<swatre_dir>>
 SWATRE internal minimum timestep=1
 Swatre output=0
+Swatre dry=0
 Matric head files=inithead
 Include tile drains=0
 Tile entry suction=-10
@@ -107,7 +108,7 @@ Infil Kavg=0
 Van Genuchten=1
 
 [Flow]
-Routing Kin Wave 2D=0
+Routing Kin Wave 2D=2
 Flow Boundary 2D=1
 Flood initial level map=0
 Flooding courant factor=0.10
@@ -141,10 +142,10 @@ Add building fraction=0.30
 Add building height=1.00
 Hard Surfaces=0
 Include road system=1
-Include storm drains=0
+Include storm drains=1
 Storm drain shape=1
 Drain inlet distance=20
-Drain inlet size=0
+Drain inlet size=0.1
 
 [Erosion]
 Include Erosion simulation=0
@@ -347,7 +348,6 @@ flowbarrierindex=flowbarrierindex.map
 
 [Storm drains/Tile drains]
 lddtile=lddtile.map
-tilesink=tileinlet.map
 tilediameter=tilediameter.map
 tilewidth=tilewidth.map
 tileheight=tileheight.map

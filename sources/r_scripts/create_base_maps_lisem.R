@@ -206,3 +206,8 @@ chandim <- left_join(chanshape, shreve_lookup,
   mutate(culvert_bool = if_else(tunnel == "culvert", 1, 0))
 
 st_write(chandim, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
+
+# 4. stormdrains ---------------------------------------------------------------
+
+#calculate drain diameter based on the Strahler order of the 5 m resolution
+#assign buffer capacity to all pits (ldd = 5) based on the upstream area
