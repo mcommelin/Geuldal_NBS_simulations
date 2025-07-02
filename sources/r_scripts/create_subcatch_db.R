@@ -1,13 +1,6 @@
 # make lisem input for sub catchment
 
 # Initialization --------------------------------------------------------------
-library(gdalUtilities)
-library(terra)
-library(tidyverse)
-
-source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
-
 # Function to create subcatchment base maps -----------------------------------
 base_maps_subcatchment <- function(
     cell_size = NULL,

@@ -23,16 +23,7 @@ source("sources/r_scripts/pcrasteR.R")
 set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
 
 #functions
-add_suffix <- function(strings) {
-  # Use grepl to check if the string contains an underscore
-  sapply(strings, function(x) {
-    if (!grepl("_", x)) {
-      paste0(x, "_00")
-    } else {
-      x
-    }
-  })
-}
+
 
 # 1. Select events --------------------------------------------------------------
 

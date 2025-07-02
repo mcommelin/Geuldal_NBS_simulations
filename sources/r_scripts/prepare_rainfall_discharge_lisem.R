@@ -31,9 +31,9 @@ add_suffix <- function(strings) {
   })
 }
 
-#1. make LISEM input precipitation data ---------------------------------------
+#1. Input precipitation data ---------------------------------------
 
-## Raster with ID zones ------------------------------------------------------- 
+##1.1  Raster with ID zones ------------------------------------------------------- 
 # make a map with numbers per cell as ID zones
 
 # give numbers to cells
@@ -51,7 +51,7 @@ writeRaster(a$ID_zone, paste0("data/processed_data/ID_zones_KNMI_radar.asc"),
 #' checked with the current events and that is correct. When switching to 5 min
 #' temporal resolution, check again.
 
-## ID maps for 5 and 20 m ------------------------------------------------------
+## 1.2 ID maps for 5 and 20 m ------------------------------------------------------
 
 resolution = c(5, 20) # 5 or 20
 
@@ -118,7 +118,7 @@ for (i in seq_along(resolution)) {
   file.remove(paste0(main_dir, "maps/ID.prj"))
 }
 
-## Rain tables per event -------------------------------------------------------
+##1.3 Rain tables hourly per event -------------------------------------------------------
 
   #load the events
 events <- read_csv("sources/selected_events.csv") %>%
@@ -188,7 +188,10 @@ for (k in seq_along(events$ts_start)) {
               row.names = F, sep = " ", quote = F)
 }
   
-## 5 min rain ------------------------------------------------------------------
+##1.4 Tables 5 min rain ------------------------------------------------------------------
+# NOTE!
+# before running this code run the code from 'KNMI_precipitation.R'
+
 # rain tables for the 4 events for calibration and control with 5 minute interval
 #load the events
 events <- read_csv("sources/selected_events.csv") %>%
@@ -242,7 +245,200 @@ for (k in seq_along(events$ts_start)) {
 }
 
 
-# 2. Discharge tables for LISEM ---------------------------------------------
+# 2. Observed discharge --------------------------------------------------------
+
+## 2.1 WH to Q -----------------------------------------------------------------
+
+### Load data ------------------------------
+# load selected events  
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end)) %>%
+  filter(use != "none")
+
+# load cross-section data based on fieldwork
+cs <- read_csv("data/cross_sections_streams.csv") %>%
+  mutate(cs_elev = cs_depth * -1 + ceiling(max(cs_depth))) %>%
+  arrange(cs_length)
+
+# load point info
+Q_pars <- read_csv("sources/height_to_Q_mannings.csv")
+
+# load data and filter for only for the selected events and measurement points
+### Load wh data ----------------------------------
+# make file list
+q_file_dir = "data/raw_data/waterhoogte_metingen/metingen"
+q_files <- dir(q_file_dir, recursive = TRUE, pattern = ".csv$")
+
+# load file with station names and characteristics
+station_names <- read_csv("sources/naam_meetpunten_Geuldal.csv")
+# add long name for each station
+station_names <- station_names %>%
+  mutate(name_long = paste0(naam, "_", ondertitel)) %>%
+  mutate(name_long = str_replace_all(name_long, " ", "_"))
+
+# load all files
+q_list <- vector("list", length = length(q_files))
+
+for (i in seq_along(q_files)) {
+  col_names_a <- names(read_delim(paste0(q_file_dir, "/", q_files[i]), delim = ";"))
+  a <- read_delim(
+    paste0(q_file_dir, "/", q_files[i]),
+    delim = ";",
+    col_names = col_names_a,
+    skip = 2
+  ) %>%
+    rename(timestamp = 'GMT+1') %>%
+    pivot_longer(
+      cols = (col_names_a[2]:col_names_a[length(col_names_a)]),
+      names_to = "code",
+      values_to = "wh"
+    ) %>%
+    mutate(wh = if_else(wh < 0, NaN, wh)) %>%
+    filter(!is.na(wh)) %>%
+    left_join(station_names, by = "code")
+  q_list[[i]] <- a
+}
+q_all <- bind_rows(q_list)
+
+# in the raw data trailing zeros are trimmed and decimal sign is removed - ad them back.
+h_data <- q_all %>%
+  mutate(wh = if_else(wh < 40, wh * 10, wh)) %>%
+  mutate(wh = if_else(wh > 40000, wh / 1000, wh)) %>%
+  mutate(wh = if_else(wh > 4000, wh / 100, wh)) %>%
+  mutate(wh = if_else(wh > 400, wh / 10, wh)) %>%
+  filter(code %in% Q_pars$code)
+# filter only observations during events of interest
+h_data <- map2_dfr(events$ts_start, events$ts_end,
+                   ~filter(h_data, timestamp >= .x & timestamp <= .y))
+
+### Load Q waterboard ------------------------------------
+# make file list
+q_file_dir = "data/raw_data/debiet_ruwe_data"
+q_files <- dir(q_file_dir, recursive = TRUE, pattern = ".csv$")
+
+# load file with station names and characteristics
+station_names <- read_csv("sources/naam_meetpunten_Geuldal.csv")
+# add long name for each station
+station_names <- station_names %>%
+  mutate(name_long = paste0(naam, "_", ondertitel)) %>%
+  mutate(name_long = str_replace_all(name_long, " ", "_"))
+
+# load all files
+q_list <- vector("list", length = length(q_files))
+
+for (i in seq_along(q_files)) {
+  col_names_a <- names(read_delim(paste0(q_file_dir, "/", q_files[i]), delim = ";"))
+  a <- read_csv2(
+    paste0(q_file_dir, "/", q_files[i]),
+    col_names = col_names_a,
+    skip = 2
+  ) %>%
+    rename(timestamp = 'GMT+1') 
+  q_list[[i]] <- a
+}
+qall <- bind_rows(q_list) %>%
+  pivot_longer(
+    cols = (-timestamp),
+    names_to = "code",
+    values_to = "Q"
+  ) %>%
+  mutate(Q = if_else(Q < 0, NaN, Q)) %>%
+  filter(!is.na(Q)) %>%
+  filter(timestamp > "2020-01-01") %>%
+  left_join(station_names, by = "code")
+
+qwb <- map2_dfr(events$ts_start, events$ts_end,
+                ~filter(qall, timestamp >= .x & timestamp <= .y))
+
+#select qwb data for points that are relevant.
+# TODO remove hardcoding of Q points!
+qwb <- qwb %>%
+  filter(code %in% c("11.Q.32", "13.Q.34")) %>%
+  mutate(point = if_else(code == "11.Q.32", 14, 4)) %>%
+  left_join(events, join_by(closest(timestamp >= ts_start))) %>%
+  dplyr::select(timestamp, ev_num, code, Q, point, use)
+
+# select watervalderbeek and eyserbeek for now.
+Q_pars <- Q_pars %>%
+  filter(river %in% c("Watervalderbeek", "Eyserbeek", "Gulp")) %>%
+  filter(code != "WATE_WATHTE_001") # remove the buffer data because we dont have a good calculation for now
+
+#adjust the cross-section depth to elevation
+cs <- cs %>%
+  left_join(Q_pars, by = "code") %>%
+  group_by(code) %>%
+  mutate(elev = max(cs_depth) + bed_lvl - cs_depth)
+
+h_data2 <- h_data %>%
+  left_join(Q_pars, by = "code") %>%
+  left_join(events, join_by(closest(timestamp >= ts_start)))
+
+# loop over locations to calculate q
+locs <- Q_pars$code
+hdat <- vector("list", length = length(locs))
+
+for (i in seq_along(locs)) {
+  # cross section info
+  cs_loc <- cs %>%
+    filter(code == locs[i])
+  stats <- cs_loc$cs_length
+  elev <- cs_loc$elev
+  
+  pars <- Q_pars %>% filter(code == locs[i])
+  eq <- pars$equation
+  
+  # calculate discharge for cross-section
+  hdat[[i]] <- h_data2 %>%
+    filter(code == locs[i]) %>%
+    rowwise() %>%
+    mutate(A = calc_channel_area(stations = stats, elev = elev,
+                                 water_level = wh, return_par = "A"),
+           P = calc_channel_area(stations = stats, elev = elev,
+                                 water_level = wh, return_par = "P"),
+           R = A/P,
+           Q = 1/pars$n * A * R^(2/3) * sqrt(pars$S))
+  
+  
+  if (eq == "tube") {
+    # calculate discharge for culvert at instroom Pletsmolen
+    nt <- 0.013 # typical Mannings n for concrete culvert
+    St <- (0.07 + 0.0047) / 2 # slope estimate at inlet culvert, bit of trial and error.
+    hdat[[i]] <- hdat[[i]] %>%
+      filter(code == locs[i]) %>%
+      rowwise() %>%
+      mutate(At = calc_culvert_area(wh = wh-bed_lvl, D = pars$b, return_par = "A"),
+             Pt = calc_culvert_area(wh = wh-bed_lvl, D = pars$b, return_par = "P"),
+             Rt = At/Pt,
+             Qt = 1/nt * At * Rt^(2/3) * sqrt(St))
+    # make a comparison between the culvert and channel calculations of Q
+    ggplot(hdat[[i]]) +
+      geom_point(aes(x = timestamp, y = Q, color = "Q-stream")) +
+      geom_point(aes(x = timestamp, y = Qt, color = "Q-culvert")) +
+      facet_wrap(~ ev_num, scales = "free", nrow = 3) +
+      theme_classic() +
+      labs(title = "comparison Q crosssection and Q culvert - Pletsmolen",
+           color = "",
+           y = "Q (m3/s)") +
+      scale_color_manual(values = c("Q-stream" = "blue", "Q-culvert" = "grey"))
+    ggsave(paste0("images/subcatch_observations/discharge_compare_watervalderbeek.png"))
+    # average the two calculation methods for watervalderbeek
+    hdat[[i]] <- hdat[[i]] %>%
+      mutate(Q = (Q + Qt) / 2)
+    
+  }
+  
+}
+
+hdat <- bind_rows(hdat) %>%
+  dplyr::select(timestamp, ev_num, code, Q, use, point)
+
+dat <- bind_rows(hdat, qwb) 
+# save high res discharge
+write_csv(dat, "LISEM_data/tables/observed_discharge_high_res.csv")
+
+## 2.2 Hourly discharge -------------------------------------------
+# this are observations from the larger streams
 
 # start time,
 # end time
@@ -290,88 +486,11 @@ for (k in seq_along(events$event_start)) {
 qtable <- bind_rows(qevent)
 write_csv(qtable, "LISEM_data/tables/observed_discharge_hourly.csv")
 
+# TODO make separate script for visualisation
 # 3. subcatch precipitation graph ----------------------------------------------
 
 # get subcatch name, events and resolution
 # make loop
-
-
-# id.map to catchment size - is now included in standard db script
-wdir <- "LISEM_runs/Watervalderbeek_5m/maps/"
-ev_date <- "2023-06-22"
-
-
-subcatch_observed <- function(wdir = NULL,
-                              ev_date = NULL,
-                              tres = "hour") {
- 
- # pcrcalc(options = "ID.map=ID.map*catchment.map", work_dir = wdir)
-  
-  # map2asc
-  # map2asc(map_in = "ID.map",
-  #         map_out = "rain_ID.asc",
-  #         sub_dir = wdir)
-  # find unique grid id's
-  rainIDs <- raster(paste0(wdir, "rain_ID.asc"))
-  id <- as.vector(rainIDs)
-  freq <- as_tibble(table(id)) %>%
-    mutate(id_nm = paste0("gauge_", id))
-  
-  # load rain data
-    date_str <- str_remove_all(ev_date, "-")
-  if (tres == "min") {
-    pfile <- paste0("LISEM_data/rain/rain_5min_", date_str, ".txt")
-  } else {
-    pfile <- paste0("LISEM_data/rain/rain_", date_str, ".txt")
-  }
-    skipval <- as.numeric(readLines(pfile)[2]) + 2
-  rain_txt <- readLines(pfile)[-(1:skipval)]
-  nms <- readLines(pfile)[3:(skipval)] %>%
-    str_replace_all(., " ", "_")
-  # make a tibble with numbers and row names
-  a <- str_split(rain_txt, " ")
-  b <- as_tibble(do.call(rbind, a)) %>%
-    rename_with( ~ nms) %>%
-    mutate(across(-time, as.numeric)) %>%
-    mutate(time_min = str_remove(time, "001:"),
-           time_min = as.numeric(time_min)) %>%
-    select(time_min, all_of(freq$id_nm))
-  
-    c <- b %>%
-    pivot_longer(cols = -time_min,
-                 values_to = "P",
-                 names_to = "id_nm") %>%
-    left_join(freq, by = "id_nm") %>%
-    mutate(Ptmp = P * n) %>%
-    group_by(time_min) %>%
-    summarize(P = round(sum(Ptmp) / sum(n), digits = 2))
-  
-  #TODO include discharge and add to figure
-
-  #TODO redefine begin and end times for subcatch events based on P and Q observed
-  
-  
-  # make figure
- if (tres == "min") {
-   total = round(sum(c$P) / 12, digits = 2)
- } else {
-   total = round(sum(c$P), digits = 2)
- }
-  plot <- ggplot(c) +
-    geom_bar(aes(x = time_min, y = P), stat = "identity") +
-    theme_classic() +
-    labs(x = "Minutes", y = "P mm/h", 
-         title = paste0("Event total = ", total, " in ", subcatch_name, " on ", ev_date))
-  
-  rain_info <- vector("list", length = 2)
-  rain_info[[1]] <- plot
-  rain_info[[2]] <- total
-  
-  return(rain_info)
-} # end function subcatchment observations
-
-# 4. function to compare discharge ---------------------------------------------
-
 
 
 # Precip and discharge for 10 & 14 --------------------------------------------
