@@ -26,6 +26,8 @@ tilegrad = tilegrad.map;        # gradient of the tile map
 tileman = tileman.map;          # mannings n of the tile drains.
 tileaccu = tileaccu.map;        # upstream accumulation to find drainage length
 tilemask = tilemask.map;
+vol_sd = vol_sd.map;
+mm_sd = mm_sd.map;
 
 initial
 
@@ -50,5 +52,7 @@ report tilediam = tilemask * diamtile;
 
 # TODO: calculate storage capacity of the storm drian network
 # should be around 7 mm for the BUA.
-# vol_stormdrain / surface_area_BUA = 7mm
+#vol_stormdrain / surface_area_BUA = 7mm
 # vol_stormdrain = length(storm_drain) * (pi * r^2) 
+report vol_sd=celllength()*3.1415*(tilediam/2) ** 2;
+report mm_sd = maptotal(vol_sd) / areaarea(nominal(bua));

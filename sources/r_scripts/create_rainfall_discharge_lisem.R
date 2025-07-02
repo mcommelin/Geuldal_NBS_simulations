@@ -432,14 +432,17 @@ rain <- map2_dfr(events$ts_start, events$ts_end,
 # add discharge
 # first make 'dat' in Q_measurements_Geuldal
 q_obs <- dat %>%
+  left_join(events, b = c("ev_num", "use")) %>%
   mutate(timestamp = timestamp - minutes(60), # correct to GMT from GMT+1
          ev_name = as.character(date(ts_start)))
 
 # make figures for both subcatch
 
 for (i in seq_along(points_id)) {
-  p <- filter(rain, point == points_id[i])
-  q <- filter(q_obs, point == points_id[i])
+  p <- filter(rain, point == points_id[i]) %>%
+    filter(ev_num == 9)
+  q <- filter(q_obs, point == points_id[i])%>%
+    filter(ev_num == 9)
 
 coeff <- 6
   
@@ -453,4 +456,35 @@ ggplot() +
   theme_classic()
 ggsave(paste0("images/q_and_p_", points_id[i], ".png"))
 }
+
+
+# test figure code Miguel
+
+# plot
+# axis constants
+q_max_round <- ceiling(max(c(q$Q), na.rm = TRUE) / 10) * 10
+p_max       <- max(p$P, na.rm = TRUE)
+k           <- q_max_round / (p_max * 2)
+y_top       <- q_max_round
+
+# plot regualr and inverted y-axis
+  ggplot() +
+  geom_linerange(data = p, aes(x = timestamp, ymin = y_top,
+                     ymax = y_top - P * k),
+                 fill = "#8D8DAA", alpha = 0.7) +
+  #geom_ribbon(aes(ymin = qmin, ymax = qmax), fill = "grey60", alpha = 0.3) +
+  geom_line(data = q, aes(x = timestamp, y = Q, color = code), linewidth = 0.3) +
+ # geom_line(aes(y = sel_run),           colour = "red", linetype = "dashed", linewidth = 0.8) +
+  # axis
+  scale_y_continuous(
+    name     = "Discharge (m³ s⁻¹)",
+    limits   = c(0, y_top),
+    sec.axis = sec_axis(
+      ~ (y_top - .) / k,
+      name = "Precipitation (mm)"
+    )
+  ) +
+  scale_x_datetime(date_breaks = "1 day", date_labels = "%b %Y") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 

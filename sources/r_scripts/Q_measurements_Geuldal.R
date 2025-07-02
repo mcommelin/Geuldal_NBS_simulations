@@ -232,7 +232,6 @@ ggplot(c) +
 
 
 
-
 # 5. Measurements with flow meter -------------------------------------------------
 #' Based on the book 'Hydrometry' by Boiten.
 #' 
