@@ -5,7 +5,7 @@
 #ev_date <- "2023-06-22"
 
 
-subcatch_observed <- function(wdir = NULL,
+subcatch_rain_compare <- function(wdir = NULL,
                               ev_date = NULL,
                               tres = "hour") {
   
@@ -50,11 +50,6 @@ subcatch_observed <- function(wdir = NULL,
     group_by(time_min) %>%
     summarize(P = round(sum(Ptmp) / sum(n), digits = 2))
   
-  #TODO include discharge and add to figure
-  
-  #TODO redefine begin and end times for subcatch events based on P and Q observed
-  
-  
   # make figure
   if (tres == "min") {
     total = round(sum(c$P) / 12, digits = 2)
@@ -72,7 +67,8 @@ subcatch_observed <- function(wdir = NULL,
   rain_info[[2]] <- total
   
   return(rain_info)
-} # end function subcatchment observations
+} # end function subcatchment rain comparison
 
-# 4. function to compare discharge ---------------------------------------------
+# show observed discharge and rain per subcatch --------------------------------
 
+#TODO include discharge and add to figure

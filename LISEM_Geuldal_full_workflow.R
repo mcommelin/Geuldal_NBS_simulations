@@ -43,8 +43,6 @@ source("sources/r_scripts/aux_functions.R")
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
-# TODO this script should also include preparation of observed discharge - WIP!
-
 ## 1.4 convert of PCRaster maps ------------------------------------------------
 # convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
 
@@ -80,7 +78,7 @@ reso <- c(5, 20)
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
 # load the function for subcatchment preparation
-source("sources/r_scripts/make_subcatch_db.R")
+source("sources/r_scripts/create_subcatch_db.R")
 
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
@@ -97,7 +95,8 @@ for (i in seq_along(points_id)) {
 
 ## 2.2 make initial lisem runs ------------------------------------------------
 
-# TODO: adjust runfile template -> make sure it is up to date with latest settings!
+# TODO adjust runfile template -> make sure it is up to date with latest settings!
+# TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
 
 for (i in seq_along(points_id)) {
@@ -157,7 +156,7 @@ for (x in seq_len(nrow(combos))) {
   wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
   evdate <- date(combos$event[x])
   
-  rain_list[[x]] <- subcatch_observed(
+  rain_list[[x]] <- subcatch_rain_compare(
     wdir = wdir,
     ev_date = evdate,
     tres = tres_val
@@ -182,10 +181,10 @@ for (i in 1:x) {
 
 # Based on this analysis we first will work with the event on 2023-06-22
 
-# TODO add the calculation of discharge
 # TODO make figure of discharge and precipitation for selected 
 # events and subcatchments
 
+# TODO when figure finished 'Q_measurements_Geuldal.R' to archive.
 
 ## 2.4 Simulation and figure ---------------------------------------------------
 
