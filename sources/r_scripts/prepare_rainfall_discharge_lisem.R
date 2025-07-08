@@ -1,4 +1,4 @@
-# make rainfall and discharge dat for selected event for LISEM
+# make rainfall and discharge data for selected event for LISEM
 # !before running this code make the subcatchment db
 #' 1. create input precipitation data for OpenLISEM for each event
 #' this is a combination of an ID.map at both resolutions and an input table
@@ -248,6 +248,8 @@ for (k in seq_along(events$ts_start)) {
 # 2. Observed discharge --------------------------------------------------------
 
 ## 2.1 WH to Q -----------------------------------------------------------------
+
+# TODO adjust zero waterlevels based on waterboard data
 
 ### Load data ------------------------------
 # load selected events  

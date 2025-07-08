@@ -116,7 +116,6 @@ for (i in seq_along(points_id)) {
 
 # Based on this we further:
 # 1: check the quality of the 5 minute resolution rainfall radar
-# 2: estimate discharge (Q) from water height measurements
 source("sources/r_scripts/create_graphs_observations_simulations.R")
 
 ## 2.3 Explore precipitation and discharge --------------------------------------
@@ -134,15 +133,10 @@ points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
 # Prepare all combinations of points, events, and temporal resolutions
 Tres <- c("hour", "min")
-combos <- expand.grid(
-  point = points_id,
-  event = events$ts_start,
-  tres = Tres,
-  stringsAsFactors = FALSE
-)
+combos <- expand.grid(point = points_id, event = events$ts_start,
+  tres = Tres, stringsAsFactors = FALSE)
 
 rain_list <- vector("list", nrow(combos))
-
 for (x in seq_len(nrow(combos))) {
   point_id <- combos$point[x]
   event_idx <- combos$event[x]
@@ -155,7 +149,7 @@ for (x in seq_len(nrow(combos))) {
   subcatch_name <- subcatch$subcatch_name
   wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
   evdate <- date(combos$event[x])
-  
+  # run the function to compare precipitation sources
   rain_list[[x]] <- subcatch_rain_compare(
     wdir = wdir,
     ev_date = evdate,
@@ -164,14 +158,12 @@ for (x in seq_len(nrow(combos))) {
 }
 
 # combine the plots
-# Extract total values from rain_list (assuming total is in the 2nd position)
+# Extract total values from rain_list (assuming total P is in the 2nd list)
 combos$total <- sapply(rain_list, function(x) x[[2]])
 x = nrow(combos) / 2
 # with cowplot combine the figures and save
 for (i in 1:x) {
-  
   plot_grid(rain_list[[i]][[1]], rain_list[[i + x]][[1]], nrow = 2, align = "hv")
-  
   ggsave(
     paste0("images/rain_compare_", date(combos$event[i]), "_", combos$point[i],".png")
   )
@@ -181,8 +173,12 @@ for (i in 1:x) {
 
 # Based on this analysis we first will work with the event on 2023-06-22
 
-# TODO make figure of discharge and precipitation for selected 
-# events and subcatchments
+# points of subcatchments
+p_id <- c(10, 14)
+# event_dates
+ev_dates <- c("2023-06-22")
+# mkae figures with combined rain and discharge
+graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
 
 # TODO when figure finished 'Q_measurements_Geuldal.R' to archive.
 
