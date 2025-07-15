@@ -1,47 +1,47 @@
-x,y,point,cell_size,name,description,subcatch_name
-178376.67,323010.425,1,20,juliana kanaal,outlet Geul bij Julianakanaal,Geul
-189258.8,318193.66,2,20,scheumerbeek,Ransdalerveld,Ransdalerveld
-189912.65,316792.76,3,20,lange gracht,Vrakelbergerweg,Vrakelbergerweg
-190842.35,314531.07,4,20,Gulp,Instroom Gulp in de Geul,x
-191296,314670.96,5,20,Eyserbeek,Instroom Eyserbeek in de Geul,x
-192016.15,313430.11,6,20,Selzerbeek,Instroom Selzerbeek in de Geul,x
-192577.93,311792.21,7,20,Mechelsebeek,Instroom Mechelsebeek in de Geul,x
-198494.83,302150.12,8,20,Hohnbach,Instroom Hohnback in de Geul,x
-198516.44,302191.02,9,20,Geul bovenloop,Geul boven instroom Hohnbach,x
-180679.94,321572.04,10,20,Watervalderbeek,"Watervalderbeek, voor ondergrondse aansluiting Geul",Watervalderbeek
-184957.91,320190,11,20,Strabeek,Strabeek 200m voordat deze in Geul stroomt,x
-198018.47,310951.15,12,20,Selzerbeek,"Selzerbeek, bij Lemiers",Lemiers
-178376.67,323010.425,1,5,juliana kanaal,outlet Geul bij Julianakanaal,Geul
-189371.09,318249.55,2,5,scheumerbeek,Ransdalerveld,Ransdalerveld
-190180.52,317048.11,3,5,lange gracht,Vrakelbergerweg,Vrakelbergerweg
-190891.39,314593.5,4,5,Gulp,Instroom Gulp in de Geul,x
-191225.95,314642.93,5,5,Eyserbeek,Instroom Eyserbeek in de Geul,x
-192750.55,313604.28,6,5,Selzerbeek,Instroom Selzerbeek in de Geul,x
-192526.68,311823.57,7,5,Mechelsebeek,Instroom Mechelsebeek in de Geul,x
-198480.897,302165.183,8,5,Hohnbach,Instroom Hohnback in de Geul,x
-198486.562,302177.51,9,5,Geul bovenloop,Geul boven instroom Hohnbach,x
-180676.299,321568.214,10,5,Watervalderbeek,"Watervalderbeek, voor ondergrondse aansluiting Geul",Watervalderbeek
-185051.29,320233.15,11,5,Strabeek,Strabeek 200m voordat deze in Geul stroomt,x
-198011.358,310942.38,12,5,Selzerbeek,"Selzerbeek, bij Lemiers",Lemiers
-190538.56,313912.57,13,20,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp
-190546.532,313922.935,13,5,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp
-193199.18,315191.48,14,20,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek
-193204.77,315192.64,14,5,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek
-192665.616,313550.405,15,20,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij
-192666.26,313552.645,15,5,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij
-192116.32,313152.83,16,20,Hommerich,Geul meetpunt code = 10.Q.30,Hommerich
-192111.578,313158.032,16,5,Hommerich,Geul meetpunt code = 10.Q.30,Hommerich
-193598.35,307731.26,17,20,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen
-193596.5,307733.01,17,5,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen
-198406.578,302241.29,18,5,Kelmis,meetpunt Geul bij Kelmis,Kelmis
-198414.43,302235.28,18,20,Kelmis,meetpunt Geul bij Kelmis,Kelmis
-180946.931,322053.891,19,5,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek
-180951.717,322054.79,19,20,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek
-193962.948,315247.694,20,5,Eys,Meetpunt in dorp Eys,Eyserbeek
-193960.5,315248.49,20,20,Eys,Meetpunt in dorp Eys,Eyserbeek
-197516.76,316322.388,21,5,Simpelveld,Simpelveld,Eyserbeek
-197499.848,316330.377,21,20,Simpelveld,Simpelveld,Eyserbeek
-188511.616,309012.18,22,5,Slenaken,Slenaken,Gulp
-188511.616,309012.18,22,20,Slenaken,Slenaken,Gulp
-189620.437,307386.242,23,5,Teuven,Teuven,Gulp
-189620.437,307386.242,23,20,Teuven,Teuven,Gulp
+x,y,point,cell_size,name,description,subcatch_name,code
+178376.67,323010.425,1,20,juliana kanaal,outlet Geul bij Julianakanaal,Geul,
+189258.8,318193.66,2,20,scheumerbeek,Ransdalerveld,Ransdalerveld,
+189912.65,316792.76,3,20,lange gracht,Vrakelbergerweg,Vrakelbergerweg,
+190842.35,314531.07,4,20,Gulp,Instroom Gulp in de Geul,x,
+191296,314670.96,5,20,Eyserbeek,Instroom Eyserbeek in de Geul,x,
+192016.15,313430.11,6,20,Selzerbeek,Instroom Selzerbeek in de Geul,x,
+192577.93,311792.21,7,20,Mechelsebeek,Instroom Mechelsebeek in de Geul,x,
+198494.83,302150.12,8,20,Hohnbach,Instroom Hohnback in de Geul,x,
+198516.44,302191.02,9,20,Geul bovenloop,Geul boven instroom Hohnbach,x,
+180679.94,321572.04,10,20,Watervalderbeek,"Watervalderbeek, voor ondergrondse aansluiting Geul",Watervalderbeek,
+184957.91,320190,11,20,Strabeek,Strabeek 200m voordat deze in Geul stroomt,x,
+198018.47,310951.15,12,20,Selzerbeek,"Selzerbeek, bij Lemiers",Lemiers,12.H.228
+178376.67,323010.425,1,5,juliana kanaal,outlet Geul bij Julianakanaal,Geul,
+189371.09,318249.55,2,5,scheumerbeek,Ransdalerveld,Ransdalerveld,
+190180.52,317048.11,3,5,lange gracht,Vrakelbergerweg,Vrakelbergerweg,
+190891.39,314593.5,4,5,Gulp,Instroom Gulp in de Geul,x,
+191225.95,314642.93,5,5,Eyserbeek,Instroom Eyserbeek in de Geul,x,
+192750.55,313604.28,6,5,Selzerbeek,Instroom Selzerbeek in de Geul,x,
+192526.68,311823.57,7,5,Mechelsebeek,Instroom Mechelsebeek in de Geul,x,
+198480.897,302165.183,8,5,Hohnbach,Instroom Hohnback in de Geul,x,
+198486.562,302177.51,9,5,Geul bovenloop,Geul boven instroom Hohnbach,x,
+180676.299,321568.214,10,5,Watervalderbeek,"Watervalderbeek, voor ondergrondse aansluiting Geul",Watervalderbeek,
+185051.29,320233.15,11,5,Strabeek,Strabeek 200m voordat deze in Geul stroomt,x,
+198011.358,310942.38,12,5,Selzerbeek,"Selzerbeek, bij Lemiers",Lemiers,12.H.228
+190538.56,313912.57,13,20,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp,13.Q.34
+190546.532,313922.935,13,5,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp,13.Q.34
+193199.18,315191.48,14,20,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
+193204.77,315192.64,14,5,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
+192665.616,313550.405,15,20,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij,12.Q.31
+192666.26,313552.645,15,5,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij,12.Q.31
+192116.32,313152.83,16,20,Hommerich,Geul meetpunt code = 10.Q.30,Hommerich,10.Q.30
+192111.578,313158.032,16,5,Hommerich,Geul meetpunt code = 10.Q.30,Hommerich,10.Q.30
+193598.35,307731.26,17,20,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen,10.Q.29
+193596.5,307733.01,17,5,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen,10.Q.29
+198406.578,302241.29,18,5,Kelmis,meetpunt Geul bij Kelmis,Kelmis,
+198414.43,302235.28,18,20,Kelmis,meetpunt Geul bij Kelmis,Kelmis,
+180946.931,322053.891,19,5,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
+180951.717,322054.79,19,20,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
+193962.948,315247.694,20,5,Eys,Meetpunt in dorp Eys,Eyserbeek,11.H.225
+193960.5,315248.49,20,20,Eys,Meetpunt in dorp Eys,Eyserbeek,11.H.225
+197516.76,316322.388,21,5,Simpelveld,Simpelveld,Eyserbeek,11.H.227
+197499.848,316330.377,21,20,Simpelveld,Simpelveld,Eyserbeek,11.H.227
+188511.616,309012.18,22,5,Slenaken,Slenaken,Gulp,13.H.25
+188511.616,309012.18,22,20,Slenaken,Slenaken,Gulp,13.H.25
+189620.437,307386.242,23,5,Teuven,Teuven,Gulp,13.H.159
+189620.437,307386.242,23,20,Teuven,Teuven,Gulp,13.H.159

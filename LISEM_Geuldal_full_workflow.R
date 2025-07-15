@@ -21,6 +21,8 @@ source("sources/r_scripts/aux_functions.R")
 # Where possible automatize GIS data management to create base data layers
 # for the whole Geul catchment
 
+# !! All datetime data in the project is in GMT+1 !!
+
 ## 1.1 make base maps ----------------------------------------------------------
 # run the code from 'create_base_maps_lisem.R' this now includes a lot of 
 # manual work in QGIS - but it will result in tif files for all basemaps.
@@ -180,9 +182,15 @@ ev_dates <- c("2023-06-22")
 # mkae figures with combined rain and discharge
 graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
 
-# TODO when figure finished 'Q_measurements_Geuldal.R' to archive.
-
 ## 2.4 Simulation and figure ---------------------------------------------------
+# select a subcatchment en event from the LISEM_runs folder structure
+# manually execute the LISEM run
+# when finished this function below will make a graph of the discharge including
+# a Goodness-of-fit calculation
+# point_id = number of the subcatchment point
+# resolution = resolution of the simulation (5 or 20 m)
+# clean_up = do you want to empty the results directory after the figure is made - advise is YES!
+graph_lisem_simulation(point_id = 14, resolution = 20, clean_up = TRUE)
 
 
 
