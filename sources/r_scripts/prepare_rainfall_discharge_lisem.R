@@ -4,9 +4,6 @@
 #' this is a combination of an ID.map at both resolutions and an input table
 #' These tables can be used for all the subcatchments, so only on input table per 
 #' event is needed.
-#' 2. make easily readable discharge/waterheigt tables for the
-#'    calibration of OpenLISEM.
-#' 3. make a function to compare the observed and simulated discharge
 #' 
 # Initialization --------------------------------------------------------------
 library(hms)

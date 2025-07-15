@@ -240,6 +240,7 @@ Channel KinWave dt=60
 Use Channel Max V=1
 Channel Max V=10.0
 Channel 2D flow connect=0
+SWATRE precision=6
 Advanced Options=1
 
 [map names]
@@ -311,9 +312,10 @@ chanwidth=chanwidth.map
 chandepth=chandepth.map
 changrad=changrad.map
 chanside=chanwidth.map
+chandiam=chandiameter.map
+chancul=chanculvert.map
 chanman=chanman.map
 chanksat=chanksat.map
-chandiam=chandiameter.map
 qinpoints=QinPoints.map
 chancoh=chancoh_mc.map
 baseflow=baseflow.map
@@ -339,6 +341,7 @@ d90=d90.map
 [Mitigation]
 buffers=buffers.map
 gridretention=gridretention.map
+chanretention=chanretention.map
 sedretmax=sedretmax.map
 grasswidth=grasswid.map
 ksatgras=ksatgras.map

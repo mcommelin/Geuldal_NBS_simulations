@@ -9,7 +9,7 @@ library(tidyverse) # always load as last library!
 
 # load pcraster functions
 source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
+set_pcraster(env = "lisem", miniconda = "~/ProgramFiles/miniconda3")
 
 #set digits to 10 for detail in coordinates
 options(digits = 10)
@@ -72,12 +72,15 @@ for (i in seq_along(chanmaps)) {
 # Watervalderbeek (10), Eyserbeek (14)
 # Kelmis (18), Gulp (4)
 
-## 2.1 prepare subcatchments ----------------------------------------------------
+#! Always load the following data - adjust if needed for custom settings
 points_id <- c(10, 14) #, 18, 4)
 reso <- c(5, 20)
 
 # load subcatchment points csv file
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+
+
+## 2.1 prepare subcatchments ----------------------------------------------------
 
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
@@ -171,8 +174,6 @@ for (i in 1:x) {
   )
 }
 
-# TODO combine lisem minutes with timestamp
-
 # Based on this analysis we first will work with the event on 2023-06-22
 
 # points of subcatchments
@@ -189,9 +190,10 @@ graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
 # a Goodness-of-fit calculation
 # point_id = number of the subcatchment point
 # resolution = resolution of the simulation (5 or 20 m)
-# clean_up = do you want to empty the results directory after the figure is made - advise is YES!
-graph_lisem_simulation(point_id = 14, resolution = 20, clean_up = TRUE)
-
+# clean_up = do you want to empty the results directory after the figure
+#             is made - advise is TRUE!
+# the resulting figure is stored in ./images/simulations/
+graph_lisem_simulation(point_id = 14, resolution = 20, clean_up = F)
 
 
 # 3. Calibration ---------------------------------------------------------------
