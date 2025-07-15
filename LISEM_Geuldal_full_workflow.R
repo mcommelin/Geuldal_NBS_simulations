@@ -193,7 +193,9 @@ graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
 # clean_up = do you want to empty the results directory after the figure
 #             is made - advise is TRUE!
 # the resulting figure is stored in ./images/simulations/
-graph_lisem_simulation(point_id = 14, resolution = 20, clean_up = F)
+
+# WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
+graph_lisem_simulation(point_id = 10, resolution = 5, clean_up = F)
 
 
 # 3. Calibration ---------------------------------------------------------------
