@@ -17,7 +17,7 @@ library(sf)
 library(tidyverse)
 
 source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
+set_pcraster(env = "lisem", miniconda = "~/ProgramFiles/miniconda3")
 
 #set digits to 10 for detail in coordinates
 options(digits = 10)

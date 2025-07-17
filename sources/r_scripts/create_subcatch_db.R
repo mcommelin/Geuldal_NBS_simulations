@@ -1,19 +1,17 @@
 # make lisem input for sub catchment
 
 # Initialization --------------------------------------------------------------
-library(gdalUtilities)
-library(terra)
-library(tidyverse)
-
-source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
-
 # Function to create subcatchment base maps -----------------------------------
 base_maps_subcatchment <- function(
     cell_size = NULL,
     sub_catch_number = NULL # adjust the number to select the subcatchment you want
     ) {
-
+# resample with parallel processes to speed up
+ # library(foreach)
+#  library(doParallel)
+#  n_cores <- detectCores() # number of cores
+#  registerDoParallel(cores = n_cores - 2) # register the cluster
+  
   
 # load subcatchment points csv file
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
@@ -122,6 +120,10 @@ base_maps <- gsub("^catchment\\.map$", "", base_maps)
 base_maps <- base_maps[base_maps != ""]  # Remove empty lines
 
 # resample the base maps to the new mask.map
+# make parrallel
+
+#foreach (i = seq_along(base_maps)) %dopar% {
+# parallel breaks at the execution of resample - probably two resample executions cannot use the same mask.map.
 for (i in seq_along(base_maps)) {
   resample(
     clone = "mask.map",

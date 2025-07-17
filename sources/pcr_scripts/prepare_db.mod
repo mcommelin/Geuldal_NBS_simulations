@@ -118,6 +118,7 @@ lddchan = lddchan.map;
 chandiam = chandiameter.map;
 changrad = changrad.map; 
 chanman = chanman.map; 
+chanculvert = chanculvert.map;
 # chancoh = chancoh.map;
 ### channel infiltration ### (optional)
 # chanksat = chanksat.map;
@@ -200,6 +201,7 @@ report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20);
 report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
 report chanman=chanmask*scalar(Chanman); 
 report chandiam = if(culvert eq 1, chanwidth * 1000);
+report chanculvert = scalar(if(culvert eq 1, 2, 0)); # for now we assumme all culverts in channels are circular.
 # report chancoh=chanmask*scalar(Chancoh);
 ############################
 ### CHANNEL INFILTRATION ###

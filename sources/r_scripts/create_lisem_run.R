@@ -3,11 +3,6 @@
 # 1. run the pcraster script to make the input database
 
 # Initialization --------------------------------------------------------------
-library(tidyverse)
-
-source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
-
 #1. Fill runfile template ------------------------------------------------------
 
 make_runfile_lisem <- function(work_dir = NULL,
@@ -32,7 +27,7 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
                                 paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
     # rain files
-    rain_file <- paste0("rain_",str_remove_all(as.character(evdate), "-"), ".txt")
+    rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
     run_temp <- str_replace_all(run_temp, "<<rain_dir>>", 
                                 paste0(proj_wd, "/", rain_dir))
     run_temp <- str_replace_all(run_temp, "<<rain_file>>", 
@@ -73,7 +68,7 @@ make_runfile_lisem <- function(work_dir = NULL,
 
 
 #2. Run pcraster db script----------------------------------------------------
-points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+#points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
 # settings
 # <- 5 # fill resolution here
@@ -130,7 +125,7 @@ for (map in base_maps) {
               quote = FALSE)
   # same for soiltbl
   soiltbl <- read_csv("LISEM_data/tables/soil_tbl.csv") %>%
-    select(-class_en, -notes)
+    select(-desc, -notes)
   nms <- as.character(seq(0, ncol(soiltbl) - 1))
   names(soiltbl) <- nms
   #write space delimited soiltbl with colnumbers instead of names

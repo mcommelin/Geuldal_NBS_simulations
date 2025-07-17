@@ -1,12 +1,7 @@
 # function to convert a source raster into pcraster format
 
 # Initialisation --------------------------------------------------------------
-library(gdalUtilities)
-library(tidyverse)
-
-source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
-
+# done in the main workflow code
 
 # Source 2 base ---------------------------------------------------------------
 
