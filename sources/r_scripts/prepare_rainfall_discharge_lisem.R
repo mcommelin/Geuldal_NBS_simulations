@@ -361,7 +361,8 @@ qwb <- qwb %>%
   left_join(point_code, by = "code") %>%
   filter(!is.na(point)) %>%
   left_join(events, join_by(closest(timestamp >= ts_start))) %>%
-  dplyr::select(timestamp, ev_num, code, Q, point, use)
+  dplyr::select(timestamp, ev_num, code, Q, point, use) %>%
+  mutate(point = if_else(code == "13.Q.34", 4, point)) # add Azijnfabriek to Gulp catchment
 
 Q_pars <- Q_pars %>%
   filter(code != "WATE_WATHTE_001") %>%

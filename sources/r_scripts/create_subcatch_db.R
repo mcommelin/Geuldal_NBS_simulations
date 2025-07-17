@@ -7,10 +7,10 @@ base_maps_subcatchment <- function(
     sub_catch_number = NULL # adjust the number to select the subcatchment you want
     ) {
 # resample with parallel processes to speed up
-  library(foreach)
-  library(doParallel)
-  n_cores <- detectCores() # number of cores
-  registerDoParallel(cores = n_cores - 2) # register the cluster
+ # library(foreach)
+#  library(doParallel)
+#  n_cores <- detectCores() # number of cores
+#  registerDoParallel(cores = n_cores - 2) # register the cluster
   
   
 # load subcatchment points csv file
@@ -122,7 +122,9 @@ base_maps <- base_maps[base_maps != ""]  # Remove empty lines
 # resample the base maps to the new mask.map
 # make parrallel
 
-foreach (i = seq_along(base_maps)) %dopar% {
+#foreach (i = seq_along(base_maps)) %dopar% {
+# parallel breaks at the execution of resample - probably two resample executions cannot use the same mask.map.
+for (i in seq_along(base_maps)) {
   resample(
     clone = "mask.map",
     map_in = paste0("base_", base_maps[i]),
