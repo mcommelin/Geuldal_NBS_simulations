@@ -13,3 +13,10 @@ This work is licensed under a
 [cc-by]: http://creativecommons.org/licenses/by/4.0/
 [cc-by-image]: https://i.creativecommons.org/l/by/4.0/88x31.png
 [cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
+
+# Preparing and running OpenLISEM
+The repository only contains code and some tables with parameters and settings. The timeseries and map data are not yet public available.
+
+The main workflow can be followed with the R script: LISEM_Geuldal_full_workflow.R
+
+At the moment the workflow is finished untill the setup and evaluation of sub catchments for testing.
