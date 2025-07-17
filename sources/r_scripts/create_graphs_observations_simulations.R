@@ -12,9 +12,9 @@ subcatch_rain_compare <- function(wdir = NULL,
   # pcrcalc(options = "ID.map=ID.map*catchment.map", work_dir = wdir)
   
   # map2asc
-  # map2asc(map_in = "ID.map",
-  #         map_out = "rain_ID.asc",
-  #         sub_dir = wdir)
+  map2asc(map_in = "ID.map",
+          map_out = "rain_ID.asc",
+          sub_dir = wdir)
   # find unique grid id's
   rainIDs <- raster(paste0(wdir, "rain_ID.asc"))
   id <- as.vector(rainIDs)
@@ -97,6 +97,11 @@ graph_subcatch_qp <- function(points_id = NULL,
       filter(cell_size == 5)
     subcatch_name <- subcatch$subcatch_name
     wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
+    
+    # map2asc
+    map2asc(map_in = "ID.map",
+            map_out = "rain_ID.asc",
+            sub_dir = wdir)
     
     # load rain id's from discharge
     rainIDs <- raster(paste0(wdir, "rain_ID.asc"))
@@ -217,8 +222,9 @@ graph_lisem_simulation <- function(
       mutate(mins = round(Time * 24 * 60, digits = 5)) %>%
       distinct() #
     if (i != 1) {
+      n <- length(hy_names)
       hydr_list[[i]] <- hydr_list[[i]] %>%
-        select(hy_names[5:6])
+        select(hy_names[n-1:n])
     }
   }
   all_hy <- bind_cols(hydr_list) %>%
@@ -242,6 +248,11 @@ graph_lisem_simulation <- function(
   
   wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
     
+  # map2asc
+  map2asc(map_in = "ID.map",
+         map_out = "rain_ID.asc",
+         sub_dir = wdir)
+  
     # load rain id's from discharge
     rainIDs <- raster(paste0(wdir, "rain_ID.asc"))
     id <- as.vector(rainIDs)
@@ -299,8 +310,8 @@ graph_lisem_simulation <- function(
      kges[i] <- round(KGE(dat$Qsim, dat$Q), digits = 2)
    }
    
-   nse <- mean(nses, na.rm = TRUE)
-   kge <- mean(kges, na.rm = TRUE)
+   nse <- round(mean(nses, na.rm = TRUE), digits = 2)
+   kge <- round(mean(kges, na.rm = TRUE), digits = 2)
    
    
     # plot

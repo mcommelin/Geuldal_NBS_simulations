@@ -2,7 +2,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 178376.67,323010.425,1,20,juliana kanaal,outlet Geul bij Julianakanaal,Geul,
 189258.8,318193.66,2,20,scheumerbeek,Ransdalerveld,Ransdalerveld,
 189912.65,316792.76,3,20,lange gracht,Vrakelbergerweg,Vrakelbergerweg,
-190842.35,314531.07,4,20,Gulp,Instroom Gulp in de Geul,x,
+190842.35,314531.07,4,20,Gulp,Instroom Gulp in de Geul,Gulp,
 191296,314670.96,5,20,Eyserbeek,Instroom Eyserbeek in de Geul,x,
 192016.15,313430.11,6,20,Selzerbeek,Instroom Selzerbeek in de Geul,x,
 192577.93,311792.21,7,20,Mechelsebeek,Instroom Mechelsebeek in de Geul,x,
@@ -14,7 +14,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 178376.67,323010.425,1,5,juliana kanaal,outlet Geul bij Julianakanaal,Geul,
 189371.09,318249.55,2,5,scheumerbeek,Ransdalerveld,Ransdalerveld,
 190180.52,317048.11,3,5,lange gracht,Vrakelbergerweg,Vrakelbergerweg,
-190891.39,314593.5,4,5,Gulp,Instroom Gulp in de Geul,x,
+190891.39,314593.5,4,5,Gulp,Instroom Gulp in de Geul,Gulp,
 191225.95,314642.93,5,5,Eyserbeek,Instroom Eyserbeek in de Geul,x,
 192750.55,313604.28,6,5,Selzerbeek,Instroom Selzerbeek in de Geul,x,
 192526.68,311823.57,7,5,Mechelsebeek,Instroom Mechelsebeek in de Geul,x,
@@ -25,7 +25,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 198011.358,310942.38,12,5,Selzerbeek,"Selzerbeek, bij Lemiers",Lemiers,12.H.228
 190538.56,313912.57,13,20,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp,13.Q.34
 190546.532,313922.935,13,5,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp,13.Q.34
-193199.18,315191.48,14,20,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
+193214.33,315190.35,14,20,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
 193204.77,315192.64,14,5,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
 192665.616,313550.405,15,20,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij,12.Q.31
 192666.26,313552.645,15,5,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij,12.Q.31

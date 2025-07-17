@@ -125,7 +125,7 @@ for (map in base_maps) {
               quote = FALSE)
   # same for soiltbl
   soiltbl <- read_csv("LISEM_data/tables/soil_tbl.csv") %>%
-    select(-class_en, -notes)
+    select(-desc, -notes)
   nms <- as.character(seq(0, ncol(soiltbl) - 1))
   names(soiltbl) <- nms
   #write space delimited soiltbl with colnumbers instead of names

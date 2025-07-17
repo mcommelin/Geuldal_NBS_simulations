@@ -73,7 +73,7 @@ for (i in seq_along(chanmaps)) {
 # Kelmis (18), Gulp (4)
 
 #! Always load the following data - adjust if needed for custom settings
-points_id <- c(10, 14) #, 18, 4)
+points_id <- c(10, 14) #, 18, 4, 12)
 reso <- c(5, 20)
 
 # load subcatchment points csv file
@@ -195,7 +195,7 @@ graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
 # the resulting figure is stored in ./images/simulations/
 
 # WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
-graph_lisem_simulation(point_id = 10, resolution = 5, clean_up = F)
+graph_lisem_simulation(point_id = 14, resolution = 20, clean_up = F)
 
 
 # 3. Calibration ---------------------------------------------------------------

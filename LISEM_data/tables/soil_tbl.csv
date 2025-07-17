@@ -1,4 +1,4 @@
-soil_num,Text Desc,stone_frac,coh,aggr_stab,d50,ksat,thetas,soildep,notes
+soil_num,desc,stone_frac,coh,aggr_stab,d50,ksat,thetas,soildep,notes
 0,Zavel zwaar,0,1,14,60,20,0.43,1500,
 1,Leem (Stenig),0.3,1,14,50,12,0.5,1500,
 2,Veen,0,1,14,50,2,0.65,1500,
