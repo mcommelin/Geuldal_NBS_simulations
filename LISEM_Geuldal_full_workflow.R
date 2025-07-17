@@ -70,10 +70,10 @@ for (i in seq_along(chanmaps)) {
 # we use subcatchments to test the model setup and perform some pre-calibration
 # the used subcatchments are (ID number points table):
 # Watervalderbeek (10), Eyserbeek (14)
-# Kelmis (18), Gulp (4)
+# Kelmis (18), Gulp (4), Lemiers (12)
 
 #! Always load the following data - adjust if needed for custom settings
-points_id <- c(10, 14) #, 18, 4, 12)
+points_id <- c(4, 12, 18) #, 18, 4, 12)
 reso <- c(5, 20)
 
 # load subcatchment points csv file
@@ -103,6 +103,8 @@ for (i in seq_along(points_id)) {
 # TODO adjust runfile template -> make sure it is up to date with latest settings!
 # TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
+
+# TODO make parallel
 
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
@@ -193,9 +195,9 @@ graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
 # clean_up = do you want to empty the results directory after the figure
 #             is made - advise is TRUE!
 # the resulting figure is stored in ./images/simulations/
-
+source("sources/r_scripts/create_graphs_observations_simulations.R")
 # WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
-graph_lisem_simulation(point_id = 14, resolution = 20, clean_up = F)
+graph_lisem_simulation(point_id = 18, resolution = 20, clean_up = T)
 
 
 # 3. Calibration ---------------------------------------------------------------

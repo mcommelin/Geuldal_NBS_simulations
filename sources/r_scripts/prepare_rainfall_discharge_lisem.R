@@ -246,8 +246,6 @@ for (k in seq_along(events$ts_start)) {
 
 ## 2.1 WH to Q -----------------------------------------------------------------
 
-# TODO adjust zero waterlevels based on waterboard data
-
 ### Load data ------------------------------
 # load selected events  
 events <- read_csv("sources/selected_events.csv") %>%
@@ -352,16 +350,22 @@ qwb <- map2_dfr(events$ts_start, events$ts_end,
 
 #select qwb data for points that are relevant.
 # TODO remove hardcoding of Q points!
+# select all qwb points that align with an outpoint for LISEM modelling
+points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+
+point_code <- points %>%
+  distinct(point, code) %>%
+  filter(!is.na(code))
+
 qwb <- qwb %>%
-  filter(code %in% c("11.Q.32", "13.Q.34")) %>%
-  mutate(point = if_else(code == "11.Q.32", 14, 4)) %>%
+  left_join(point_code, by = "code") %>%
+  filter(!is.na(point)) %>%
   left_join(events, join_by(closest(timestamp >= ts_start))) %>%
   dplyr::select(timestamp, ev_num, code, Q, point, use)
 
-# select watervalderbeek and eyserbeek for now.
 Q_pars <- Q_pars %>%
-  filter(river %in% c("Watervalderbeek", "Eyserbeek", "Gulp")) %>%
-  filter(code != "WATE_WATHTE_001") # remove the buffer data because we dont have a good calculation for now
+  filter(code != "WATE_WATHTE_001") %>%
+  filter(code != "GEUL_WATHTE_201") # remove the buffer data because we dont have a good calculation for now
 
 #adjust the cross-section depth to elevation
 cs <- cs %>%

@@ -6,7 +6,12 @@ base_maps_subcatchment <- function(
     cell_size = NULL,
     sub_catch_number = NULL # adjust the number to select the subcatchment you want
     ) {
-
+# resample with parallel processes to speed up
+  library(foreach)
+  library(doParallel)
+  n_cores <- detectCores() # number of cores
+  registerDoParallel(cores = n_cores - 2) # register the cluster
+  
   
 # load subcatchment points csv file
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
@@ -115,7 +120,9 @@ base_maps <- gsub("^catchment\\.map$", "", base_maps)
 base_maps <- base_maps[base_maps != ""]  # Remove empty lines
 
 # resample the base maps to the new mask.map
-for (i in seq_along(base_maps)) {
+# make parrallel
+
+foreach (i = seq_along(base_maps)) %dopar% {
   resample(
     clone = "mask.map",
     map_in = paste0("base_", base_maps[i]),

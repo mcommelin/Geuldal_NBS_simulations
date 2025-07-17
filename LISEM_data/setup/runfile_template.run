@@ -140,7 +140,7 @@ Include raindrum storage=0
 Add buildings to DEM=1
 Add building fraction=0.30
 Add building height=1.00
-Hard Surfaces=0
+Hard Surfaces=1
 Include road system=1
 Include storm drains=1
 Storm drain shape=1
@@ -225,7 +225,7 @@ OutSedSS=0
 OutSedBL=0
 
 [Advanced]
-Nr user Cores=0
+Nr user Cores=8
 Flooding SWOF Reconstruction=3
 Flooding SWOF flux limiter=1
 Correct MB with WH=0
@@ -329,7 +329,7 @@ road=roadwidth.map
 housecover=buildings.map
 roofstore=zero.map
 drumstore=zero.map
-hardsurf=hardsurf.map
+hardsurf=hard_surface.map
 
 [Erosion]
 coh=coh.map
