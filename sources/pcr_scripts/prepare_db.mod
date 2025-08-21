@@ -150,7 +150,7 @@ report id = if(boolean(catchment), id);
 ### BASE MAPS ### 
 #################
 report grad = max(sin(atan(slope(dem))),0.001); 
-report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
+#report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
 report outlet = pit(Ldd);
 ##################### 
 ### LAND USE MAPS ### 

@@ -207,6 +207,25 @@ chandim <- left_join(chanshape, shreve_lookup,
 
 st_write(chandim, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
 
+# for baseflow make a new layer that only containe channel sections with baseflow
+chan_bf <- chandim %>%
+  filter(baseflow == 1)
+st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channels_baseflow", delete_layer = TRUE)
+
+# export the channels_baseflow layer with:
+# rasterize (GDAL), 5 m georeferenced units with as extent the mask 5m.
+# channels_baseflow.tif : select field = baseflow
+
+# export the following raster .tif from the channels layer with:
+# rasterize (GDAL), 5 m georeferenced units with as extent the mask 5m.
+# channels_bool.tif : 1 if channel, set fixed burn-in value = 1 
+# channels_depth.tif : select field = depth
+# channels_width.tif : select field = width
+# culverts_bool.tif : select field = culvert
+
+
+
+
 # 4. stormdrains ---------------------------------------------------------------
 
 #calculate drain diameter based on the Strahler order of the 5 m resolution
