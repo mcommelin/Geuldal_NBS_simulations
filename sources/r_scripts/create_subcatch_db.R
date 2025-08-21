@@ -133,6 +133,14 @@ for (i in seq_along(base_maps)) {
   )
 }
 
+# run pcraster script to create base maps for subcatch
+pcr_script(
+  script = "base_maps_subcatch.mod",
+  script_dir = "sources/pcr_scripts",
+  work_dir = sub_catch_dir
+)
+
+
 # remove all intermediate maps and files
 file.remove(
   list.files(

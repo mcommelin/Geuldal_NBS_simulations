@@ -5,7 +5,12 @@ library(gdalUtilities)
 library(terra)
 library(raster)
 library(cowplot)
+library(conflicted)
 library(tidyverse) # always load as last library!
+
+# make global choices for conflicting functions
+conflict_prefer("filter", "dplyr")
+conflict_prefer("select", "dplyr")
 
 # load pcraster functions
 source("sources/r_scripts/pcrasteR.R")
@@ -27,6 +32,10 @@ source("sources/r_scripts/aux_functions.R")
 # run the code from 'create_base_maps_lisem.R' this now includes a lot of 
 # manual work in QGIS - but it will result in tif files for all basemaps.
 
+#Notes on manual adjustments!
+
+
+
 ## 1.2 cathment delineation ----------------------------------------------------
 # catchment delineation based on DEM and the local drain direction on 20
 # meter resolution. 
@@ -37,7 +46,7 @@ source("sources/r_scripts/aux_functions.R")
 # 4. resample based on the 5 and 20m mask.map to the correct extent
 # 5. run the pcr_script 'base_maps.mod' to make the ldd.map
 
-# Result: based on this dem.map and catchment.map are made for 5 and 20 m.
+# Result: based on this dem.map and catchment.map and ldd.map are made for 5 and 20 m.
 
 ## 1.3 preparation of precipitation and discharge data -------------------------
 # with the script 'prepare_rainfall_discharge_lisem.R' the radar precipitation
@@ -45,7 +54,7 @@ source("sources/r_scripts/aux_functions.R")
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
-## 1.4 convert of PCRaster maps ------------------------------------------------
+## 1.4 convert to PCRaster maps ------------------------------------------------
 # convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
 
 # load the list of base maps.
@@ -55,8 +64,8 @@ base_maps <- readLines("sources/base_maps.txt")
 source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
 
 chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
-            "culverts_bool.tif", "build_up_area_5m.tif")
-outmaps <- c("chanmask", "chandepth", "chanwidth", "culvertmask", "bua")
+            "culverts_bool.tif", "build_up_area_5m.tif", "channels_baseflow.tif")
+outmaps <- c("chanmask", "chandepth", "chanwidth", "culvertmask", "bua", "baseflow")
 
 for (i in seq_along(chanmaps)) {
   source_to_base_maps(
@@ -73,12 +82,26 @@ for (i in seq_along(chanmaps)) {
 # Kelmis (18), Gulp (4), Lemiers (12)
 
 #! Always load the following data - adjust if needed for custom settings
-points_id <- c(12, 18) #, 18, 4, 12)
+points_id <- c(10, 14) #, 18, 4, 12)
 reso <- c(5, 20)
 
 # load subcatchment points csv file
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
+# Additional preparation of baseflow
+#1. If not down run the function from 2.2 for the full Geul_catchment
+#create_lisem_run(20, 1)
+
+# copy baseflow.map to full run
+file.copy(from = "LISEM_data/Geul_5m/maps/baseflow.map", to = "LISEM_runs/Geul_5m/maps", overwrite = T)
+file.copy(from = "LISEM_data/Geul_20m/maps/baseflow.map", to = "LISEM_runs/Geul_20m/maps", overwrite = T)
+
+# run the pcrscript to prepare the baseflow maps 'sources/pcr_scripts/baseflow_calculations.mod'
+# update the runfile, set the option: stationary baseflow as map = 1 to 0.
+# run the model until the first calculations start.
+# copy the resulting baseinflow.map from the results folder to 'LISEM_data/Geul_xm/maps'
+
+# After these steps rebuild the desired subcatchments and LISEM runs
 
 ## 2.1 prepare subcatchments ----------------------------------------------------
 
