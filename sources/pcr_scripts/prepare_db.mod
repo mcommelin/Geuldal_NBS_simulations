@@ -129,11 +129,11 @@ initial
 ####################
 
 # remove data outside catchment area
-report dem = if(boolean(catchment), dem);
-report soil = if(boolean(catchment), soil);
-report lu = if(boolean(catchment), lu); 
-report buildings = if(boolean(catchment), buildings);
-report outpoint = if(boolean(catchment), outpoint);
+#report dem = if(boolean(catchment), dem);
+#report soil = if(boolean(catchment), soil);
+#report lu = if(boolean(catchment), lu); 
+#report buildings = if(boolean(catchment), buildings);
+#report outpoint = if(boolean(catchment), outpoint);
 area = dem * 0 + 1;
 report one = dem * 0 + 1; # map with value 1
 report zero = dem * 0; # map with value 0

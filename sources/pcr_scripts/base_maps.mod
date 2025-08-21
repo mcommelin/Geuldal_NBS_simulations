@@ -1,6 +1,6 @@
 #! --matrixtable --lddin --clone mask.map
 
-# PCRASTER script to build a LISEM input database 
+# PCRASTER script to build a LISEM ldd and dem for the whole Geul
 # made by Meindert Commelin 21/08/2025            
 ###################################################
 
