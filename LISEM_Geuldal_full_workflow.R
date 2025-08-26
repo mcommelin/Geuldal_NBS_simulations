@@ -114,7 +114,6 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i]
     )
-    
   }
 }
 
