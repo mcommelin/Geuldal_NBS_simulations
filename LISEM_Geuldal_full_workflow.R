@@ -7,6 +7,7 @@ library(raster)
 library(cowplot)
 library(conflicted)
 library(tidyverse) # always load as last library!
+library(sensobol)
 
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
@@ -19,7 +20,7 @@ set_pcraster(env = "lisem", miniconda = "~/ProgramFiles/miniconda3")
 #set digits to 10 for detail in coordinates
 options(digits = 10)
 
-# load the functions coded for this project
+# load helper functions coded for this project
 source("sources/r_scripts/aux_functions.R")
 
 # 1. Data preparation --------------
@@ -221,6 +222,28 @@ graph_lisem_simulation(point_id = 4, resolution = 20, clean_up = F)
 
 
 # 3. Calibration ---------------------------------------------------------------
+# load functions to run lisem many times for calibration etc.
+source("sources/r_scripts/lisem_auto_functions.R")
+
+## 3.1 First explorative runs --------------------------------------------------
+
+# process the selected calibration parameters to prepare for random sampling
+input_parameters_OL()
+
+# sample parameters for QRN run
+set.seed(4571)  #random seed, to be able to reproduce sampling
+
+# to draw the sample, we use the 'sensobol' package. For initial exploration 
+# runs we only need the 'A' matrix and we will draw 64 parameter sets.
+sample_QRN_sim(file = "LISEM_data/setup/vars_openlisem.csv", n = 128, 
+               matrix = "A", 
+               out_file = "LISEM_data/params/sim_runoff_params.csv")
+
+# further steps of adjustment if needed.
+
+# prepare runs based on selected parameters and create script to run on hpc
+# this is all done in th the script auto_runs_input_lisem.r
+
 
 # 4. Baseline simulations ------------------------------------------------------
 

@@ -20,4 +20,4 @@ fieldwork/*
 *.xlsx
 *.map
 *.tbl
-
+LISEM_data/params/*
