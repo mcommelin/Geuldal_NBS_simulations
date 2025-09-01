@@ -5,8 +5,9 @@ library(gdalUtilities)
 library(terra)
 library(raster)
 library(cowplot)
+library(sf)
 library(conflicted)
-library(tidyverse) # always load as last library!
+library(tidyverse)
 library(sensobol)
 
 # make global choices for conflicting functions
@@ -94,8 +95,8 @@ points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 #create_lisem_run(20, 1)
 
 # copy baseflow.map to full run
-file.copy(from = "LISEM_data/Geul_5m/maps/baseflow.map", to = "LISEM_runs/Geul_5m/maps", overwrite = T)
-file.copy(from = "LISEM_data/Geul_20m/maps/baseflow.map", to = "LISEM_runs/Geul_20m/maps", overwrite = T)
+#file.copy(from = "LISEM_data/Geul_5m/maps/baseflow.map", to = "LISEM_runs/Geul_5m/maps", overwrite = T)
+#file.copy(from = "LISEM_data/Geul_20m/maps/baseflow.map", to = "LISEM_runs/Geul_20m/maps", overwrite = T)
 
 # run the pcrscript to prepare the baseflow maps 'sources/pcr_scripts/baseflow_calculations.mod'
 # update the runfile, set the option: stationary baseflow as map = 1 to 0.
