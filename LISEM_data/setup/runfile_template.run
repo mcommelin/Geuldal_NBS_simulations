@@ -82,18 +82,18 @@ Litter interception storage=1.0
 
 [Infiltration]
 Include Infiltration=1
-Infil Method=3
+Infil Method=1
 Use OM correction=0
 Use Density correction=0
 Include compacted=0
 Include crusts=0
 Dynamic crusting=0
 Impermeable sublayer=1
-Use one matrix potential=0
+Use one matrix potential=1
 Initial matrix potential=-100
 Nr input layers=1
 Psi user input=0
-Swatre profile file=profile.inp
+Swatre profile file=<<swatre_inp>>
 Swatre table directory=<<swatre_dir>>
 SWATRE internal minimum timestep=1
 Swatre output=0
@@ -276,7 +276,7 @@ compfrc=compfrc.map
 
 [Infiltration]
 [Swatre]
-profmap=profile.map
+profmap=soils_swatre.map
 profcrst=profcrst.map
 profcomp=profcomp.map
 profgras=profgras.map

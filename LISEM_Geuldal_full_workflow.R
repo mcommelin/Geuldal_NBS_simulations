@@ -56,7 +56,19 @@ source("sources/r_scripts/aux_functions.R")
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
-## 1.4 convert to PCRaster maps ------------------------------------------------
+## 1.4 make SWATRE soil tables -------------------------------------------------
+
+# for the simulations of infiltration we use the SWATRE mobel inside OpenLISEM
+# this requires the van Genuchten parameters for differents soil layers for
+# each identified soil and landuse combination. 
+# To estimate these parameters from variables we know a modelling / equation
+# workflow is used.
+# Based on soil texture, organic matter and management we calculate the input
+# for SWATRE by first applying Saxton&Rawls 2006 equations and than the Rosetta
+# (v3) model.
+# These steps are done in the following script: '/sources/r_script/swatre_input.R'
+
+## 1.5 convert to PCRaster maps ------------------------------------------------
 # convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
 
 # load the list of base maps.

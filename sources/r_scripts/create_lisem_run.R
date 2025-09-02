@@ -8,6 +8,7 @@
 make_runfile_lisem <- function(work_dir = NULL,
                                rain_dir = NULL,
                                infil_dir = NULL,
+                               inp_file = NULL,
                                evdate = NULL,
                                dt = 5,
                                start_time = 0,
@@ -34,6 +35,9 @@ make_runfile_lisem <- function(work_dir = NULL,
                                 rain_file)
     
     # infiltration files
+    run_temp <- str_replace(run_temp, "<<swatre_inp>>",
+                            paste0(proj_wd, "/", inp_file))
+    
     run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
                                 paste0(proj_wd, "/", infil_dir))
     
@@ -158,7 +162,8 @@ for (map in base_maps) {
   make_runfile_lisem(
     work_dir = run_dir,
     rain_dir = "LISEM_data/rain/",
-    infil_dir = "LISEM_data/",
+    infil_dir = "LISEM_data/swatre/tables/",
+    inp_file = "LISEM_data/swatre/profile.inp",
     evdate = date(events$ts_start[i]),
     start_time = 0,
     end_time = events$event_length[i],
