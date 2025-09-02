@@ -5,8 +5,10 @@ library(gdalUtilities)
 library(terra)
 library(raster)
 library(cowplot)
+library(sf)
 library(conflicted)
-library(tidyverse) # always load as last library!
+library(tidyverse)
+library(sensobol)
 
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
@@ -19,7 +21,7 @@ set_pcraster(env = "lisem", miniconda = "~/ProgramFiles/miniconda3")
 #set digits to 10 for detail in coordinates
 options(digits = 10)
 
-# load the functions coded for this project
+# load helper functions coded for this project
 source("sources/r_scripts/aux_functions.R")
 
 # 1. Data preparation --------------
@@ -54,7 +56,19 @@ source("sources/r_scripts/aux_functions.R")
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
-## 1.4 convert to PCRaster maps ------------------------------------------------
+## 1.4 make SWATRE soil tables -------------------------------------------------
+
+# for the simulations of infiltration we use the SWATRE mobel inside OpenLISEM
+# this requires the van Genuchten parameters for differents soil layers for
+# each identified soil and landuse combination. 
+# To estimate these parameters from variables we know a modelling / equation
+# workflow is used.
+# Based on soil texture, organic matter and management we calculate the input
+# for SWATRE by first applying Saxton&Rawls 2006 equations and than the Rosetta
+# (v3) model.
+# These steps are done in the following script: '/sources/r_script/swatre_input.R'
+
+## 1.5 convert to PCRaster maps ------------------------------------------------
 # convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
 
 # load the list of base maps.
@@ -93,8 +107,8 @@ points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 #create_lisem_run(20, 1)
 
 # copy baseflow.map to full run
-file.copy(from = "LISEM_data/Geul_5m/maps/baseflow.map", to = "LISEM_runs/Geul_5m/maps", overwrite = T)
-file.copy(from = "LISEM_data/Geul_20m/maps/baseflow.map", to = "LISEM_runs/Geul_20m/maps", overwrite = T)
+#file.copy(from = "LISEM_data/Geul_5m/maps/baseflow.map", to = "LISEM_runs/Geul_5m/maps", overwrite = T)
+#file.copy(from = "LISEM_data/Geul_20m/maps/baseflow.map", to = "LISEM_runs/Geul_20m/maps", overwrite = T)
 
 # run the pcrscript to prepare the baseflow maps 'sources/pcr_scripts/baseflow_calculations.mod'
 # update the runfile, set the option: stationary baseflow as map = 1 to 0.
@@ -221,6 +235,28 @@ graph_lisem_simulation(point_id = 4, resolution = 20, clean_up = F)
 
 
 # 3. Calibration ---------------------------------------------------------------
+# load functions to run lisem many times for calibration etc.
+source("sources/r_scripts/lisem_auto_functions.R")
+
+## 3.1 First explorative runs --------------------------------------------------
+
+# process the selected calibration parameters to prepare for random sampling
+input_parameters_OL()
+
+# sample parameters for QRN run
+set.seed(4571)  #random seed, to be able to reproduce sampling
+
+# to draw the sample, we use the 'sensobol' package. For initial exploration 
+# runs we only need the 'A' matrix and we will draw 64 parameter sets.
+sample_QRN_sim(file = "LISEM_data/setup/vars_openlisem.csv", n = 128, 
+               matrix = "A", 
+               out_file = "LISEM_data/params/sim_runoff_params.csv")
+
+# further steps of adjustment if needed.
+
+# prepare runs based on selected parameters and create script to run on hpc
+# this is all done in th the script auto_runs_input_lisem.r
+
 
 # 4. Baseline simulations ------------------------------------------------------
 

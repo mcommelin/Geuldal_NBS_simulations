@@ -16,7 +16,8 @@ catchment = catchment.map;
 
 # input vars
 ntile = 0.012; # the mannings n of storm drains.
-diamtile = 0.7; # initial estimate storm drains.
+tilestore = 7.0; # mm of runoff on bua to fit in storm drains.
+pi = 3.141592;
 
 #output maps
 tiledepth = tiledepth.map;      # for stormdrains = 0, for soil drains > 0.
@@ -27,11 +28,8 @@ tileman = tileman.map;          # mannings n of the tile drains.
 tileaccu = tileaccu.map;        # upstream accumulation to find drainage length
 tilemask = tilemask.map;
 vol_sd = vol_sd.map;
-mm_sd = mm_sd.map;
 
 initial
-
-bua = if(boolean(catchment), bua);
 
 # simplify the network by removing very small branches.
 tilemask = if(bua == 1 and roads > 0, 1);
@@ -44,15 +42,16 @@ tilemask = if(accuflux(lddtile, 1) > 2, 1);
 #tilemask = if(accuflux(lddtile, 1) > 1, 1);
 report lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
 
+# calculate diameter of drains based on required storage
+bua = if(boolean(catchment), bua);
+area_bua = areaarea(nominal(bua)); #m2
+tile_num = maptotal(tilemask); # number of cells with storm drain
+vol_sd = (area_bua / tile_num) * tilestore; # liter storage per cell
+
+diamtile = 2 * sqrt((vol_sd / 1000) / (pi * celllength())); 
+
 report tiledepth = tilemask * 0;
 report tilegrad = sin(atan(slope(tilemask * dem)));
 report tileman = tilemask * ntile;
 report tileaccu = accuflux(lddtile, 1);
 report tilediam = tilemask * diamtile;
-
-# TODO: calculate storage capacity of the storm drian network
-# should be around 7 mm for the BUA.
-#vol_stormdrain / surface_area_BUA = 7mm
-# vol_stormdrain = length(storm_drain) * (pi * r^2) 
-report vol_sd=celllength()*3.1415*(tilediam/2) ** 2;
-report mm_sd = maptotal(vol_sd) / areaarea(nominal(bua));
