@@ -21,3 +21,4 @@ fieldwork/*
 *.map
 *.tbl
 LISEM_data/params/*
+*.inp
