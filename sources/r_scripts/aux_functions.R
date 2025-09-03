@@ -297,3 +297,14 @@ ini_conc_OLP <- function(depths = NULL, concs = NULL, zs = 20, zm = NULL) {
   concs <- tibble(zm_c = zm_c, zs_c = zs_c)
   return(concs)
 }
+
+# theta from h
+theta_genuchten <- function(theta_r = NULL,
+                            theta_s = NULL,
+                            alpha = NULL,
+                            h = NULL,
+                            n = NULL) {
+  m = 1 - 1/n
+  t = theta_r + (theta_s - theta_r)/(1 + abs(alpha * h)^ n)^m
+  return(t)
+}
