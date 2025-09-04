@@ -66,7 +66,9 @@ source("sources/r_scripts/aux_functions.R")
 # Based on soil texture, organic matter and management we calculate the input
 # for SWATRE by first applying Saxton&Rawls 2006 equations and than the Rosetta
 # (v3) model.
-# These steps are done in the following script: '/sources/r_script/swatre_input.R'
+source("sources/r_scripts/swatre_input.R")
+soil_landuse_to_swatre(file = "LISEM_data/swatre/UBC_texture.csv",
+                       swatre_out = "LISEM_data/calibration/base_swatre_params.csv")
 
 ## 1.5 convert to PCRaster maps ------------------------------------------------
 # convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
@@ -220,7 +222,7 @@ ev_dates <- c("2023-06-22")
 graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
 
 ## 2.4 Simulation and figure ---------------------------------------------------
-# select a subcatchment en event from the LISEM_runs folder structure
+# select a subcatchment and event from the LISEM_runs folder structure
 # manually execute the LISEM run
 # when finished this function below will make a graph of the discharge including
 # a Goodness-of-fit calculation
@@ -235,10 +237,28 @@ graph_lisem_simulation(point_id = 4, resolution = 20, clean_up = F)
 
 
 # 3. Calibration ---------------------------------------------------------------
+
+## 3.1 manual calibration ------------------------------------------------------
+
+# adjust infiltration parameters for calibration. 
+# copy the file "LISEM_data/calibration/base_params_swatre.csv 
+# give a new name and adjust thevalues for specific ubc codes.
+# initial parameters of interest are npar, alpha and ksat.
+# when save run the following function to update the input
+# WARNING this input effects all lisem runs of the Geulcatchment!!
+# you can always go back te base settings by loading the base file in the function.
+make_swatre_tables(cal_file = "base_swatre_params.csv")
+
+# run your simulation and make evaluation figures:
+# WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
+graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T)
+
+
+
 # load functions to run lisem many times for calibration etc.
 source("sources/r_scripts/lisem_auto_functions.R")
 
-## 3.1 First explorative runs --------------------------------------------------
+## 3.2 First explorative runs --------------------------------------------------
 
 # process the selected calibration parameters to prepare for random sampling
 input_parameters_OL()

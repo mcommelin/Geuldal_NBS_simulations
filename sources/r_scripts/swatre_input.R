@@ -6,9 +6,11 @@
 library(rosettaPTF)
 
 # Calculate params -------------------------------------------------------------
-
+soil_landuse_to_swatre <- function(file = "",
+                                   swatre_out = "")
+{
 #load the UBC codes including texture, gravel, OM
-ubc_in <- read_csv("LISEM_data/swatre/UBC_texture.csv")
+ubc_in <- read_csv(file)
 
 ## 1.2 UBS to S&R --------------------------------------------------------------
 
@@ -41,20 +43,33 @@ soildat <- sr_params %>%
 # these results also contain uncertainty, which we can use for calibration later.  
 rosetta_params <- run_rosetta(soildat)
 
-soil_params <- bind_cols(sr_params, rosetta_params)
+soil_params <- bind_cols(sr_params, rosetta_params) %>%
+  mutate_at(vars(matches("^log10")), ~ 10^.) %>% # recalculate all log10 values
+  rename_with(~ str_remove(., "^log10_")) # update names
+
+# write the soil_params to LISEM_data/calibration
+# here we can adjust many parameters for each variable during testing
+write_csv(soil_params, swatre_out)
+}
 ## 1.4 theta - h - k table ------------------------------------------------
+
+make_swatre_tables <- function(cal_file = ""
+                               ) 
+{
+
+soil_params <- read_csv(paste0("LISEM_data/calibration/", cal_file))
 
 # for loop making all tables
 for (i in seq_along(soil_params$UBC)) {
 ubc_tbl_n <- soil_params$UBC[i]
 
 # get profile specific params
-alpha <- 10^(soil_params$log10_alpha_mean[i])
+alpha <- soil_params$alpha_mean[i]
 theta_r <- soil_params$theta_r_mean[i]
 theta_s <- soil_params$theta_s_mean[i]
-n <- 10^(soil_params$log10_npar_mean[i])
+n <- soil_params$npar_mean[i]
 m <- 1 - (1/n)
-ks <- 10^(soil_params$log10_Ksat_mean[i])
+ks <- soil_params$Ksat_mean[i]
 
 
 # theta values between theta_r and theta_s
@@ -109,3 +124,4 @@ write(string, file = file, append = T)
 # print sequence: tble name, bottom depth
 
 }
+} # end function make_swatre_tables()

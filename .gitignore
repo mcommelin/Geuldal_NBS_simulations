@@ -13,6 +13,7 @@ documenten_en_literatuur/*
 LISEM_data/Geul_*
 LISEM_data/subcatchments/*
 LISEM_data/rain/*
+LISEM_data/calibration/*
 images/*
 fieldwork/*
 *.html
