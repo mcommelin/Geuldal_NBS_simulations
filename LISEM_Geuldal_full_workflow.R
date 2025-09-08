@@ -98,7 +98,7 @@ for (i in seq_along(chanmaps)) {
 # Kelmis (18), Gulp (4), Lemiers (12)
 
 #! Always load the following data - adjust if needed for custom settings
-points_id <- c(10, 14) #, 18, 4, 12)
+points_id <- c(10, 14) #, 18, 4, 12, 90)
 reso <- c(5, 20)
 
 # load subcatchment points csv file
