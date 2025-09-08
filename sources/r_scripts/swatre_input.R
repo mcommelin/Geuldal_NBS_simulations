@@ -57,11 +57,13 @@ make_swatre_tables <- function(cal_file = ""
                                ) 
 {
 
-soil_params <- read_csv(paste0("LISEM_data/calibration/", cal_file))
+soil_params <- read_csv(paste0("LISEM_data/calibration/", cal_file)) %>%
+  filter(!is.na(clay)) %>%
+  mutate(CODE = str_replace(CODE, "-", "_"))
 
 # for loop making all tables
-for (i in seq_along(soil_params$UBC)) {
-ubc_tbl_n <- soil_params$UBC[i]
+for (i in seq_along(soil_params$CODE)) {
+ubc_tbl_n <- soil_params$CODE[i]
 
 # get profile specific params
 alpha <- soil_params$alpha_mean[i]
@@ -98,30 +100,41 @@ inp <- readLines("LISEM_data/swatre/profile_template.inp")
 file <- "LISEM_data/swatre/profile.inp" # input file name
 write(inp, file = file, append = F)
 
-for (i in seq_along(soil_params$UBC)) {
+ubc <- unique(soil_params$UBC)
 
-  # find C horizon belonging to UBC code
-  ubc <- soil_params$UBC[i]
-  if (ubc > 1000) {
-  c_num <- str_extract(str_extract(ubc, "\\d."), "\\d$")
-  ubc_c <- paste0("9", c_num, "0000.tbl")
-  } else {
-    ubc_c <- "920000.tbl" # soil below build up is loam
+for (i in seq_along(ubc)) {
+
+  # write horizon data
+  ubc_n <- ubc[i]
+  string <- paste0("\n", ubc_n)
+  write(string, file = file, append = T)  
+  
+  ubc_pars <- soil_params %>%
+    filter(UBC == ubc_n)
+  for (j in seq_along(ubc_pars$CODE)) {
+    ubc_tbl_n <- ubc_pars$CODE[j]
+    depth <- ubc_pars$depth[j]
+    string <- paste0(
+      ubc_tbl_n, ".tbl\n",
+      depth
+    )
+    write(string, file = file, append = T) 
   }
-  string <- paste0(
-    ubc, "\n",
-    ubc, ".tbl\n",
-    soil_params$depth_end[i], "\n",
-    ubc_c, "\n",
-    "200\n"
-  )
-
-write(string, file = file, append = T)  
-
-
-#later:
-# find number of horizons for UBC code
-# print sequence: tble name, bottom depth
+  if (ubc_n == 100) {
+    depth <- 350
+    string <- paste0(
+      "140000_C.tbl\n",
+      "350"
+    )
+    write(string, file = file, append = T) 
+  }
+  if (depth < 350) {
+    string <- paste0(
+      "97.tbl\n",
+      "350"
+    )
+    write(string, file = file, append = T) 
+  }
 
 }
 } # end function make_swatre_tables()

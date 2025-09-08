@@ -2,7 +2,7 @@ dem.map
 mask.map
 landuse.map
 soils.map
-soils_swatre.map
+profile.map
 catchment.map
 ID.map
 buildings.map

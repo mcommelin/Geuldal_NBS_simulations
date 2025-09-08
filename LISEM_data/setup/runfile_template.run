@@ -276,7 +276,7 @@ compfrc=compfrc.map
 
 [Infiltration]
 [Swatre]
-profmap=soils_swatre.map
+profmap=profile.map
 profcrst=profcrst.map
 profcomp=profcomp.map
 profgras=profgras.map

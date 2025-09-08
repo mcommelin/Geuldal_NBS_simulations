@@ -1,36 +1,59 @@
-UBC,clay,silt,sand,gravel,om,depth_start,depth_end,description,horizon,opmerking
-150000,0.195,0.731,0.074,0,1,0,30,Lichte Zavel homogene ondergrond,A,gemiddelde van LISEM metingen textuur
-151000,0.129,0.737,0.134,0,1,0,30,"Zavel en lichte klei, homogene ondergrond",A,gemiddelde van LISEM metingen textuur
-120000,0.135,0.593,0.272,7.5,1,0,30,"Kleefaarde, verweerde kalksteen",A,equivalent van Leem VL/W
-140000,0.088,0.777,0.135,0,1,0,30,"Colluvium, ooivaaggrond, A-C profiel",A,verspoelde Loss dalbodems en onder aan helling
-145000,0.073,0.792,0.135,0,1,0,30,"Brikgronden, met ondiepe Bt 30 cm",A,A-Bt-C
-144000,0.088,0.777,0.135,0,1,0,30,"Brikgrond met diepere Bt, 60 cm",A,A-E-Bt-C
-143000,0.088,0.777,0.135,7.5,1,0,30,"Loess op kalksteen, vuursteen, ",A, loss op limon calliouteux!
-141000,0.088,0.777,0.135,0,1,0,30,Loess op Pleistoceen fluciatiel ondiep,A,Zavel in ondergrond of juist zandig?
-210000,0.03,0.22,0.75,0,1,0,30,Sableux/Sable limoneux,A,zandig
-220000,0.213,0.694,0.093,0,1,0,30,Limoneux,A,leem
-230000,0.231,0.571,0.198,0,1,0,30,"Mix (tourbeux), omgeven met G",A,leem
-232000,0.231,0.571,0.198,7.5,1,0,30,Limoneux,A,leem(stenig)
-233000,0.231,0.571,0.198,32.5,1,0,30,Limoneux,A,leem(stenig)
-250000,0.55,0.3,0.15,0,1,0,30,Argilleux,A,kleirijk
-320000,0.213,0.694,0.093,0,1,0,30,Leem,A,leem
-330000,0.231,0.571,0.198,0,1,0,30,"Complex, vaak op steile hellingen, omgeven met G",A,leem
-333000,0.231,0.571,0.198,32.5,1,0,30,Stenige leem,A,leem stenig
-350000,0.55,0.3,0.15,0,1,0,30,kleiig,A,kleirijk
-410000,0.03,0.15,0.82,0,1,0,30,Sand,A,zandig
-412000,0.08,0.35,0.57,0,1,0,30,Lemigher sand,A,lemig zand
-421000,0.15,0.25,0.6,0,1,0,30,Stark Sandiger Lehm,A,zeer zandige leem
-420000,0.22,0.35,0.43,0,1,0,30,sandiger Lehm,A,zandige leem
-424000,0.23,0.6,0.17,0,1,0,30,Schluffiger Lehm,A,siltige leem
-425000,0.4,0.4,0.2,0,1,0,30,Toniger lehm,A, kleirijke leem
-450000,0.55,0.3,0.15,0,1,0,30,Ton,A,kleiig
-440000,0.12,0.65,0.23,0,1,0,30,Lemigher Schluff,A,loess
-424000,0.23,0.6,0.17,0,1,0,30,,A,veen
-1000,0.08,0.35,0.57,0,1,0,30,,A,bebopuwde kom (zandig)
-99,0.08,0.35,0.57,0,1,0,200,,A,open water
-98,0.08,0.35,0.57,0,1,0,200,,A,trein talud
-910000,0.03,0.15,0.82,0,1,30,200,C horizon sand,C,
-920000,0.213,0.694,0.093,0,1,30,200,C horizon leem,C,
-930000,0.231,0.571,0.198,32.5,1,30,200,C horizon stenig leem,C,
-940000,0.088,0.777,0.135,0,1,30,200,C horizon loess,C,
-950000,0.55,0.3,0.15,0,1,30,200,C horizon klei,C,
+country,UBC,soil_map_unit,description,main_tex,CODE,depth,clay,silt,sand,gravel,om,note
+NL,150000,4004/4019 (M),Lichte Zavel homogene ondergrond,Lisem dbase,150000-A,30,0.129,0.737,0.134,0,1.5,
+NL,150000,4004/4019 (M),Lichte Zavel homogene ondergrond,Lisem dbase,150000-C,300,0.129,0.737,0.134,0,0.5,
+NL,151000,"4016/4020/4013 (Rd,Rn)","Zavel en lichte klei, homogene ondergrond",Rd,151000-A,30,0.195,0.731,0.074,0,1.5,
+NL,151000,"4016/4020/4013 (Rd,Rn)","Zavel en lichte klei, homogene ondergrond",Rd,151000-C,120,0.195,0.731,0.074,0,0.5,
+NL,120000,KK en  varianten,"Kleefaarde, verweerde kalksteen",K,120000-A,30,0.284,0.584,0.133,7.5,1.5,
+NL,120000,KK en  varianten,"Kleefaarde, verweerde kalksteen",K,120000-B,40,0.284,0.584,0.133,10,1,
+NL,120000,KK en  varianten,"Kleefaarde, verweerde kalksteen",K,120000-C,120,0.284,0.584,0.133,15,0.5,
+NL,144000,Ldh6 e.a. LD varianten,"Colluvium, ooivaaggrond, A-C profiel",L,140000-A,30,0.088,0.777,0.135,1,1.5,
+NL,144000,Ldh6 e.a. LD varianten,"Colluvium, ooivaaggrond, A-C profiel",L,140000-C,200,0.088,0.777,0.135,2,0.5,
+NL,142000,"BLh6, BLn6, BLb6","Brikgronden, met ondiepe Bt 30 cm",BL,142000-A,30,0.073,0.792,0.134,0,1.5,
+NL,142000,"BLh6, BLn6, BLb6","Brikgronden, met ondiepe Bt 30 cm",BL,142000-Bt,50,0.11,0.792,0.098,0,0.5,
+NL,142000,"BLh6, BLn6, BLb6","Brikgronden, met ondiepe Bt 30 cm",BL,142000-C,350,0.073,0.792,0.134,0,0.5,
+NL,141000,BLd6,"Brikgrond met diepere Bt, 60 cm",BLd,141000-A,30,0.088,0.792,0.12,0,1.5,
+NL,141000,BLd6,"Brikgrond met diepere Bt, 60 cm",BLd,141000-E,60,0.07,0.792,0.138,0,1,
+NL,141000,BLd6,"Brikgrond met diepere Bt, 60 cm",BLd,141000-Bt,100,0.11,0.792,0.098,0,0.5,
+NL,141000,BLd6,"Brikgrond met diepere Bt, 60 cm",BLd,141000-C,350,0.088,0.792,0.12,0,0.5,
+NL,140000,"AHl,Ahc",Loess ,Ahlc,140000-A,30,0.088,0.777,0.135,0,1.5,
+NL,140000,"AHl,Ahc",Loess ,Ahlc,140000-C,350,0.088,0.777,0.135,0,0.5,
+NL,143000,"AHa,AHk,AHs","Loess op glauconiet,kalksteen, vuursteen, ",AH,143000-A,30,0.088,0.777,0.135,7.5,1.5,
+NL,143000,"AHa,AHk,AHs","Loess op glauconiet,kalksteen, vuursteen, ",AH,143000-B,40,0.088,0.777,0.135,15,0.5,
+NL,143000,"AHa,AHk,AHs","Loess op glauconiet,kalksteen, vuursteen, ",AH,143000-C,200,0.284,0.584,0.133,25,0.5,idem 120000-C
+NL,145000,"FG varianten, Abl",Zavel in ondergrond,FG,145000-A,30,0.088,0.777,0.135,0,1.5,
+NL,145000,"FG varianten, Abl",idem 150000-C,FG,145000-C,120,0.129,0.737,0.134,0,0.5,
+W,210000,"2010,2020",Sableux/Sable limoneux,S,210000-A,30,0.03,0.22,0.75,0,1.5,
+W,210000,"2010,2020",Sableux/Sable limoneux,S,210000-C,160,0.03,0.22,0.75,0,0.5,
+W,220000,"4010,4020,4030",Limoneux,A,220000-A,30,0.213,0.694,0.093,0,1.5,
+W,220000,"4010,4020,4030",Limoneux,A,220000-C,150,0.213,0.694,0.093,0,0.5,
+W,230000,"1000, 10000","Mix (tourbeux), omgeven met G",B,230000-A,30,0.231,0.571,0.198,0,1.5,
+W,230000,"1000, 10000","Mix (tourbeux), omgeven met G",B,230000-C,200,0.231,0.571,0.198,0,0.5,
+W,232000,"6010,6020",Limoneux,G,232000-A,30,0.231,0.571,0.198,7.5,1.5,
+W,232000,"6010,6020",Limoneux,G,232000-C,100,0.231,0.571,0.198,7.5,0.5,
+W,233000,7210 etc,Limoneux,G,233000-A,30,0.231,0.571,0.198,32.5,1.5,
+W,233000,7210 etc,Limoneux,G,233000-C,100,0.231,0.571,0.198,32.5,0.5,sommige plekken tot 200 cm
+W,250000,"5010,5020",Argilleux,E,250000-A,30,0.55,0.3,0.15,0,1.5,
+W,250000,"5010,5020",Argilleux,E,250000-C,75,0.55,0.3,0.15,0,0.5,
+Vl,320000,A,Leem,A-L,320000-A,30,0.213,0.694,0.093,0,1.5,
+Vl,320000,A,Leem,A-L,320000-C,150,0.213,0.694,0.093,0,0.5,
+Vl,330000,G,"Complex, vaak op steile hellingen, omgeven met G",G,330000-A,30,0.231,0.571,0.198,0,1.5,
+Vl,330000,G,"Complex, vaak op steile hellingen, omgeven met G",G,330000-C,120,0.231,0.571,0.198,0,0.5,
+Vl,333000,B,Stenige leem,B,333000-A,30,0.231,0.571,0.198,32.5,1.5,
+Vl,333000,B,Stenige leem,B,333000-C,200,0.231,0.571,0.198,32.5,0.5,
+Vl,350000,E,kleiig,E,350000-A,30,0.55,0.3,0.15,0,1.5,
+Vl,350000,E,kleiig,E,350000-C,75,0.55,0.3,0.15,0,0.5,
+D,410000,S,Sand,1,410000-A,30,0.03,0.15,0.82,0,1.5,
+D,410000,S,Sand,1,410000-C,200,0.03,0.15,0.82,0,0.5,
+D,412000,lS,Lemigher sand,2,410000-A,30,0.08,0.35,0.57,0,1.5,
+D,412000,lS,Lemigher sand,2,410000-C,100,0.08,0.35,0.57,0,0.5,
+D,420000,sL,sandiger Lehm,4,410000-A,30,0.22,0.35,0.43,0,1.5,
+D,420000,sL,sandiger Lehm,4,410000-C,120,0.22,0.35,0.43,0,0.5,
+D,424000,uL,Schluffiger Lehm,4,410000-A,30,0.23,0.6,0.17,0,1.5,
+D,424000,uL,Schluffiger Lehm,4,410000-C,120,0.23,0.6,0.17,0,0.5,
+D,425000,tL,Toniger lehm,5,410000-A,30,0.4,0.4,0.2,0,1.5,
+D,425000,tL,Toniger lehm,5,410000-C,120,0.4,0.4,0.2,0,0.5,
+D,450000,T,Ton,5,410000-A,30,0.55,0.3,0.15,0,1.5,
+D,450000,T,Ton,5,410000-C,200,0.55,0.3,0.15,0,0.5,
+D,440000,IU,Lemigher Schluff,3,410000-A,30,0.12,0.65,0.23,0,1.5,
+D,440000,IU,Lemigher Schluff,3,410000-C,200,0.12,0.65,0.23,0,0.5,
+X,100,bebouwde kom,,S,100,100,0.08,0.35,0.57,0,0.5,bebopuwde kom (zandig)
