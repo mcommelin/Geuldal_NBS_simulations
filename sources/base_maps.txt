@@ -11,10 +11,11 @@ roads_fraction.map
 chanmask.map
 chanwidth.map
 chandepth.map
-culvertmask.map
+chantype.map
 outpoints.map
 ldd.map
 bua.map
+buffers_bool.map
 hard_surface.map
 baseinflow.map
 baseflowinitvol.map

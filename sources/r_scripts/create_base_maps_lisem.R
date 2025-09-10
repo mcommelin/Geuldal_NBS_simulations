@@ -187,7 +187,7 @@ chan <- ranked_chan %>%
 # see sources/GIS_manual/Schreve_width_channels.csv
 shreve_lookup <- read_csv("sources/GIS_manual/Shreve_width_channels.csv")
 
-# teh channel width from OSM only covers a few features and does not seem usefull
+# the channel width from OSM only covers a few features and does not seem useful
 # so for now we neglect it.
 
 # add shape and dimensions.
@@ -199,11 +199,13 @@ chanshape <- chan %>%
          shape = if_else(tunnel == "culvert", "round", shape)) %>%
   rename(width_osm = width)
 
+# 2025-09-10 we don't use culverts at the moment so don't adjust diameter
 chandim <- left_join(chanshape, shreve_lookup, 
                      join_by(closest(ValueShreve >= ClassShreve))) %>%
-  mutate(width = if_else(tunnel == "culvert", diameter, width)) %>%
+  #mutate(width = if_else(tunnel == "culvert", diameter, width)) %>%
   select(waterway, width, depth, shape, tunnel, baseflow) %>%
-  mutate(culvert_bool = if_else(tunnel == "culvert", 1, 0))
+  mutate(culvert_bool = if_else(tunnel == "culvert", 1, 0),
+         chan_type = if_else(waterway == "stream", 1, 2))
 
 st_write(chandim, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
 

@@ -86,8 +86,8 @@ base_maps <- readLines("sources/base_maps.txt")
 source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
 
 chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
-            "culverts_bool.tif", "build_up_area_5m.tif", "channels_baseflow.tif")
-outmaps <- c("chanmask", "chandepth", "chanwidth", "culvertmask", "bua", "baseflow")
+            "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif")
+outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow")
 
 for (i in seq_along(chanmaps)) {
   source_to_base_maps(
@@ -96,6 +96,9 @@ for (i in seq_along(chanmaps)) {
     resample_method = "max"
   )
 }
+
+# some Geulcatchemnt wide map preparations with pcraster
+
 
 # 2. Subcatchment initial testing ----------------------------------------------
 # we use subcatchments to test the model setup and perform some pre-calibration
