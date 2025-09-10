@@ -1,0 +1,23 @@
+# This configuration file is used to set user specific settings for this project
+# make adjustement to all setting where needed and save this file as:
+# ./config.yaml
+
+# 1. Path to your local Miniconda installation.
+# Example: "/home/username/miniconda3"
+miniconda_path: "/home/user/miniconda3"
+
+# 2. Name of the conda environment where pcraster is installed
+# Example: "lisem"
+conda_env: "lisem"
+
+# 3. List of subcatchment numbers to analyse.
+# see the file /LISEM_data/setup/outpoints_description.csv
+# for subcatchment names and numbers.
+# WARNING: 1 = the whole catchment - very long processing times
+# You can specify one or more numbers, e.g. [101, 102, 105]
+subcatchments: [10, 14]
+
+
+# Name of the table containing infiltration data in your database or dataset.
+# Example: "soil_layers_infiltration"
+infiltration_table: "soil_layers_infiltration.csv"

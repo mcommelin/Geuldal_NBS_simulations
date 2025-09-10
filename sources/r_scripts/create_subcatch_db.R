@@ -4,7 +4,8 @@
 # Function to create subcatchment base maps -----------------------------------
 base_maps_subcatchment <- function(
     cell_size = NULL,
-    sub_catch_number = NULL # adjust the number to select the subcatchment you want
+    sub_catch_number = NULL, # adjust the number to select the subcatchment you want
+    calc_ldd = FALSE
     ) {
 # resample with parallel processes to speed up
  # library(foreach)
@@ -134,6 +135,13 @@ for (i in seq_along(base_maps)) {
 }
 
 # run pcraster script to create base maps for subcatch
+if (calc_ldd == TRUE) {
+pcr_script(
+  script = "ldd_subcatch.mod",
+  script_dir = "sources/pcr_scripts",
+  work_dir = sub_catch_dir
+)
+}
 pcr_script(
   script = "base_maps_subcatch.mod",
   script_dir = "sources/pcr_scripts",

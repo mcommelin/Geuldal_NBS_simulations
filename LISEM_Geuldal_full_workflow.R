@@ -1,6 +1,9 @@
 # full workflow for lisem simulations in the Geul catchment.
 
 # Initialization ---------------------------------------------------------------
+library(yaml)
+library(hydroGOF)
+library(rosettaPTF)
 library(gdalUtilities)
 library(terra)
 library(raster)
@@ -10,13 +13,16 @@ library(conflicted)
 library(tidyverse)
 library(sensobol)
 
+# load configuration
+config <- yaml.load_file("config.yaml")
+
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
 
 # load pcraster functions
 source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = "lisem", miniconda = "~/ProgramFiles/miniconda3")
+set_pcraster(env = config$conda_env, miniconda = config$miniconda_path)
 
 #set digits to 10 for detail in coordinates
 options(digits = 10)
@@ -98,8 +104,8 @@ for (i in seq_along(chanmaps)) {
 # Kelmis (18), Gulp (4), Lemiers (12)
 
 #! Always load the following data - adjust if needed for custom settings
-points_id <- c(10, 14) #, 18, 4, 12, 90)
-reso <- c(5, 20)
+points_id <- config$subcatchments #, 18, 4, 12, 90)
+reso <- config$resolution
 
 # load subcatchment points csv file
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
@@ -128,7 +134,8 @@ for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     base_maps_subcatchment(
       cell_size = reso[j],
-      sub_catch_number = points_id[i]
+      sub_catch_number = points_id[i],
+      calc_ldd = F
     )
   }
 }
