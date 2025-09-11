@@ -15,7 +15,8 @@ soil = soils.map;           # field id's for texture/soil map
 roads = roads_fraction.map; # fraction road coverage (optional)
 chanmask = chanmask.map;    # location of channels value = 1 (optional)
 #culvert = culvertmask.map;  # location of culverts
-chanwidth = chanwidth.map;  # width of channels and culverts
+chanwidth = chanwidth.map;  # width of channels
+chandepth = chandepth.map;  # depth of channels
 chantype = chantype.map;    # either stream (1) or ditch (2)
 outpoint = outpoints.map;  # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
@@ -42,7 +43,7 @@ lutbl = lu.tbl;
 # 06 thetas (cm3/cm3) = porosity   
 # 07 soildepth (cm)
 
-
+chantbl = chan.tbl;
 ###################
 ### PROCES MAPS ###
 ###################
@@ -184,15 +185,18 @@ report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20);
 report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
 
 # calculate mannings for channel
+bua = cover(bua, 0);
+chanclass = if(bua eq 1,chantype, chantype + 2);
+chanman = lookupscalar(chantbl, 1, chanclass);
 
-# adjsut channel in buffers
+# adjust channel in buffers
+buffers = cover(buffers, 0);
+report chanwidth = if(buffers eq 1, 3, chanwidth) * chanmask;
+report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
 
 # place culvert in buffer
+report chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
+report chandiameter = scalar(if(chanculvert eq 2, 600));
+report chanman = if(cover(chanculvert, 0) eq 2, 0.01, chanman);
 
-#report chandiam = if(culvert eq 1, chanwidth * 1000);
-#report chanculvert = scalar(if(culvert eq 1, 2, 0)); # for now we assumme all culverts in channels are circular.
-# report chancoh=chanmask*scalar(Chancoh);
-############################
-### CHANNEL INFILTRATION ###
-############################
-# report chanksat = chanmask*scalar(ChanKsat);
+

@@ -136,6 +136,8 @@ for (map in base_maps) {
   write.table(soiltbl, file = paste0(subdir, "soil.tbl"),
               sep = " ", row.names = FALSE,
               quote = FALSE)
+  #copy chan.tbl
+  file.copy(from = "LISEM_data/tables/chan.tbl", to = subdir, overwrite = T)
   
   # run pcraster script to finalize run database.
   pcr_script(
@@ -172,6 +174,7 @@ for (map in base_maps) {
   }
     
   #delete intermediate files
+  file.remove(paste0(subdir, "chan.tbl"))
   file.remove(paste0(subdir, "lu.tbl"))
   file.remove(paste0(subdir, "soil.tbl"))
 }

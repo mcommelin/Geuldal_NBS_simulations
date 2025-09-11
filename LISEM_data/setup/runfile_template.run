@@ -83,8 +83,6 @@ Litter interception storage=1.0
 [Infiltration]
 Include Infiltration=1
 Infil Method=1
-Use OM correction=0
-Use Density correction=0
 Include compacted=0
 Include crusts=0
 Dynamic crusting=0
@@ -97,7 +95,7 @@ Swatre profile file=<<swatre_inp>>
 Swatre table directory=<<swatre_dir>>
 SWATRE internal minimum timestep=1
 Swatre output=0
-Swatre dry=0
+Swatre dry=1
 Matric head files=inithead
 Include tile drains=0
 Tile entry suction=-10
@@ -119,9 +117,7 @@ Flood solution=1
 
 [Channel and Groundwater]
 Include main channels=1
-Include channel infil=0
-Include stationary baseflow=1
-Stationary baseflow as map=1
+Channel baseflow method=3
 Include channel culverts=1
 Include GW flow=0
 GW flow explicit=1

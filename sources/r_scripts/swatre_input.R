@@ -3,7 +3,6 @@
 # Initialization --------------------------------------------------------------
 # we expect this to run inside the full workflow, so all libraries required are
 # loaded already.
-library(rosettaPTF)
 
 # Calculate params -------------------------------------------------------------
 soil_landuse_to_swatre <- function(file = "",
@@ -61,6 +60,12 @@ soil_params <- read_csv(paste0("LISEM_data/calibration/", cal_file)) %>%
   filter(!is.na(clay)) %>%
   mutate(CODE = str_replace(CODE, "-", "_"))
 
+# cleanup /LISEM_data/swatre/tables.
+if (dir.exists("LISEM_data/swatre/tables/")) {
+  unlink("LISEM_data/swatre/tables/", recursive = TRUE)
+}
+dir.create("LISEM_data/swatre/tables/")
+
 # for loop making all tables
 for (i in seq_along(soil_params$CODE)) {
 ubc_tbl_n <- soil_params$CODE[i]
@@ -89,6 +94,9 @@ ubc_tbl <- tibble(
 ubc_file <- paste0("LISEM_data/swatre/tables/", ubc_tbl_n, ".tbl")
 write.table(ubc_tbl, file = ubc_file, col.names = F,
             row.names = F, sep = " ", quote = F)
+
+# copy the table for impermeable lower soils 97.tbl to the tables folder
+file.copy("LISEM_data/swatre/97.tbl", "LISEM_data/swatre/tables/", overwrite = T)
 
 }
 
