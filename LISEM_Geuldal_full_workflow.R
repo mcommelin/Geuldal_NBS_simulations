@@ -52,7 +52,7 @@ source("sources/r_scripts/aux_functions.R")
 # 2. with PCRaster col2map make map of the outlet (mask = dem_region.map)
 # 3. run delineate_catchment.mod script to find the catchment area.
 # 4. resample based on the 5 and 20m mask.map to the correct extent
-# 5. run the pcr_script 'base_maps.mod' to make the ldd.map
+# 5. run the pcr_script 'base_ldd.mod' to make the ldd.map
 
 # Result: based on this dem.map and catchment.map and ldd.map are made for 5 and 20 m.
 
@@ -75,6 +75,8 @@ source("sources/r_scripts/aux_functions.R")
 source("sources/r_scripts/swatre_input.R")
 soil_landuse_to_swatre(file = "LISEM_data/swatre/UBC_texture.csv",
                        swatre_out = "LISEM_data/calibration/base_swatre_params.csv")
+# and make the tables based on the base params:
+make_swatre_tables(cal_file = "base_swatre_params.csv")
 
 ## 1.5 convert to PCRaster maps ------------------------------------------------
 # convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
@@ -86,8 +88,8 @@ base_maps <- readLines("sources/base_maps.txt")
 source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
 
 chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
-            "culverts_bool.tif", "build_up_area_5m.tif", "channels_baseflow.tif")
-outmaps <- c("chanmask", "chandepth", "chanwidth", "culvertmask", "bua", "baseflow")
+            "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif")
+outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow")
 
 for (i in seq_along(chanmaps)) {
   source_to_base_maps(
@@ -253,7 +255,7 @@ graph_lisem_simulation(point_id = 4, resolution = 20, clean_up = F)
 # initial parameters of interest are npar, alpha and ksat.
 # when save run the following function to update the input
 # WARNING this input effects all lisem runs of the Geulcatchment!!
-# you can always go back te base settings by loading the base file in the function.
+# you can always go back the base settings by loading the base file in the function.
 make_swatre_tables(cal_file = "base_swatre_params.csv")
 
 # run your simulation and make evaluation figures:

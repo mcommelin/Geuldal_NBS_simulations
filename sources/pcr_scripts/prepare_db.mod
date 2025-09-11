@@ -14,12 +14,16 @@ catchment = catchment.map;  #
 soil = soils.map;           # field id's for texture/soil map
 roads = roads_fraction.map; # fraction road coverage (optional)
 chanmask = chanmask.map;    # location of channels value = 1 (optional)
-culvert = culvertmask.map;  # location of culverts
-chanwidth = chanwidth.map;  # width of channels and culverts
+#culvert = culvertmask.map;  # location of culverts
+chanwidth = chanwidth.map;  # width of channels
+chandepth = chandepth.map;  # depth of channels
+chantype = chantype.map;    # either stream (1) or ditch (2)
 outpoint = outpoints.map;  # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
 #grass = grasswid.map;      # only if buffers are included
 id = ID.map;                # rainfall id grid
+bua = bua.map; 		     # map with build up area.
+buffers = buffers.map;      # map with boolean location of retention buffers
 
 ### INPUT TABLES ### 
 
@@ -31,35 +35,15 @@ lutbl = lu.tbl;
 # lu
 # 01 rr (cm) = random roughness
 # 02 n = Manning's n
-# 03 thetai (cm3/cm3) = initial moisture content
 # 04 per (fraction) = surface cover by vegetation
 # 05 lai (m2/m2) = leaf area index
-# 06 ch (m) = crop height
-# 07 cohadd (kPa) = additional cohesion by roots
 
 # soil
-# 01 stonefraction (ratio)
-# 02 coh (kPa) = cohesion of soil
-# 03 aggregate stability (number)
-# 04 D50 (micro m)
 # 05 ksat (mm/h)
 # 06 thetas (cm3/cm3) = porosity   
 # 07 soildepth (cm)
 
-
-####################### 
-### INPUT CONSTANTS ###
-####################### 
-# channel properties: 
-# NOTE: if channels with different parameters, use a table as with landuse.
-# Chanwidth = 2; # width of channels in meters 
-# Chanside = 0; # tan of angle between side and surface (0 = rectangular)
-Chanman = 0.1; # Manning's n in channel
-# Chancoh = 10; # high cohesion, kPa 
-# ChanKsat = 20; # channel ksat for infiltration
-
-
-
+chantbl = chan.tbl;
 ###################
 ### PROCES MAPS ###
 ###################
@@ -118,7 +102,7 @@ lddchan = lddchan.map;
 chandiam = chandiameter.map;
 changrad = changrad.map; 
 chanman = chanman.map; 
-chanculvert = chanculvert.map;
+#chanculvert = chanculvert.map;
 # chancoh = chancoh.map;
 ### channel infiltration ### (optional)
 # chanksat = chanksat.map;
@@ -199,11 +183,20 @@ chanclean = if(chanclean > celllength(), 1);
 chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20); 
 report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
-report chanman=chanmask*scalar(Chanman); 
-report chandiam = if(culvert eq 1, chanwidth * 1000);
-report chanculvert = scalar(if(culvert eq 1, 2, 0)); # for now we assumme all culverts in channels are circular.
-# report chancoh=chanmask*scalar(Chancoh);
-############################
-### CHANNEL INFILTRATION ###
-############################
-# report chanksat = chanmask*scalar(ChanKsat);
+
+# calculate mannings for channel
+bua = cover(bua, 0);
+chanclass = if(bua eq 1,chantype, chantype + 2);
+chanman = lookupscalar(chantbl, 1, chanclass);
+
+# adjust channel in buffers
+buffers = cover(buffers, 0);
+report chanwidth = if(buffers eq 1, 3, chanwidth) * chanmask;
+report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
+
+# place culvert in buffer
+report chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
+report chandiameter = scalar(if(chanculvert eq 2, 600));
+report chanman = if(cover(chanculvert, 0) eq 2, 0.01, chanman);
+
+
