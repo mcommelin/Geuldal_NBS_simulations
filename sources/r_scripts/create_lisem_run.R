@@ -157,7 +157,7 @@ for (map in base_maps) {
     work_dir = subdir
   )
   
-  # add runfiles for 4 events
+  # add runfiles for selected events
   events <- read_csv("sources/selected_events.csv") %>%
     filter(use != "none") %>%
     mutate(ts_start = ymd_hms(event_start),
@@ -166,26 +166,26 @@ for (map in base_maps) {
   dt <- ceiling(resolution * 0.75)
   
   for (i in seq_along(events$event_start)) {
-    #make baseflow
-    date_event <- str_remove_all(as.character(date(events$ts_start[i])), "-")
-    baseqtbl <- read_csv("sources/base_flow_cal_events.csv") %>%
-      filter(date == str_remove_all(as.character(date(events$ts_start[i])), "-")) %>%
-      select(-date)
-    nms <- as.character(seq(0, ncol(baseqtbl) - 1))
-    names(baseqtbl) <- nms
-    #write space delimited lutbl with colnumbers instead of names
-    write.table(baseqtbl, file = paste0(subdir, "baseq.tbl"),
-                sep = " ", row.names = FALSE,
-                quote = FALSE)
-    # run pcraster script to make baseflow map.
-    pcr_script(
-      script = "baseflow_cal.mod",
-      script_dir = "sources/pcr_scripts",
-      work_dir = subdir
-    )
-    
-    file.rename(paste0(subdir, "baseflow.map"), 
-                paste0(subdir, "baseflow_", date_event, ".map"))
+    # #make baseflow
+    # date_event <- str_remove_all(as.character(date(events$ts_start[i])), "-")
+    # baseqtbl <- read_csv("sources/base_flow_cal_events.csv") %>%
+    #   filter(date == str_remove_all(as.character(date(events$ts_start[i])), "-")) %>%
+    #   select(-date)
+    # nms <- as.character(seq(0, ncol(baseqtbl) - 1))
+    # names(baseqtbl) <- nms
+    # #write space delimited lutbl with colnumbers instead of names
+    # write.table(baseqtbl, file = paste0(subdir, "baseq.tbl"),
+    #             sep = " ", row.names = FALSE,
+    #             quote = FALSE)
+    # # run pcraster script to make baseflow map.
+    # pcr_script(
+    #   script = "baseflow_cal.mod",
+    #   script_dir = "sources/pcr_scripts",
+    #   work_dir = subdir
+    # )
+    # 
+    # file.rename(paste0(subdir, "baseflow.map"), 
+    #             paste0(subdir, "baseflow_", date_event, ".map"))
     
   # make runfile  
   make_runfile_lisem(

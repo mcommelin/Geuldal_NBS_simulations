@@ -117,7 +117,7 @@ Flood solution=1
 
 [Channel and Groundwater]
 Include main channels=1
-Channel baseflow method=2
+Channel baseflow method=3
 Include channel culverts=1
 Include GW flow=0
 GW flow explicit=1
@@ -141,8 +141,9 @@ Hard Surfaces=1
 Include road system=1
 Include storm drains=1
 Storm drain shape=1
+Storm drain no outflow=1
 Drain inlet distance=20
-Drain inlet size=0.1
+Drain inlet size=0.100
 
 [Erosion]
 Include Erosion simulation=0
@@ -315,7 +316,7 @@ chanman=chanman.map
 chanksat=chanksat.map
 qinpoints=QinPoints.map
 chancoh=chancoh_mc.map
-baseflow=<<baseflow_map>>
+baseflow=baseinflow.map
 baseflowinitvol=baseflowinitvol.map
 lddbase=lddbaseflow.map
 basereach=basedistance.map

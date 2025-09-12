@@ -113,6 +113,10 @@ reso <- config$resolution
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
 # Additional preparation of baseflow
+
+#WARNING for the calibration of 20230622 we use observed baseflow.
+# still need to update this better in the code!!!!!
+
 #1. If not done run the function from 2.2 for the full Geul_catchment
 #create_lisem_run(20, 1)
 

@@ -96,7 +96,6 @@ soildep= soildep1.map;
 # pore2= thetas2.map;
 # thetai2= thetai2.map; 
 # soildep2= soildep2.map;
-baseq = baseflow.map;
 ### channel maps ### (optional)
 lddchan = lddchan.map; 
 # chanwidth = chanwidt.map; 
@@ -104,7 +103,7 @@ lddchan = lddchan.map;
 chandiam = chandiameter.map;
 changrad = changrad.map; 
 chanman = chanman.map; 
-#chanculvert = chanculvert.map;
+chanculvert = chanculvert.map;
 # chancoh = chancoh.map;
 ### channel infiltration ### (optional)
 # chanksat = chanksat.map;
@@ -198,9 +197,6 @@ report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
 
 # place culvert in buffer
 report chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
-report chandiameter = scalar(if(chanculvert eq 2, 600));
+report chandiam = scalar(if(chanculvert eq 2, 600));
 chanman = if(buffers eq 1, 0.2, chanman);
 report chanman = if(cover(chanculvert, 0) eq 2, 0.01, chanman);
-
-
-report baseq = lookupscalar(baseqtbl, 1, outpoint);

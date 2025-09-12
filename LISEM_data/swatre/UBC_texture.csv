@@ -1,3 +1,4 @@
+country,UBC,soil_map_unit,description,main_tex,CODE,depth,clay,silt,sand,gravel,om,note
 X,100,bebouwde kom,,S,100,100,0.08,0.35,0.57,0,0.5,bebopuwde kom (zandig)
 NL,120000,KK en  varianten,"Kleefaarde, verweerde kalksteen",K,120000-A,30,0.284,0.584,0.133,7.5,1.5,
 NL,120000,KK en  varianten,"Kleefaarde, verweerde kalksteen",K,120000-B,40,0.284,0.584,0.133,10,1,
@@ -56,4 +57,3 @@ D,440000,IU,Lemigher Schluff,3,410000-A,30,0.12,0.65,0.23,0,1.5,
 D,440000,IU,Lemigher Schluff,3,410000-C,200,0.12,0.65,0.23,0,0.5,
 D,450000,T,Ton,5,410000-A,30,0.55,0.3,0.15,0,1.5,
 D,450000,T,Ton,5,410000-C,200,0.55,0.3,0.15,0,0.5,
-country,UBC,soil_map_unit,description,main_tex,CODE,depth,clay,silt,sand,gravel,om,note
