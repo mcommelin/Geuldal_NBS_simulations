@@ -115,8 +115,8 @@ names(rain) <- str_extract(names(rain), "\\d.*")
 timestmp <- as_tibble_col(datetime, column_name = "timestamp")
 rain <- bind_cols(rain, timestmp) %>%
   mutate(timestamp = ymd_hm(timestamp)) %>% 
-  mutate(across(-timestamp, ~ .*12)) # change to mm/h
- %>%
+  mutate(across(-timestamp, ~ .*12))  %>% # change to mm/h
+
 mutate(timestamp = timestamp + hours(1),    # from GMT to GMT + 1
        timestamp = timestamp - minutes(5)) # correct for counting backward of KNMI radar.
 

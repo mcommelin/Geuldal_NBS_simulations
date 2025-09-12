@@ -11,7 +11,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 180679.94,321572.04,10,20,Watervalderbeek,"Watervalderbeek, voor ondergrondse aansluiting Geul",Watervalderbeek,
 184957.91,310950.1,11,20,Strabeek,Strabeek 200m voordat deze in Geul stroomt,x,
 197996.63,310970.42,12,20,Selzerbeek,"Selzerbeek, bij Lemiers",Lemiers,12.H.228
-178376.67,323010.425,1,5,juliana kanaal,outlet Geul bij Julianakanaal,Geul,10.Q.36
+178376.101,323002.405,1,5,juliana kanaal,outlet Geul bij Julianakanaal,Geul,10.Q.36
 189371.09,318249.55,2,5,scheumerbeek,Ransdalerveld,Ransdalerveld,
 190180.52,317048.11,3,5,lange gracht,Vrakelbergerweg,Vrakelbergerweg,
 190891.39,314593.5,4,5,Gulp,Instroom Gulp in de Geul,Gulp,
@@ -35,7 +35,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 193596.5,307733.01,17,5,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen,10.Q.29
 198446.138,302182.97,18,5,Kelmis,meetpunt Geul bij Kelmis,Kelmis,KELMIS_Q_001
 198476.64,302171.28,18,20,Kelmis,meetpunt Geul bij Kelmis,Kelmis,KELMIS_Q_001
-180946.931,302169.8,19,5,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
+180912,322047.52,19,5,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
 180938.12,322051.19,19,20,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
 193962.948,315247.694,20,5,Eys,Meetpunt in dorp Eys,Eyserbeek,11.H.225
 193960.5,315248.49,20,20,Eys,Meetpunt in dorp Eys,Eyserbeek,11.H.225

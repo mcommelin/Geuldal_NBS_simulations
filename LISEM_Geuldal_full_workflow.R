@@ -113,7 +113,7 @@ reso <- config$resolution
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
 # Additional preparation of baseflow
-#1. If not down run the function from 2.2 for the full Geul_catchment
+#1. If not done run the function from 2.2 for the full Geul_catchment
 #create_lisem_run(20, 1)
 
 # copy baseflow.map to full run
@@ -179,7 +179,7 @@ events <- read_csv("sources/selected_events.csv") %>%
 
 # check the quality of the 5 minute rainfall data
 # for 2 subcatchments:
-points_id <- c(10, 14) # add 4 and 18 later
+points_id <- c(10, 14, 4, 18) # add 4 and 18 later
 # load subcatchment points csv file
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 

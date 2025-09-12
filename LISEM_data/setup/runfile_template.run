@@ -117,7 +117,7 @@ Flood solution=1
 
 [Channel and Groundwater]
 Include main channels=1
-Channel baseflow method=3
+Channel baseflow method=2
 Include channel culverts=1
 Include GW flow=0
 GW flow explicit=1
@@ -315,7 +315,7 @@ chanman=chanman.map
 chanksat=chanksat.map
 qinpoints=QinPoints.map
 chancoh=chancoh_mc.map
-baseflow=baseinflow.map
+baseflow=<<baseflow_map>>
 baseflowinitvol=baseflowinitvol.map
 lddbase=lddbaseflow.map
 basereach=basedistance.map

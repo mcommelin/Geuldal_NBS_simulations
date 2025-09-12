@@ -184,7 +184,7 @@ graph_lisem_simulation <- function(
     clean_up = FALSE) {
   
   # load the package to calculate GOFs
-  library(hydroGOF)
+  #library(hydroGOF)
   # based on the point find the subcatch folder
   points <- read_csv("LISEM_data/setup/outpoints_description.csv")
   subcatch <- points %>%

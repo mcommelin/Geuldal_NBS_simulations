@@ -75,7 +75,7 @@ q_all <- q_all %>%
 # 1. the events with high discharges at the outlet of the Geul in Meersen
 b <- q_all %>%
   filter(str_detect(name_long, "Maastrichterlaan")) %>%
-  filter(timestamp > "2019-01-01 12:00:00" &
+  filter(timestamp > "2010-01-01 12:00:00" &
            timestamp < "2024-12-30 12:00:00") %>%
   filter(wh > 44.2)
 # 6 events with high discharge
@@ -85,10 +85,10 @@ ggplot(b) +
 # 2. shorter peaks in the Eyserbeek
 # from here we select 3 smaller events.
 b <- q_all %>%
-  filter(str_detect(name_long, "meetgeet_Eys")) %>%
-  filter(timestamp > "2024-05-02 12:00:00" &
-           timestamp < "2024-05-05 18:00:00") %>%
-  filter(wh > 40.7)
+  filter(str_detect(name_long, "meetgoot_Eys")) %>%
+  filter(timestamp > "2018-04-29 12:00:00" &
+           timestamp < "2018-05-02 18:00:00") %>%
+  filter(wh > 101.5)
 
 ggplot(b) +
   geom_point(aes(x = timestamp, y = wh))
