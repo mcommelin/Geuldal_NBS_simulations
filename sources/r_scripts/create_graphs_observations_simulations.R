@@ -181,7 +181,8 @@ graph_subcatch_qp <- function(points_id = NULL,
 # function to show simulated and observed results
 graph_lisem_simulation <- function(
     point_id = NULL, resolution = NULL,
-    clean_up = FALSE) {
+    clean_up = FALSE, run_date = NULL,
+    res_dir = NULL) {
   
   # load the package to calculate GOFs
   #library(hydroGOF)
@@ -191,12 +192,20 @@ graph_lisem_simulation <- function(
     filter(point == point_id) %>%
     filter(cell_size == resolution)
   subcatch_name <- subcatch$subcatch_name
-  resdir <- paste0("LISEM_runs/", subcatch_name, "_", resolution, "m/res")
+  if (is.null(res_dir)) {
+    resdir <- paste0("LISEM_runs/", subcatch_name, "_", resolution, "m/res")
+  } else {
+    resdir <- paste0("LISEM_runs/", subcatch_name, "_", resolution, "m/", res_dir)
+  }
+  
   
   # based on the runfile in /res find the date
   resrun_file <- dir(resdir, recursive = TRUE, pattern = ".run$")
+  if (is.null(run_date)) {
   ev_date <- ymd(str_remove(resrun_file, ".run"))
-  
+  } else {
+    ev_date <- ymd(run_date)
+  }
   # events
   events <- read_csv("sources/selected_events.csv") %>%
     mutate(ts_start = ymd_hms(event_start),
@@ -316,10 +325,10 @@ graph_lisem_simulation <- function(
    
     # plot
     # axis constants
-    q_max_round <- ceiling(max(c(q$Q, a$Qsim), na.rm = TRUE) / 10) * 10
+    q_max_round <- ceiling(max(c(q$Q, a$Qsim), na.rm = TRUE))
     p_max       <- max(p$P, na.rm = TRUE)
-    k           <- q_max_round / (p_max * 2)
-    y_top       <- q_max_round
+    k           <- q_max_round / (p_max * 1.2)
+    y_top       <- q_max_round * 2
     
     # plot regular and inverted y-axis
     ggplot() +
