@@ -1,9 +1,8 @@
-num,description,rr,n,thetai,per,lai,ch,cohadd,notes
-0,no class,5,0.3,0.3,0,0,0,0,
-1,akker,3,0.15,0.2,0.8,1,0.5,2,
-2,loofbos,7,0.4,0.3,1,1.5,3,4,
-3,(productie) grasland,5,0.2,0.2,1,1,0.2,3,
-4,natuurlijk grasland,5,0.3,0.25,1,1.2,0.3,4,
-5,verhard,1,0.05,0.2,0,0,0,0,
-6,water bodies,0,0.01,0.1,0,0,0,0,
-7,naaldbos,7,0.35,0.3,1,1.5,3,4,
+lu_nr,description,rr,n,per,om,smax_eq,notes
+1,akker,-9,-9,-9,-9,1,
+2,loofbos,-9,-9,-9,-9,6,
+3,(productie) grasland,-9,-9,-9,-9,8,
+4,natuurlijk grasland,-9,-9,-9,-9,8,
+5,verhard,0.05,0.05,0,0.5,7,
+6,water bodies,0,0.01,0,0,7,
+7,naaldbos,-9,-9,-9,-9,2,

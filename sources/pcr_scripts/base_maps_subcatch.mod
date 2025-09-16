@@ -21,11 +21,10 @@ Ldd = ldd.map;
 initial
 
 # remove data outside catchment area
-#report dem = if(boolean(catchment), dem);
+report dem = if(boolean(catchment), dem);
 report soil = if(boolean(catchment), soil);
 report lu = if(boolean(catchment), lu); 
 report buildings = if(boolean(catchment), buildings);
 report outpoint = if(boolean(catchment), outpoint);
 report id = if(boolean(catchment), id);
-# make ldd for the subcatchment
-#report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
+

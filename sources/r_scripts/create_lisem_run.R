@@ -123,25 +123,28 @@ for (map in base_maps) {
             overwrite = TRUE)
 }
 
-  #copy landuse and soil tables to subdir
-  lutbl <- read_csv("LISEM_data/tables/lu_tbl.csv") %>%
-    select(-description, -notes)
-  nms <- as.character(seq(0, ncol(lutbl) - 1))
-  names(lutbl) <- nms
-  #write space delimited lutbl with colnumbers instead of names
-  write.table(lutbl, file = paste0(subdir, "lu.tbl"),
-              sep = " ", row.names = FALSE,
-              quote = FALSE)
-  # same for soiltbl
-  soiltbl <- read_csv("LISEM_data/tables/soil_tbl.csv") %>%
-    select(-desc, -notes)
-  nms <- as.character(seq(0, ncol(soiltbl) - 1))
-  names(soiltbl) <- nms
-  #write space delimited soiltbl with colnumbers instead of names
-  write.table(soiltbl, file = paste0(subdir, "soil.tbl"),
-              sep = " ", row.names = FALSE,
-              quote = FALSE)
-  #copy chan.tbl
+  # #copy landuse and soil tables to subdir
+  # lutbl <- read_csv("LISEM_data/tables/lu_tbl.csv") %>%
+  #   select(-description, -notes)
+  # nms <- as.character(seq(0, ncol(lutbl) - 1))
+  # names(lutbl) <- nms
+  # #write space delimited lutbl with colnumbers instead of names
+  # write.table(lutbl, file = paste0(subdir, "lu.tbl"),
+  #             sep = " ", row.names = FALSE,
+  #             quote = FALSE)
+  # # same for soiltbl
+  # soiltbl <- read_csv("LISEM_data/tables/soil_tbl.csv") %>%
+  #   select(-desc, -notes)
+  # nms <- as.character(seq(0, ncol(soiltbl) - 1))
+  # names(soiltbl) <- nms
+  # #write space delimited soiltbl with colnumbers instead of names
+  # write.table(soiltbl, file = paste0(subdir, "soil.tbl"),
+  #             sep = " ", row.names = FALSE,
+  #             quote = FALSE)
+  # copy lu.tbl
+  file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
+ 
+   #copy chan.tbl
   file.copy(from = "LISEM_data/tables/chan.tbl", to = subdir, overwrite = T)
   
   # run pcraster script to finalize run database.
@@ -203,7 +206,7 @@ for (map in base_maps) {
   #delete intermediate files
   file.remove(paste0(subdir, "chan.tbl"))
   file.remove(paste0(subdir, "lu.tbl"))
-  file.remove(paste0(subdir, "soil.tbl"))
+  #file.remove(paste0(subdir, "soil.tbl"))
 }
 
 

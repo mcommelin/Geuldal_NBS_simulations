@@ -44,11 +44,12 @@ report lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
 
 # calculate diameter of drains based on required storage
 bua = if(boolean(catchment), bua);
-area_bua = areaarea(nominal(bua)); #m2
-tile_num = maptotal(tilemask); # number of cells with storm drain
-vol_sd = (area_bua / tile_num) * tilestore; # liter storage per cell
+#area_bua = areaarea(nominal(bua)); #m2
+#tile_num = maptotal(tilemask); # number of cells with storm drain
+#vol_sd = (area_bua / tile_num) * tilestore; # liter storage per cell
 
-diamtile = 2 * sqrt((vol_sd / 1000) / (pi * celllength())); 
+#diamtile = 2 * sqrt((vol_sd / 1000) / (pi * celllength())); 
+diamtile = 800; # a diameter of ~800 mm results in a storag eof about 7mm
 
 report tiledepth = tilemask * 0;
 report tilegrad = sin(atan(slope(tilemask * dem)));

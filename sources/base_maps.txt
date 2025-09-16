@@ -19,3 +19,5 @@ buffers.map
 hard_surface.map
 baseinflow.map
 baseflowinitvol.map
+lai.map
+per.map

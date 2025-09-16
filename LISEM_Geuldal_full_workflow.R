@@ -62,7 +62,37 @@ source("sources/r_scripts/aux_functions.R")
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
-## 1.4 make SWATRE soil tables -------------------------------------------------
+## 1.4 prepare lookup table landuse and soil -----------------------------------
+
+# load fieldwork results
+pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv") %>%
+  mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
+  # remove 1 nbs label to include in natural grassland group
+  filter(is.na(nbs_type)) %>%
+  group_by(lu_nr) %>%
+  summarise(rr = round(mean(rr), digits = 2),
+         n = round(mean(n), digits = 2),
+         om = round(mean(om), digits = 2),
+         per = round(mean(per), digits = 2))
+
+# load lu table
+lu_tbl <- read_csv("LISEM_data/tables/lu_tbl.csv")
+
+lu_add <- lu_tbl %>%
+  filter(rr != -9) %>%
+  select(-description, -smax_eq, - notes)
+
+s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
+
+lu_pars <- bind_rows(pars_lu, lu_add) %>%
+  left_join(s_eq, by = "lu_nr")
+  
+write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
+            sep = " ", row.names = FALSE,
+            quote = FALSE)
+
+
+## 1.5 make SWATRE soil tables -------------------------------------------------
 
 # for the simulations of infiltration we use the SWATRE mobel inside OpenLISEM
 # this requires the van Genuchten parameters for differents soil layers for
@@ -78,7 +108,9 @@ soil_landuse_to_swatre(file = "LISEM_data/swatre/UBC_texture.csv",
 # and make the tables based on the base params:
 make_swatre_tables(cal_file = "base_swatre_params.csv")
 
-## 1.5 convert to PCRaster maps ------------------------------------------------
+
+
+## 1.6 convert to PCRaster maps ------------------------------------------------
 # convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
 
 # load the list of base maps.

@@ -24,33 +24,18 @@ buildings = buildings.map;  # fraction of buildings in cell. (optional)
 id = ID.map;                # rainfall id grid
 bua = bua.map; 		     # map with build up area.
 buffers = buffers.map;      # map with boolean location of retention buffers
+#per = per.map; 		     # input map with cover based on NDVI
+lai = lai.map;		     # map with lai based on NDVI (202306)
 
 ### INPUT TABLES ### 
 
-soiltbl = soil.tbl; 
-# table with soil parameters for each field id 
 lutbl = lu.tbl;
-# table with crop and landuse parameters for each field id  
-#
-# lu
-# 01 rr (cm) = random roughness
-# 02 n = Manning's n
-# 04 per (fraction) = surface cover by vegetation
-# 05 lai (m2/m2) = leaf area index
-
-# soil
-# 05 ksat (mm/h)
-# 06 thetas (cm3/cm3) = porosity   
-# 07 soildepth (cm)
-
-chantbl = chan.tbl;
-baseqtbl = baseq.tbl;
+chantbl = chan.tbl;	# table with param values for different channel types
 
 ###################
 ### PROCES MAPS ###
 ###################
 area = area.map; # value = 1
-
 
 ###################
 ### OUTPUT MAPS ### 
@@ -64,12 +49,9 @@ grad = grad.map; # slope gradient
 Ldd = ldd.map; # Local Drain Direction  
 outlet = outlet.map; # location outlets and checkpoints 
 ### landuse maps ###
-per = per.map; # surface cover by vegetation
-lai= lai.map; # leaf area index
-ch = ch.map;  # crop height
 roadwidth = roadwidth.map;
-# grass = grasswid.map; # width of grass strips (optional)
-# smax = smax.map; # max canopy storage (optional)
+smax = smax.map; 
+
 ### surface maps ###
 rr = rr.map; # random roughness
 mann = n.map; # Manning's n
@@ -77,48 +59,22 @@ stone = stonefrc.map; # stone fraction
 # crust= crustfrc.map; # crusted fraction of surface (optional)
 # comp = compfrc.map; # compacted fraction of surface (optional)
 # hard = hardsurf.map; # impermeable surface (optional)
-### erosion maps ### 
-coh = coh.map; # cohesion of the soil
-cohadd = cohadd.map; # additional cohesion by roots
-aggrstab = aggrstab.map; # aggregate stability
-D50 = d50.map; # median texture size
+
 ### infiltration maps ###
-# for G&A 1st layer:
-ksat= ksat1.map; 
-psi= psi1.map; 
-pore= thetas1.map; 
-thetai= thetai1.map; 
-thetas= thetas1.map;
-soildep= soildep1.map; 
-# for G&A 2nd layer: (optional)
-# ksat2= ksat2.map; 
-# psi2= psi2.map; 
-# pore2= thetas2.map;
-# thetai2= thetai2.map; 
-# soildep2= soildep2.map;
+# swatre theta maps?
+
 ### channel maps ### (optional)
 lddchan = lddchan.map; 
-# chanwidth = chanwidt.map; 
-# chanside = chanside.map;
 chandiam = chandiameter.map;
 changrad = changrad.map; 
 chanman = chanman.map; 
 chanculvert = chanculvert.map;
-# chancoh = chancoh.map;
-### channel infiltration ### (optional)
-# chanksat = chanksat.map;
+
 
 initial 
 ####################
 ### PROCESS MAPS ###
 ####################
-
-# remove data outside catchment area
-#report dem = if(boolean(catchment), dem);
-#report soil = if(boolean(catchment), soil);
-#report lu = if(boolean(catchment), lu); 
-#report buildings = if(boolean(catchment), buildings);
-#report outpoint = if(boolean(catchment), outpoint);
 area = dem * 0 + 1;
 report one = dem * 0 + 1; # map with value 1
 report zero = dem * 0; # map with value 0
@@ -127,52 +83,33 @@ report zero = dem * 0; # map with value 0
 ### MAPS WITH RAINFALL  ### 
 ########################### 
 report id = if(boolean(catchment), id); 
-# for >1 rainfall zones based on points use ArcGIS or:
-# report id = spreadzone(points, 0, friction);
-# with; points = boolean map with locations of rainfall stations
-# and friction = friction map (see page 70 of LISEMdocumentation6)
+
 #################
 ### BASE MAPS ### 
 #################
 report grad = max(sin(atan(slope(dem))),0.001); 
-#report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
+#report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions # already made earlier
 report outlet = pit(Ldd);
-##################### 
-### LAND USE MAPS ### 
-##################### 
-report per = lookupscalar(lutbl, 4, lu); # fraction soil cover 
-report ch = lookupscalar(lutbl, 6, lu); # crop height (m)
-report lai = lookupscalar(lutbl, 5, lu); # leaf area index
 
 ####################
 ### SURFACE MAPS ### 
 ####################
 report rr = lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
 report mann = lookupscalar(lutbl, 2, lu); # Manning's n
+# calculate interception
+smax_eq = lookupscalar(lutbl, 5, lu);
+smax = if(smax_eq eq 1, 1.036+0.438*lai, 1);
+smax = if(smax_eq eq 2, 0.233*lai, smax);
+smax = if(smax_eq eq 6, 0.286*lai, smax);
+smax = if(smax_eq eq 7, 0.171*lai, smax);
+report smax = if(smax_eq eq 8, 0.59*lai**0.88, smax);
+
 # report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
-report stone = lookupscalar(soiltbl, 1, soil); # stone fraction 
 roadwidth = roads * celllength();
 report roadwidth = if(boolean(catchment), roadwidth);
-####################
-### EROSION MAPS ### 
-####################
-report coh = lookupscalar(soiltbl, 2, soil); 
-report cohadd = lookupscalar(lutbl, 7, lu); 
-report aggrstab = lookupscalar(soiltbl, 3, soil); 
-report D50 = lookupscalar(soiltbl, 4, soil);
-########################################## 
-### INFILTRATION MAPS for GREEN & AMPT ### 
-##########################################
-report ksat = lookupscalar(soiltbl, 5, soil); 
-#report psi = lookupscalar();
-report thetas = lookupscalar(soiltbl, 6, soil); 
-report thetai = lookupscalar(lutbl, 3, lu); 
-report soildep = lookupscalar(soiltbl, 7, soil); 
-# report ksat2 = lookupscalar(unittbl[name], [col.nr], [map.name]); 
-# report psi2 = lookupscalar(unittbl[name], [col.nr], [map.name]);
-# report thetas2 = lookupscalar(unittbl[name], [col.nr], [map.name]); 
-# report thetai2 = lookupscalar(unittbl[name], [col.nr], [map.name]); 
-# report soildep2 = lookupscalar(unittbl[name], [col.nr], [map.name]);
+
+
+
 #################### 
 ### CHANNEL MAPS ###
 ####################
