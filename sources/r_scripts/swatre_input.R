@@ -11,6 +11,28 @@ soil_landuse_to_swatre <- function(file = "",
 #load the UBC codes including texture, gravel, OM
 ubc_in <- read_csv(file)
 
+lu_in <- read.table("LISEM_data/tables/lu.tbl")[-1, ] %>%
+  select(1, 4) %>%
+  rename_with(~ c("lu", "om")) %>%
+  mutate(lu = lu * 100)
+
+ubc_a <- ubc_in %>%
+  filter(str_detect(CODE, "-A")) %>%
+  select(-om)
+
+ubc_lu <- expand_grid(UBC = ubc_a$UBC, lu = lu_in$lu) %>%
+  mutate(ubclu = UBC + lu) %>%
+  left_join(lu_in, by = "lu") %>%
+  left_join(ubc_a, by = "UBC") %>%
+  select(-UBC, -lu) %>%
+  rename("UBC" = "ubclu")
+
+ubc_lower <- ubc_in %>%
+  filter(!str_detect(CODE, "-A"))
+
+ubc_all <- bind_rows(ubc_lu, ubc_lower)
+# adjust A horizons for organic matter related to landuse
+
 ## 1.2 UBS to S&R --------------------------------------------------------------
 
 # to apply the S&R calculation we make use of code provided by: rcropmod
@@ -18,7 +40,7 @@ ubc_in <- read_csv(file)
 # Containing an Apache 2.0 license
 source("modules/rcropmod/pedotransfer.R")
 
-sr_params <- ubc_in %>%
+sr_params <- ubc_all %>%
   mutate(wp = wilt_point(sand, clay, om),
          fc = field_cap(sand, clay, om),
          thetas = theta_s(sand, clay, om),

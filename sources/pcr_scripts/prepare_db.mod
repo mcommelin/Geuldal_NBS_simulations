@@ -78,7 +78,7 @@ initial
 area = dem * 0 + 1;
 report one = dem * 0 + 1; # map with value 1
 report zero = dem * 0; # map with value 0
-
+lu = if(lu eq 0, 5, lu); # adjust 0 values to urban area
 ###########################
 ### MAPS WITH RAINFALL  ### 
 ########################### 

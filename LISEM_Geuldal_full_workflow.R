@@ -86,7 +86,10 @@ s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 
 lu_pars <- bind_rows(pars_lu, lu_add) %>%
   left_join(s_eq, by = "lu_nr")
-  
+
+nms <- as.character(seq(0, ncol(lu_pars) - 1))
+names(lu_pars) <- nms
+
 write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
