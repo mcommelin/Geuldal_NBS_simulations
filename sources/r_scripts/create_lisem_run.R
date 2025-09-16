@@ -10,7 +10,7 @@ make_runfile_lisem <- function(work_dir = NULL,
                                infil_dir = NULL,
                                inp_file = NULL,
                                evdate = NULL,
-                               dt = 5,
+                               resolution = 5,
                                start_time = 0,
                                end_time = 100) {
   # Adjust runfile lisem 
@@ -41,7 +41,14 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
                                 paste0(proj_wd, "/", infil_dir))
     
+    # flow solution
+    if (resolution > 10) {
+      run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
+    }
+      
+    
     # set timestep
+    dt <- ceiling(resolution * 0.75)
     ts <- str_pad(as.character(dt), width = 3,
             side = "left", pad = "0")
     run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model 
@@ -54,9 +61,9 @@ make_runfile_lisem <- function(work_dir = NULL,
     
     runname <- str_remove_all(as.character(evdate), "-")
     
-    # set baseflowmap
-    run_temp <- str_replace(run_temp, "<<baseflow_map>>",
-                            paste0("baseflow_", runname, ".map"))
+    # # set baseflowmap
+    # run_temp <- str_replace(run_temp, "<<baseflow_map>>",
+    #                         paste0("baseflow_", runname, ".map"))
     
     writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
   
@@ -86,7 +93,8 @@ make_runfile_lisem <- function(work_dir = NULL,
 # function create_lisem_run
 create_lisem_run <- function(
     resolution = NULL,
-    catch_num = NULL) {
+    catch_num = NULL,
+    swatre_file = "base_swatre_params.csv") {
 catch_info <- points %>%
   filter(point == catch_num) %>%
   filter(cell_size == resolution)
@@ -107,7 +115,7 @@ if (!dir.exists(run_dir)) {
 }
 
 # create the following folders in the run_dir: maps, rain, res, runfiles
-dirs <- c("maps", "rain", "res", "runfiles")
+dirs <- c("maps", "swatre", "res", "runfiles")
 for (dir in dirs) {
   dir_path <- paste0(run_dir, dir)
   if (!dir.exists(dir_path)) {
@@ -166,7 +174,7 @@ for (map in base_maps) {
     mutate(ts_start = ymd_hms(event_start),
            ts_end = ymd_hms(event_end),
            event_length = as.numeric(ts_end - ts_start) * 1440)
-  dt <- ceiling(resolution * 0.75)
+  
   
   for (i in seq_along(events$event_start)) {
     # #make baseflow
@@ -194,12 +202,12 @@ for (map in base_maps) {
   make_runfile_lisem(
     work_dir = run_dir,
     rain_dir = "LISEM_data/rain/",
-    infil_dir = "LISEM_data/swatre/tables/",
-    inp_file = "LISEM_data/swatre/profile.inp",
+    infil_dir = paste0(run_dir, "swatre/tables/"),
+    inp_file = paste0(run_dir, "swatre/profile.inp"),
     evdate = date(events$ts_start[i]),
     start_time = 0,
     end_time = events$event_length[i],
-    dt = dt
+    resolution = resolution
   )
   }
     
@@ -207,6 +215,11 @@ for (map in base_maps) {
   file.remove(paste0(subdir, "chan.tbl"))
   file.remove(paste0(subdir, "lu.tbl"))
   #file.remove(paste0(subdir, "soil.tbl"))
+  
+  source("sources/r_scripts/swatre_input.R")
+  make_swatre_tables(cal_file = swatre_file,
+                     swatre_dir = paste0(run_dir, "swatre/"))
+  
 }
 
 

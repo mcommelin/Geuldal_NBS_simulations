@@ -7,13 +7,7 @@ base_maps_subcatchment <- function(
     sub_catch_number = NULL, # adjust the number to select the subcatchment you want
     calc_ldd = FALSE
     ) {
-# resample with parallel processes to speed up
- # library(foreach)
-#  library(doParallel)
-#  n_cores <- detectCores() # number of cores
-#  registerDoParallel(cores = n_cores - 2) # register the cluster
-  
-  
+
 # load subcatchment points csv file
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
@@ -123,15 +117,25 @@ base_maps <- base_maps[base_maps != ""]  # Remove empty lines
 # resample the base maps to the new mask.map
 # make parrallel
 
-#foreach (i = seq_along(base_maps)) %dopar% {
-# parallel breaks at the execution of resample - probably two resample executions cannot use the same mask.map.
-for (i in seq_along(base_maps)) {
+# resample with parallel processes to speed up
+  n_cores <- detectCores() # number of cores
+  registerDoParallel(cores = n_cores - 4) # register the cluster
+
+  for (i in seq_along(base_maps)) {
+    file.copy(paste0(sub_catch_dir, "mask.map"), paste0(sub_catch_dir, i, ".map"))
+  }
+  
+foreach (i = seq_along(base_maps)) %dopar% {
+#for (i in seq_along(base_maps)) {
+  tmp_mask <- paste0(i, ".map")
+  
   resample(
-    clone = "mask.map",
+    clone = tmp_mask,
     map_in = paste0("base_", base_maps[i]),
     map_out = base_maps[i],
     dir = sub_catch_dir
   )
+  file.remove(paste0(sub_catch_dir, tmp_mask))
 }
 
 # run pcraster script to create base maps for subcatch

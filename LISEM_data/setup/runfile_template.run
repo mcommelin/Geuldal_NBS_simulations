@@ -76,7 +76,7 @@ Water level inflow directory=
 
 [Interception]
 Include Interception=1
-Canopy storage equation=0
+Canopy storage equation=8
 Include litter interception=0
 Litter interception storage=1.0
 
@@ -86,8 +86,8 @@ Infil Method=1
 Include compacted=0
 Include crusts=0
 Dynamic crusting=0
-Impermeable sublayer=1
-Use one matrix potential=1
+Impermeable sublayer=0
+Use one matrix potential=0
 Initial matrix potential=-100
 Nr input layers=1
 Psi user input=0
@@ -112,8 +112,8 @@ Flood initial level map=0
 Flooding courant factor=0.10
 Timestep flood=0.02
 Correct DEM=0
-Use 2D Diagonal flow=1
-Flood solution=1
+Use 2D Diagonal flow=0
+Flood solution=0
 
 [Channel and Groundwater]
 Include main channels=1
@@ -202,7 +202,7 @@ Aggregate stability calibration=1.00
 
 [Output maps]
 Erosion map units (0/1/2)=0
-Output interval=1
+Output interval=40
 OutRunoff=0
 OutWH=0
 OutV=0
@@ -223,7 +223,7 @@ OutSedSS=0
 OutSedBL=0
 
 [Advanced]
-Nr user Cores=8
+Nr user Cores=6
 Flooding SWOF Reconstruction=3
 Flooding SWOF flux limiter=1
 Correct MB with WH=0
@@ -237,8 +237,8 @@ Use Channel Kinwave dt=0
 Channel KinWave dt=60
 Use Channel Max V=1
 Channel Max V=10.0
-Channel 2D flow connect=0
-SWATRE precision=6
+Channel 2D flow connect=1
+SWATRE precision=12
 Advanced Options=1
 
 [map names]

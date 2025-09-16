@@ -8,9 +8,9 @@
 soil_landuse_to_swatre <- function(file = "",
                                    swatre_out = "")
 {
-#load the UBC codes including texture, gravel, OM
+#load the UBC codes including texture, gravel
 ubc_in <- read_csv(file)
-
+# load landuse classes with OM
 lu_in <- read.table("LISEM_data/tables/lu.tbl")[-1, ] %>%
   select(1, 4) %>%
   rename_with(~ c("lu", "om")) %>%
@@ -19,7 +19,7 @@ lu_in <- read.table("LISEM_data/tables/lu.tbl")[-1, ] %>%
 ubc_a <- ubc_in %>%
   filter(str_detect(CODE, "-A")) %>%
   select(-om)
-
+# combine the landuse and soil data to all possible combinations
 ubc_lu <- expand_grid(UBC = ubc_a$UBC, lu = lu_in$lu) %>%
   mutate(ubclu = UBC + lu) %>%
   left_join(lu_in, by = "lu") %>%
@@ -30,7 +30,11 @@ ubc_lu <- expand_grid(UBC = ubc_a$UBC, lu = lu_in$lu) %>%
 ubc_lower <- ubc_in %>%
   filter(!str_detect(CODE, "-A"))
 
-ubc_all <- bind_rows(ubc_lu, ubc_lower)
+ubc_all <- bind_rows(ubc_lu, ubc_lower) %>%
+  mutate(horizon = str_extract(CODE, "-.*$"),
+         CODE = paste0(UBC, horizon),
+         CODE = str_remove(CODE, "NA")) %>%
+  select(-horizon)
 # adjust A horizons for organic matter related to landuse
 
 ## 1.2 UBS to S&R --------------------------------------------------------------
@@ -74,7 +78,8 @@ write_csv(soil_params, swatre_out)
 }
 ## 1.4 theta - h - k table ------------------------------------------------
 
-make_swatre_tables <- function(cal_file = ""
+make_swatre_tables <- function(cal_file = "",
+                               swatre_dir = NULL
                                ) 
 {
 
@@ -82,11 +87,13 @@ soil_params <- read_csv(paste0("LISEM_data/calibration/", cal_file)) %>%
   filter(!is.na(clay)) %>%
   mutate(CODE = str_replace(CODE, "-", "_"))
 
+tbl_dir <- paste0(swatre_dir, "tables/")
+
 # cleanup /LISEM_data/swatre/tables.
-if (dir.exists("LISEM_data/swatre/tables/")) {
-  unlink("LISEM_data/swatre/tables/", recursive = TRUE)
+if (dir.exists(tbl_dir)) {
+  unlink(tbl_dir, recursive = TRUE)
 }
-dir.create("LISEM_data/swatre/tables/")
+dir.create(tbl_dir)
 
 # for loop making all tables
 for (i in seq_along(soil_params$CODE)) {
@@ -113,12 +120,12 @@ ubc_tbl <- tibble(
   select(theta, h, k)
 
 # write the profile tables
-ubc_file <- paste0("LISEM_data/swatre/tables/", ubc_tbl_n, ".tbl")
+ubc_file <- paste0(tbl_dir, ubc_tbl_n, ".tbl")
 write.table(ubc_tbl, file = ubc_file, col.names = F,
             row.names = F, sep = " ", quote = F)
 
 # copy the table for impermeable lower soils 97.tbl to the tables folder
-file.copy("LISEM_data/swatre/97.tbl", "LISEM_data/swatre/tables/", overwrite = T)
+file.copy("LISEM_data/swatre/97.tbl", tbl_dir, overwrite = T)
 
 }
 
@@ -127,20 +134,36 @@ file.copy("LISEM_data/swatre/97.tbl", "LISEM_data/swatre/tables/", overwrite = T
 
 # load template .inp
 inp <- readLines("LISEM_data/swatre/profile_template.inp")
-file <- "LISEM_data/swatre/profile.inp" # input file name
+file <- paste0(swatre_dir, "profile.inp") # input file name
 write(inp, file = file, append = F)
 
-ubc <- unique(soil_params$UBC)
+soil_params <-soil_params %>%
+  mutate(ubc_soil = str_extract(UBC, "^\\d\\d\\d"),
+         horizon = str_extract(CODE, ".$"))
+
+a_soils <- soil_params %>% 
+  filter(horizon %in% c("A", "0"))
+
+lower_soils <- soil_params %>%
+  anti_join(a_soils, by = "UBC")
+
+ubc <- unique(a_soils$UBC)
 
 for (i in seq_along(ubc)) {
 
   # write horizon data
   ubc_n <- ubc[i]
+  ubc_s <- a_soils$ubc_soil[i]
   string <- paste0("\n", ubc_n)
   write(string, file = file, append = T)  
   
-  ubc_pars <- soil_params %>%
-    filter(UBC == ubc_n)
+  low <- lower_soils %>%
+    filter(ubc_soil == ubc_s)
+  
+  ubc_pars <- a_soils %>%
+    filter(UBC == ubc_n) %>%
+    bind_rows(low)
+ 
   for (j in seq_along(ubc_pars$CODE)) {
     ubc_tbl_n <- ubc_pars$CODE[j]
     depth <- ubc_pars$depth[j]

@@ -21,3 +21,15 @@ baseinflow.map
 baseflowinitvol.map
 lai.map
 per.map
+inithead.001
+inithead.002
+inithead.003
+inithead.004
+inithead.005
+inithead.006
+inithead.007
+inithead.008
+inithead.009
+inithead.010
+inithead.011
+inithead.012

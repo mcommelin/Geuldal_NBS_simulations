@@ -26,6 +26,8 @@ bua = bua.map; 		     # map with build up area.
 buffers = buffers.map;      # map with boolean location of retention buffers
 #per = per.map; 		     # input map with cover based on NDVI
 lai = lai.map;		     # map with lai based on NDVI (202306)
+profile = profile.map;	# map with ubc soil codes for swatre
+
 
 ### INPUT TABLES ### 
 
@@ -108,7 +110,9 @@ report smax = if(smax_eq eq 8, 0.59*lai**0.88, smax);
 roadwidth = roads * celllength();
 report roadwidth = if(boolean(catchment), roadwidth);
 
-
+# combine landuse with soil map for swatre
+profile = profile + 100 * lu;
+report profile = if(profile lt 1000, 100, profile);
 
 #################### 
 ### CHANNEL MAPS ###

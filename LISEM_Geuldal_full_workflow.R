@@ -12,6 +12,8 @@ library(sf)
 library(conflicted)
 library(tidyverse)
 library(sensobol)
+library(foreach)
+library(doParallel)
 
 # load configuration
 config <- yaml.load_file("config.yaml")
@@ -108,9 +110,6 @@ write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
 source("sources/r_scripts/swatre_input.R")
 soil_landuse_to_swatre(file = "LISEM_data/swatre/UBC_texture.csv",
                        swatre_out = "LISEM_data/calibration/base_swatre_params.csv")
-# and make the tables based on the base params:
-make_swatre_tables(cal_file = "base_swatre_params.csv")
-
 
 
 ## 1.6 convert to PCRaster maps ------------------------------------------------
@@ -194,7 +193,8 @@ for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(
       resolution = reso[j], 
-      catch_num = points_id[i]
+      catch_num = points_id[i],
+      swatre_file = "base_swatre_params.csv"
     )
   }
 }
