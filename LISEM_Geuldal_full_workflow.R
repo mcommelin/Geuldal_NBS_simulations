@@ -304,10 +304,17 @@ make_swatre_tables(cal_file = "base_swatre_params.csv")
 
 # run your simulation and make evaluation figures:
 # WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
-graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T)
+graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = F)
 
+qobs <- read_csv("data/processed_data/obs_discharge/observed_discharge_high_res.csv")
 
-
+q_run <- qobs %>%
+  filter(ev_num == 9) %>%
+  filter(point %in% c(14)) %>%
+  mutate(qtot = Q * 300)
+  
+q_sum <- sum(q_run$qtot)
+  
 # load functions to run lisem many times for calibration etc.
 source("sources/r_scripts/lisem_auto_functions.R")
 

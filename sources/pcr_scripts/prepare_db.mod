@@ -129,7 +129,7 @@ report changrad=max(0.001,sin(atan(slope(chanmask*dem))));
 # calculate mannings for channel
 bua = cover(bua, 0);
 chanclass = if(bua eq 1,chantype, chantype + 2);
-chanman = lookupscalar(chantbl, 1, chanclass);
+report chanman = lookupscalar(chantbl, 1, chanclass);
 
 # adjust channel in buffers
 buffers = cover(buffers, 0);
@@ -139,5 +139,5 @@ report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
 # place culvert in buffer
 report chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
 report chandiam = scalar(if(chanculvert eq 2, 600));
-chanman = if(buffers eq 1, 0.2, chanman);
-report chanman = if(cover(chanculvert, 0) eq 2, 0.01, chanman);
+#chanman = if(buffers eq 1, 0.2, chanman);
+#report chanman = if(cover(chanculvert, 0) eq 2, 0.01, chanman);
