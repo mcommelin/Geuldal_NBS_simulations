@@ -49,7 +49,7 @@ bua = if(boolean(catchment), bua);
 #vol_sd = (area_bua / tile_num) * tilestore; # liter storage per cell
 
 #diamtile = 2 * sqrt((vol_sd / 1000) / (pi * celllength())); 
-diamtile = 800; # a diameter of ~800 mm results in a storag eof about 7mm
+diamtile = 0.8; # a diameter of ~800 mm results in a storag eof about 7mm
 
 report tiledepth = tilemask * 0;
 report tilegrad = sin(atan(slope(tilemask * dem)));

@@ -117,8 +117,8 @@ Flood solution=0
 
 [Channel and Groundwater]
 Include main channels=1
-Channel baseflow method=3
-Include channel culverts=1
+Channel baseflow method=2
+Include channel culverts=0
 Include GW flow=0
 GW flow explicit=1
 GW flow SWOF=0
@@ -309,14 +309,14 @@ lddchan=lddchan.map
 chanwidth=chanwidth.map
 chandepth=chandepth.map
 changrad=changrad.map
-chanside=chanwidth.map
+chanside=zero.map
 chandiam=chandiameter.map
 chancul=chanculvert.map
 chanman=chanman.map
 chanksat=chanksat.map
 qinpoints=QinPoints.map
 chancoh=chancoh_mc.map
-baseflow=baseinflow.map
+baseflow=<<baseflow_map>>
 baseflowinitvol=baseflowinitvol.map
 lddbase=lddbaseflow.map
 basereach=basedistance.map

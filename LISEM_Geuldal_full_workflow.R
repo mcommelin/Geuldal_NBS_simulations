@@ -86,8 +86,13 @@ lu_add <- lu_tbl %>%
 
 s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 
+#option to calibrate input parameters
+# multiply OM observed:
+cal_factors <- tibble(cf = c(0.7, 1, 0.5, 0.8, 1, 0, 0))
+
 lu_pars <- bind_rows(pars_lu, lu_add) %>%
-  left_join(s_eq, by = "lu_nr")
+  left_join(s_eq, by = "lu_nr") %>%
+  mutate(om = om * cal_factors$cf)
 
 nms <- as.character(seq(0, ncol(lu_pars) - 1))
 names(lu_pars) <- nms
@@ -109,7 +114,7 @@ write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
 # (v3) model.
 source("sources/r_scripts/swatre_input.R")
 soil_landuse_to_swatre(file = "LISEM_data/swatre/UBC_texture.csv",
-                       swatre_out = "LISEM_data/calibration/base_swatre_params.csv")
+                       swatre_out = "LISEM_data/calibration/cal_OM_swatre.csv")
 
 
 ## 1.6 convert to PCRaster maps ------------------------------------------------
@@ -194,7 +199,7 @@ for (i in seq_along(points_id)) {
     create_lisem_run(
       resolution = reso[j], 
       catch_num = points_id[i],
-      swatre_file = "base_swatre_params.csv"
+      swatre_file = "cal_OM_swatre.csv"
     )
   }
 }
