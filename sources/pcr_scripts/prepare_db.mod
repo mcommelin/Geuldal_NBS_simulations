@@ -138,6 +138,6 @@ report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
 
 # place culvert in buffer
 report chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
-report chandiam = scalar(if(chanculvert eq 2, 600));
+report chandiam = scalar(if(chanculvert eq 2, 0.6));
 #chanman = if(buffers eq 1, 0.2, chanman);
 #report chanman = if(cover(chanculvert, 0) eq 2, 0.01, chanman);
