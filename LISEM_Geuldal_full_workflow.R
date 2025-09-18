@@ -286,7 +286,8 @@ graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
 # the resulting figure is stored in ./images/simulations/
 source("sources/r_scripts/create_graphs_observations_simulations.R")
 # WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
-graph_lisem_simulation(point_id = 4, resolution = 20, clean_up = F)
+graph_lisem_simulation(point_id = 10, resolution = 5, clean_up = F,
+                       run_date = "20230622", res_dir = "res")
 
 
 # 3. Calibration ---------------------------------------------------------------

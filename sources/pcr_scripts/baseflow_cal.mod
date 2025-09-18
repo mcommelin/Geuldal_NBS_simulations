@@ -15,3 +15,4 @@ baseflow = baseflow.map;
 initial
 
 baseflow = lookupscalar(baseqtbl, 1, outpoint);
+report baseflow = cover(baseflow, 0);
