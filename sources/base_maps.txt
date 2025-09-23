@@ -12,6 +12,7 @@ chanmask.map
 chanwidth.map
 chandepth.map
 chantype.map
+culvertmask.map
 outpoints.map
 ldd.map
 bua.map

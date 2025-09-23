@@ -127,8 +127,10 @@ base_maps <- readLines("sources/base_maps.txt")
 source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
 
 chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
-            "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif")
-outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow")
+            "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif",
+            "culverts_bool.tif")
+outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow",
+             "culvertmask")
 
 for (i in seq_along(chanmaps)) {
   source_to_base_maps(
@@ -216,16 +218,18 @@ source("sources/r_scripts/create_graphs_observations_simulations.R")
 
 ## 2.3 Explore precipitation and discharge --------------------------------------
 # explore the available discharge and precipitation data
+ev_nums <- c(8,9,5,6)
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
          ts_end = ymd_hms(event_end)) %>%
-  filter(use == "cal")
+  filter(ev_num %in% ev_nums)
 
 # check the quality of the 5 minute rainfall data
 # for 2 subcatchments:
-points_id <- c(10, 14, 4, 18) # add 4 and 18 later
+points_id <- c(12, 4) # add 4 and 18 later
 # load subcatchment points csv file
 points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+
 
 # Prepare all combinations of points, events, and temporal resolutions
 Tres <- c("hour", "min")
@@ -340,5 +344,16 @@ sample_QRN_sim(file = "LISEM_data/setup/vars_openlisem.csv", n = 128,
 
 
 # 4. Baseline simulations ------------------------------------------------------
+
+# prepare catchment etc.
+source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
+
+source_to_base_maps(map_in = "data/processed_data/GIS_data/dhydro_raster_line.tif",
+                    map_out = "dhydro_line")
+
+# Create a matrix of random 2-digit numbers (10 to 99)
+set.seed(123) # Optional: for reproducibility
+mat <- matrix(sample(10:99, 1500 * 27000, replace = TRUE), nrow = 1500, ncol = 27000)
+
 
 # 5. Scenario simulations ------------------------------------------------------

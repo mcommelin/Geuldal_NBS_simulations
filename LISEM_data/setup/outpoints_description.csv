@@ -26,7 +26,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 190538.56,313912.57,13,20,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp,13.Q.34
 190546.532,313922.935,13,5,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp,13.Q.34
 193214.33,315190.35,14,20,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
-193204.77,315192.64,14,5,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
+193211.624,315192.672,14,5,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
 192665.616,313550.405,15,20,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij,12.Q.31
 192666.26,313552.645,15,5,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij,12.Q.31
 192116.32,313152.83,16,20,Hommerich,Geul meetpunt code = 10.Q.30,Hommerich,10.Q.30
@@ -35,7 +35,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 193596.5,307733.01,17,5,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen,10.Q.29
 198446.138,302182.97,18,5,Kelmis,meetpunt Geul bij Kelmis,Kelmis,KELMIS_Q_001
 198476.64,302171.28,18,20,Kelmis,meetpunt Geul bij Kelmis,Kelmis,KELMIS_Q_001
-180912,322047.52,19,5,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
+180952.99,322053.36,19,5,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
 180938.12,322051.19,19,20,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
 193962.948,315247.694,20,5,Eys,Meetpunt in dorp Eys,Eyserbeek,11.H.225
 193960.5,315248.49,20,20,Eys,Meetpunt in dorp Eys,Eyserbeek,11.H.225

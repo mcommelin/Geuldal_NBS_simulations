@@ -118,7 +118,7 @@ Flood solution=0
 [Channel and Groundwater]
 Include main channels=1
 Channel baseflow method=2
-Include channel culverts=0
+Include channel culverts=1
 Include GW flow=0
 GW flow explicit=1
 GW flow SWOF=0
@@ -194,6 +194,7 @@ Theta calibration=1.00
 Psi calibration=1.00
 Channel Ksat calibration=1.00
 Channel N calibration=1.00
+Culvert size calibration=1.00
 Boundary water level calibration=1.00
 Channel tortuosity=1.00
 Cohesion calibration=1.00

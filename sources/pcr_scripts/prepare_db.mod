@@ -14,7 +14,7 @@ catchment = catchment.map;  #
 soil = soils.map;           # field id's for texture/soil map
 roads = roads_fraction.map; # fraction road coverage (optional)
 chanmask = chanmask.map;    # location of channels value = 1 (optional)
-#culvert = culvertmask.map;  # location of culverts
+culvert = culvertmask.map;  # location of culverts
 chanwidth = chanwidth.map;  # width of channels
 chandepth = chandepth.map;  # depth of channels
 chantype = chantype.map;    # either stream (1) or ditch (2)
@@ -129,7 +129,8 @@ report changrad=max(0.001,sin(atan(slope(chanmask*dem))));
 # calculate mannings for channel
 bua = cover(bua, 0);
 chanclass = if(bua eq 1,chantype, chantype + 2);
-report chanman = lookupscalar(chantbl, 1, chanclass);
+chanman = lookupscalar(chantbl, 1, chanclass);
+chandiam = if(culvert eq 1, chanwidth);
 
 # adjust channel in buffers
 buffers = cover(buffers, 0);
@@ -137,7 +138,9 @@ report chanwidth = if(buffers eq 1, 3, chanwidth) * chanmask;
 report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
 
 # place culvert in buffer
-report chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
-report chandiam = scalar(if(chanculvert eq 2, 0.6));
-#chanman = if(buffers eq 1, 0.2, chanman);
-#report chanman = if(cover(chanculvert, 0) eq 2, 0.01, chanman);
+chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
+
+
+report chandiam = scalar(if(cover(chanculvert, 0) eq 2, 0.6, chandiam));
+report chanculvert = scalar(if(cover(culvert, 0) eq 1, 2, chanculvert)); # for now we assumme all culverts in channels are circular.
+report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman);

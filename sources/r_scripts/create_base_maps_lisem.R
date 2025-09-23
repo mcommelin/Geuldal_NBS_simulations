@@ -199,17 +199,16 @@ chanshape <- chan %>%
          shape = if_else(tunnel == "culvert", "round", shape)) %>%
   rename(width_osm = width)
 
-# 2025-09-10 we don't use culverts at the moment so don't adjust diameter
 chandim <- left_join(chanshape, shreve_lookup, 
                      join_by(closest(ValueShreve >= ClassShreve))) %>%
-  #mutate(width = if_else(tunnel == "culvert", diameter, width)) %>%
+  mutate(width = if_else(tunnel == "culvert", diameter, width)) %>%
   select(waterway, width, depth, shape, tunnel, baseflow) %>%
   mutate(culvert_bool = if_else(tunnel == "culvert", 1, 0),
          chan_type = if_else(waterway == "stream", 1, 2))
 
 st_write(chandim, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
 
-# for baseflow make a new layer that only containe channel sections with baseflow
+# for baseflow make a new layer that only contains channel sections with baseflow
 chan_bf <- chandim %>%
   filter(baseflow == 1)
 st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channels_baseflow", delete_layer = TRUE)
