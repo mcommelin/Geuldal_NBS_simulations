@@ -187,7 +187,7 @@ graph_lisem_simulation <- function(
   # load the package to calculate GOFs
   #library(hydroGOF)
   # based on the point find the subcatch folder
-  points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+  points <- read_csv("sources/setup/outpoints_description.csv")
   subcatch <- points %>%
     filter(point == point_id) %>%
     filter(cell_size == resolution)
@@ -253,7 +253,7 @@ graph_lisem_simulation <- function(
   
 # load rainfall
   ## precipitation 5 minute resolution (GMT+1)
-  rain_5min <- read_csv("data/raw_data/neerslag/KNMI_rain_5min.csv")
+  rain_5min <- read_csv("data/processed_data/neerslag/KNMI_rain_5min.csv")
   
   wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
     

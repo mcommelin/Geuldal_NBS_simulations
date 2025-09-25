@@ -120,4 +120,4 @@ rain <- bind_cols(rain, timestmp) %>%
 mutate(timestamp = timestamp + hours(1),    # from GMT to GMT + 1
        timestamp = timestamp - minutes(5)) # correct for counting backward of KNMI radar.
 
-write_csv(rain, "data/raw_data/neerslag/KNMI_rain_5min.csv")
+write_csv(rain, "data/processed_data/neerslag/KNMI_rain_5min.csv")

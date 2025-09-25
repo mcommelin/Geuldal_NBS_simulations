@@ -4,6 +4,9 @@
 
 ## Preparation ------------------
 
+#. 0 Do you want to automatically install packages that are required for this project?
+install_packages: "Y"   # choose Y or N
+
 # 1. Path to your local Miniconda installation.
 # Example: "/home/username/miniconda3"
 miniconda_path: "~/ProgramFiles/miniconda3"
@@ -16,21 +19,15 @@ conda_env: "lisem"
 # see the file /LISEM_data/setup/outpoints_description.csv
 # for subcatchment names and numbers.
 # WARNING: 1 = the whole catchment - very long processing times
+# Subcatchments for calibration are: Watervalderbeek = 10, Eyserbeek = 14, Gulp = 4,
+# Lemiers = 12, Kelmis = 18 and a 1km2 test catchment - Sippenaeken = 90.
 # You can specify one or more numbers, e.g. [10, 12, 18]
 subcatchments: [10, 12]
 
-# 4 resolution to work on, available are 5 and 20, both is also possible
+# 4. resolution to work on, available are 5 and 20, both is also possible
 resolution: [5, 20]
 
-# Name of the table containing infiltration data in your database or dataset.
-# Example: "soil_layers_infiltration"
-infiltration_table: "soil_layers_infiltration.csv"
+# 5. Name of the table containing swatre data to make in your LISEM dataset.
+# Example: "soil_layers_infiltration.csv"
+infiltration_table: "cal_OM_swatre.csv"
 
-
-## Exploration ----------------------
-
-## Calibration ---------------------
-
-## Baseline simulation --------------
-
-## Scenarios ------------------------

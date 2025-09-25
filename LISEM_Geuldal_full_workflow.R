@@ -1,36 +1,10 @@
 # full workflow for lisem simulations in the Geul catchment.
+# select lines and execute these with Ctrl + Enter
 
 # Initialization ---------------------------------------------------------------
-library(yaml)
-library(hydroGOF)
-library(rosettaPTF)
-library(gdalUtilities)
-library(terra)
-library(raster)
-library(cowplot)
-library(sf)
-library(conflicted)
-library(tidyverse)
-library(sensobol)
-library(foreach)
-library(doParallel)
 
-# load configuration
-config <- yaml.load_file("config.yaml")
-
-# make global choices for conflicting functions
-conflict_prefer("filter", "dplyr")
-conflict_prefer("select", "dplyr")
-
-# load pcraster functions
-source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = config$conda_env, miniconda = config$miniconda_path)
-
-#set digits to 10 for detail in coordinates
-options(digits = 10)
-
-# load helper functions coded for this project
-source("sources/r_scripts/aux_functions.R")
+# load and set configured settings from config.yaml
+source("sources/r_scripts/configuration.R")
 
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers
@@ -43,8 +17,6 @@ source("sources/r_scripts/aux_functions.R")
 # manual work in QGIS - but it will result in tif files for all basemaps.
 
 #Notes on manual adjustments!
-
-
 
 ## 1.2 cathment delineation ----------------------------------------------------
 # catchment delineation based on DEM and the local drain direction on 20
@@ -64,7 +36,30 @@ source("sources/r_scripts/aux_functions.R")
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
-## 1.4 prepare lookup table landuse and soil -----------------------------------
+## 1.4 convert to PCRaster maps ------------------------------------------------
+# convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
+
+# load the list of base maps.
+base_maps <- readLines("sources/base_maps.txt")
+
+# convert the required base maps
+source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
+
+chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
+              "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif",
+              "culverts_bool.tif")
+outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow",
+             "culvertmask")
+
+for (i in seq_along(chanmaps)) {
+  source_to_base_maps(
+    map_in = paste0("data/processed_data/GIS_data/base_rasters/", chanmaps[i]),
+    map_out = outmaps[i],
+    resample_method = "max"
+  )
+}
+
+## 1.5 prepare lookup table landuse and soil -----------------------------------
 
 # load fieldwork results
 pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv") %>%
@@ -78,7 +73,7 @@ pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv") %>%
          per = round(mean(per), digits = 2))
 
 # load lu table
-lu_tbl <- read_csv("LISEM_data/tables/lu_tbl.csv")
+lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv")
 
 lu_add <- lu_tbl %>%
   filter(rr != -9) %>%
@@ -102,7 +97,7 @@ write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
             quote = FALSE)
 
 
-## 1.5 make SWATRE soil tables -------------------------------------------------
+## 1.6 make SWATRE soil tables -------------------------------------------------
 
 # for the simulations of infiltration we use the SWATRE mobel inside OpenLISEM
 # this requires the van Genuchten parameters for differents soil layers for
@@ -113,49 +108,13 @@ write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
 # for SWATRE by first applying Saxton&Rawls 2006 equations and than the Rosetta
 # (v3) model.
 source("sources/r_scripts/swatre_input.R")
-soil_landuse_to_swatre(file = "LISEM_data/swatre/UBC_texture.csv",
-                       swatre_out = "LISEM_data/calibration/cal_no_OM_swatre.csv")
+soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
+                       swatre_out = paste0("sources/setup/calibration/", swatre_file))
 
-
-## 1.6 convert to PCRaster maps ------------------------------------------------
-# convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
-
-# load the list of base maps.
-base_maps <- readLines("sources/base_maps.txt")
-
-# convert the required base maps
-source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
-
-chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
-            "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif",
-            "culverts_bool.tif")
-outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow",
-             "culvertmask")
-
-for (i in seq_along(chanmaps)) {
-  source_to_base_maps(
-    map_in = paste0("data/processed_data/GIS_data/base_rasters/", chanmaps[i]),
-    map_out = outmaps[i],
-    resample_method = "max"
-  )
-}
-
-# 2. Subcatchment initial testing ----------------------------------------------
-# we use subcatchments to test the model setup and perform some pre-calibration
-# the used subcatchments are (ID number points table):
-# Watervalderbeek (10), Eyserbeek (14)
-# Kelmis (18), Gulp (4), Lemiers (12)
-
-#! Always load the following data - adjust if needed for custom settings
-points_id <- config$subcatchments #, 18, 4, 12, 90)
-reso <- config$resolution
-
-# load subcatchment points csv file
-points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
 # Additional preparation of baseflow
 
-#WARNING for the calibration of 20230622 we use observed baseflow.
+#WARNING for the calibration of 20230622 we use observed baseflow for 10, 4, 14, 12 and 18.
 # still need to update this better in the code!!!!!
 
 #1. If not done run the function from 2.2 for the full Geul_catchment
@@ -172,27 +131,81 @@ points <- read_csv("LISEM_data/setup/outpoints_description.csv")
 
 # After these steps rebuild the desired subcatchments and LISEM runs
 
+#-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# The base maps etc for the data are now finished
+# All other steps can be done by adjusting PCRaster scripts
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+# 2. Create LISEM runs for subcatchments ---------------------------------------
+# we use subcatchments to test the model setup and do the calibration
+# the used subcatchments are (ID number points table):
+# Watervalderbeek (10), Eyserbeek (14)
+# Kelmis (18), Gulp (4), Lemiers (12)
+# Sippenaeken (90) -> 1km2 for testing only 
+
 ## 2.1 prepare subcatchments ----------------------------------------------------
+
+# PCR scripts called in this function: 
+# 1. delineate_catchment.mod   = make the subcatchment
+# 2. ldd_subcatch.mod          = if 'calc_ldd = TRUE' - make ldd for subcatchment
+# 3. base_maps_subcatch.mod    = cut other basemaps to correct size.
+
+# the aim of this function is to only do data management and not influence 
+# important settings for calibration etc, these all should be part of the next
+# function.
+
+#points_id <- c(10, 12) # use if you want to update multiple subcatchments on the go
 
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
+# run for both resolutions and all selected subcatchments
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = F
+      calc_ldd = FALSE # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
 
+# you can also run for one specific subcatchment e.g.
+
+#base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = FALSE)
+
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
 
-## 2.2 make initial lisem runs ------------------------------------------------
+## 2.2 make lisem runs ------------------------------------------------
 
-# TODO adjust runfile template -> make sure it is up to date with latest settings!
+# this function mainly works for manual calibration
+# to do many runs exploring a parameter space, code is developed in section 3.
+
+# options to adjust/calibrate LISEM input:
+#' 1. the landuse table including OM values.
+#'      in section 1.5 this table is made 'cal_factors' can be adjusten or the
+#'      resulting LISEM_data/tables/lu.tbl can be adjusted before running the 
+#'      swatre code in 1.6
+#' 2. the resulting swatre input parameters from section 1.6 can be adjusted 
+#'      for each UBC code. A ksat, npar and alpha map are made in each run to
+#'      better grasp these values.
+#'      WARNING this input effects all lisem runs of the Geulcatchment!!
+#'      you can always go back the base settings by loading the base file in the function.
+#' PCRaster scripts used in the function:
+#' 1.  baseflow_cal.mod  = calculates baseflow for subcatchments on 20230622 
+#'                - if more events/subcatch needed adjust code and csv file
+#' 2. prepare_db.mod     = main script making most of the maps, channels and culverts
+#' 3. storm_drans.mod    = script making storm drains in urban area 
+#'                          - contains hard coded drain size!
+
+# the runfile template file should be updated manually if the model has new options
+# stored in : 'sources/setup/runfile_template.run'
+
+#points_id <- c(10, 12) # use if you want to update multiple subcatchments on the go
+#swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
+
 # TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
 
@@ -201,10 +214,38 @@ for (i in seq_along(points_id)) {
     create_lisem_run(
       resolution = reso[j], 
       catch_num = points_id[i],
-      swatre_file = "cal_OM_swatre.csv"
+      swatre_file = swatre_file
     )
   }
 }
+
+# you can also run for one specific subcatchment e.g.
+#create_lisem_run(resolution = 20, catch_num = 10, swatre_file = "cal_OM_swatre.csv")
+
+## 2.3 Simulation and figure ---------------------------------------------------
+# select a subcatchment and event from the LISEM_runs folder structure
+# manually execute the LISEM run
+# when finished this function below will make a graph of the discharge including
+# a Goodness-of-fit calculation
+# point_id = number of the subcatchment point
+# resolution = resolution of the simulation (5 or 20 m)
+# clean_up = do you want to empty the results directory after the figure
+#             is made - advise is TRUE!
+# if the runfile name has changed from the default date format set
+# run_date = "20230622" # the date as character string
+# if the result directory is not 'res' set
+# res_dir = <res_folder_name>
+
+# the resulting figure is stored in ./images/simulations/
+source("sources/r_scripts/create_graphs_observations_simulations.R")
+# WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
+graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T,
+                       run_date = "20230622", res_dir = "res")
+
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# From here the code is under development for different part of the WRL project.
 
 # first we explore the available precipitation and discharge data 
 # to select events for calibration
@@ -216,7 +257,7 @@ for (i in seq_along(points_id)) {
 # 1: check the quality of the 5 minute resolution rainfall radar
 source("sources/r_scripts/create_graphs_observations_simulations.R")
 
-## 2.3 Explore precipitation and discharge --------------------------------------
+## 2.4 Explore precipitation and discharge --------------------------------------
 # explore the available discharge and precipitation data
 ev_nums <- c(8,9,5,6)
 events <- read_csv("sources/selected_events.csv") %>%
@@ -228,7 +269,7 @@ events <- read_csv("sources/selected_events.csv") %>%
 # for 2 subcatchments:
 points_id <- c(12, 4) # add 4 and 18 later
 # load subcatchment points csv file
-points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+points <- read_csv("sources/setup/outpoints_description.csv")
 
 
 # Prepare all combinations of points, events, and temporal resolutions
@@ -278,34 +319,11 @@ ev_dates <- c("2023-06-22")
 # mkae figures with combined rain and discharge
 graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
 
-## 2.4 Simulation and figure ---------------------------------------------------
-# select a subcatchment and event from the LISEM_runs folder structure
-# manually execute the LISEM run
-# when finished this function below will make a graph of the discharge including
-# a Goodness-of-fit calculation
-# point_id = number of the subcatchment point
-# resolution = resolution of the simulation (5 or 20 m)
-# clean_up = do you want to empty the results directory after the figure
-#             is made - advise is TRUE!
-# the resulting figure is stored in ./images/simulations/
-source("sources/r_scripts/create_graphs_observations_simulations.R")
-# WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
-graph_lisem_simulation(point_id = 10, resolution = 5, clean_up = F,
-                       run_date = "20230622", res_dir = "res")
-
-
 # 3. Calibration ---------------------------------------------------------------
 
 ## 3.1 manual calibration ------------------------------------------------------
 
-# adjust infiltration parameters for calibration. 
-# copy the file "LISEM_data/calibration/base_params_swatre.csv 
-# give a new name and adjust thevalues for specific ubc codes.
-# initial parameters of interest are npar, alpha and ksat.
-# when save run the following function to update the input
-# WARNING this input effects all lisem runs of the Geulcatchment!!
-# you can always go back the base settings by loading the base file in the function.
-make_swatre_tables(cal_file = "base_swatre_params.csv")
+
 
 # run your simulation and make evaluation figures:
 # WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
