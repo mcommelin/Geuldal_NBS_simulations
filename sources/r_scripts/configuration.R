@@ -6,13 +6,24 @@ config <- yaml.load_file("config.yaml")
 ins <- config$install_packages
 if (ins == "Y") {
 # install packages if needed
-if (!require("pacman")) install.packages("pacman")
-pacman::p_load(yaml, hydroGOF, gdalUtilities, terra, raster, cowplot, sf, 
-               conflicted, tidyverse, sensobol, foreach, doParallel)
-
+# if (!require("pacman")) install.packages("pacman")
+# pacman::p_load(yaml, hydroGOF, gdalUtilities, terra, raster, cowplot, sf, 
+#                conflicted, tidyverse, sensobol, foreach, doParallel)
+if (!require("hydroGOF")) install.packages("hydroGOF")
+if (!require("gdalUtilities")) install.packages("gdalUtilities")
+if (!require("terra")) install.packages("terra")
+if (!require("raster")) install.packages("raster")
+if (!require("cowplot")) install.packages("cowplot")
+if (!require("sf")) install.packages("sf")
+if (!require("conflicted")) install.packages("conflicted")
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("sensobol")) install.packages("sensobol")
+if (!require("foreach")) install.packages("foreach")
+if (!require("doParallel")) install.packages("doParallel")
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
 } else {
   print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
+  Sys.sleep(2)
 }
 # load all packages
 
