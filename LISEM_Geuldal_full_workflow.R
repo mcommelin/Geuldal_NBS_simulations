@@ -114,7 +114,7 @@ write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
 # (v3) model.
 source("sources/r_scripts/swatre_input.R")
 soil_landuse_to_swatre(file = "LISEM_data/swatre/UBC_texture.csv",
-                       swatre_out = "LISEM_data/calibration/cal_OM_swatre.csv")
+                       swatre_out = "LISEM_data/calibration/cal_no_OM_swatre.csv")
 
 
 ## 1.6 convert to PCRaster maps ------------------------------------------------
@@ -309,7 +309,7 @@ make_swatre_tables(cal_file = "base_swatre_params.csv")
 
 # run your simulation and make evaluation figures:
 # WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
-graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = F)
+graph_lisem_simulation(point_id = 14, resolution = 20, clean_up = T)
 
 qobs <- read_csv("data/processed_data/obs_discharge/observed_discharge_high_res.csv")
 
