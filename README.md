@@ -26,7 +26,7 @@ To run the code properly the ./LISEM_data/ and ./data/processed_data/ folders ar
 # Required Software
 
 ## OpenLISEM
-The OpenLISEM model can be downloaded from: https://github.com/vjetten/openlisem
+The OpenLISEM model can be downloaded from: https://github.com/vjetten/openlisem  
 For installation etc follow the instruction at: https://github.com/vjetten/openlisem/wiki/Getting-started
 
 ## PCRaster
