@@ -83,7 +83,7 @@ make_swatre_tables <- function(cal_file = "",
                                ) 
 {
 
-soil_params <- read_csv(paste0("LISEM_data/calibration/", cal_file)) %>%
+soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file)) %>%
   filter(!is.na(clay)) %>%
   mutate(CODE = str_replace(CODE, "-", "_"))
 
@@ -125,7 +125,7 @@ write.table(ubc_tbl, file = ubc_file, col.names = F,
             row.names = F, sep = " ", quote = F)
 
 # copy the table for impermeable lower soils 97.tbl to the tables folder
-file.copy("LISEM_data/swatre/97.tbl", tbl_dir, overwrite = T)
+file.copy("sources/setup/swatre/97.tbl", tbl_dir, overwrite = T)
 
 }
 
@@ -133,7 +133,7 @@ file.copy("LISEM_data/swatre/97.tbl", tbl_dir, overwrite = T)
 ## 1.5 update profile.inp ------------------------------------------------------
 
 # load template .inp
-inp <- readLines("LISEM_data/swatre/profile_template.inp")
+inp <- readLines("sources/setup/swatre/profile_template.inp")
 file <- paste0(swatre_dir, "profile.inp") # input file name
 write(inp, file = file, append = F)
 

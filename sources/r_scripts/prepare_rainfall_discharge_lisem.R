@@ -5,28 +5,6 @@
 #' These tables can be used for all the subcatchments, so only on input table per 
 #' event is needed.
 #' 
-# Initialization --------------------------------------------------------------
-library(hms)
-library(gdalUtilities)
-library(raster)
-library(sf)
-library(tidyverse)
-
-# load pcraster functions
-source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
-
-#functions
-add_suffix <- function(strings) {
-  # Use grepl to check if the string contains an underscore
-  sapply(strings, function(x) {
-    if (!grepl("_", x)) {
-      paste0(x, "_00")
-    } else {
-      x
-    }
-  })
-}
 
 #1. Input precipitation data ---------------------------------------
 
@@ -187,7 +165,8 @@ for (k in seq_along(events$ts_start)) {
   
 ##1.4 Tables 5 min rain ------------------------------------------------------------------
 # NOTE!
-# before running this code run the code from 'KNMI_precipitation.R'
+# if './data/processed_data/neerslag/KNMI_rain_5min.csv' does not exist
+# run the code from 'KNMI_precipitation.R'
 
 # rain tables for the 4 events for calibration and control with 5 minute interval
 #load the events
@@ -196,7 +175,7 @@ events <- read_csv("sources/selected_events.csv") %>%
          ts_end = ymd_hms(event_end)) %>%
   filter(use != "none")
 
-rain_5min <- read_csv("data/raw_data/neerslag/KNMI_rain_5min.csv")
+rain_5min <- read_csv("data/processed_data/neerslag/KNMI_rain_5min.csv")
 
 # set options to enough digits for accuracy extent
 options(digits = 10)
@@ -488,5 +467,5 @@ for (k in seq_along(events$event_start)) {
 }
 # combine to tabe and save
 qtable <- bind_rows(qevent)
-write_csv(qtable, "LISEM_data/tables/observed_discharge_hourly.csv")
+write_csv(qtable, "data/processed_data/obs_discharge/observed_discharge_hourly.csv")
 

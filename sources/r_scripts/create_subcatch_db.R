@@ -9,7 +9,7 @@ base_maps_subcatchment <- function(
     ) {
 
 # load subcatchment points csv file
-points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+points <- read_csv("sources/setup/outpoints_description.csv")
 
 res = cell_size
 
@@ -119,7 +119,7 @@ base_maps <- base_maps[base_maps != ""]  # Remove empty lines
 
 # resample with parallel processes to speed up
   n_cores <- detectCores() # number of cores
-  registerDoParallel(cores = n_cores - 4) # register the cluster
+  registerDoParallel(cores = n_cores - 2) # register the cluster
 
   for (i in seq_along(base_maps)) {
     file.copy(paste0(sub_catch_dir, "mask.map"), paste0(sub_catch_dir, i, ".map"))

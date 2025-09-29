@@ -1,6 +1,0 @@
-var_name,mean,sd,lower,upper,dis_type,source,lumped_for,note,cal_include
-n,1,1,0.1,1.9,uniform,estimate,lu,NA,1
-ksat1,1,1,0.2,5,uniform,dinoloket,lu,NA,1
-psi1,1,1,2,17,uniform,estimate,lu,NA,1
-thetai1,1,1,0.8,1.2,uniform,estimate,lu,NA,1
-rain,1,1,0.8,1.2,uniform,estimate,all,NA,1

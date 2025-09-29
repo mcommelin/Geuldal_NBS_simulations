@@ -17,11 +17,13 @@ options(stringsAsFactors = FALSE)
 
 #use anonymous key from: https://developer.dataplatform.knmi.nl/get-started
 key <- "eyJvcmciOiI1ZTU1NGUxOTI3NGE5NjAwMDEyYTNlYjEiLCJpZCI6ImVlNDFjMWI0MjlkODQ2MThiNWI4ZDViZDAyMTM2YTM3IiwiaCI6Im11cm11cjEyOCJ9"
-#download files from KNMI data portal
+
+# select the time periods based on selected rainfall events.
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
          ts_end = ymd_hms(event_end)) %>%
   filter(use != "none")
+
 days_list <- vector("list", length = length(events$event_start))
 for (j in seq_along(events$event_start)) {
   days_list[[j]] <- seq(date(events$ts_start[j]), date(events$ts_end[j]), by = 'days') %>%
@@ -120,4 +122,4 @@ rain <- bind_cols(rain, timestmp) %>%
 mutate(timestamp = timestamp + hours(1),    # from GMT to GMT + 1
        timestamp = timestamp - minutes(5)) # correct for counting backward of KNMI radar.
 
-write_csv(rain, "data/raw_data/neerslag/KNMI_rain_5min.csv")
+write_csv(rain, "data/processed_data/neerslag/KNMI_rain_5min.csv")

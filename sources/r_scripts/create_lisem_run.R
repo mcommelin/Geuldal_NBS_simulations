@@ -14,7 +14,7 @@ make_runfile_lisem <- function(work_dir = NULL,
                                start_time = 0,
                                end_time = 100) {
   # Adjust runfile lisem 
-  run_template <- readLines("LISEM_data/setup/runfile_template.run")
+  run_template <- readLines("sources/setup/runfile_template.run")
   
     #load template
     run_temp <- run_template
@@ -131,29 +131,11 @@ for (map in base_maps) {
             overwrite = TRUE)
 }
 
-  # #copy landuse and soil tables to subdir
-  # lutbl <- read_csv("LISEM_data/tables/lu_tbl.csv") %>%
-  #   select(-description, -notes)
-  # nms <- as.character(seq(0, ncol(lutbl) - 1))
-  # names(lutbl) <- nms
-  # #write space delimited lutbl with colnumbers instead of names
-  # write.table(lutbl, file = paste0(subdir, "lu.tbl"),
-  #             sep = " ", row.names = FALSE,
-  #             quote = FALSE)
-  # # same for soiltbl
-  # soiltbl <- read_csv("LISEM_data/tables/soil_tbl.csv") %>%
-  #   select(-desc, -notes)
-  # nms <- as.character(seq(0, ncol(soiltbl) - 1))
-  # names(soiltbl) <- nms
-  # #write space delimited soiltbl with colnumbers instead of names
-  # write.table(soiltbl, file = paste0(subdir, "soil.tbl"),
-  #             sep = " ", row.names = FALSE,
-  #             quote = FALSE)
-  # copy lu.tbl
+  # #copy landuse and channel table to subdir
   file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
  
    #copy chan.tbl
-  file.copy(from = "LISEM_data/tables/chan.tbl", to = subdir, overwrite = T)
+  file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   
   # run pcraster script to finalize run database.
   pcr_script(
@@ -167,6 +149,14 @@ for (map in base_maps) {
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
+  
+  # # run pcraster script to make buffer features.
+  # pcr_script(
+  #   script = "prepare_buffer_features.mod",
+  #   script_dir = "sources/pcr_scripts",
+  #   work_dir = subdir
+  # )
+  
   
   # add runfiles for selected events
   events <- read_csv("sources/selected_events.csv") %>%
