@@ -193,6 +193,8 @@ for (i in seq_along(points_id)) {
 #'      better grasp these values.
 #'      WARNING this input effects all lisem runs of the Geulcatchment!!
 #'      you can always go back the base settings by loading the base file in the function.
+#' 3. the channel mannings n properties: see sources/setup/tables/
+#' 
 #' PCRaster scripts used in the function:
 #' 1.  baseflow_cal.mod  = calculates baseflow for subcatchments on 20230622 
 #'                - if more events/subcatch needed adjust code and csv file

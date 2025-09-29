@@ -150,6 +150,14 @@ for (map in base_maps) {
     work_dir = subdir
   )
   
+  # # run pcraster script to make buffer features.
+  # pcr_script(
+  #   script = "prepare_buffer_features.mod",
+  #   script_dir = "sources/pcr_scripts",
+  #   work_dir = subdir
+  # )
+  
+  
   # add runfiles for selected events
   events <- read_csv("sources/selected_events.csv") %>%
     filter(use != "none") %>%

@@ -85,7 +85,7 @@ graph_subcatch_qp <- function(points_id = NULL,
   points <- read_csv("LISEM_data/setup/outpoints_description.csv")
   
   ## precipitation 5 minute resolution (GMT +1)
-  rain_5min <- read_csv("data/raw_data/neerslag/KNMI_rain_5min.csv")
+  rain_5min <- read_csv("data/processed_data/neerslag/KNMI_rain_5min.csv")
   
   # make loop over subcatch
   rain_sub <- vector("list", length = length(points_id))

@@ -1,0 +1,7 @@
+4 different channeltypes are defined:
+
+1 = natural stream in rural area
+2 = manmade ditch in rural area
+3 = natural stream in urban area
+4 = manmade ditch in urban area
+
