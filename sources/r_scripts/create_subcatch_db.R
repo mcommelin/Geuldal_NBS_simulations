@@ -121,14 +121,14 @@ if (parallel == TRUE) {
 
 # resample with parallel processes to speed up
   n_cores <- detectCores() # number of cores
-  c1 <- makeCluster(n_cores - 2)
-  registerDoParallel(c1) # register the cluster
+#  c1 <- makeCluster(n_cores - 2)
+  registerDoParallel(cores = n_cores - 2) # register the cluster
   # make tmp mask maps otherwise resample crashes 
   for (i in seq_along(base_maps)) {
     file.copy(paste0(sub_catch_dir, "mask.map"), paste0(sub_catch_dir, i, ".map"))
   }
   
-foreach (i = seq_along(base_maps)) %do% {
+foreach (i = seq_along(base_maps)) %dopar% {
   tmp_mask <- paste0(i, ".map")
   
   resample(
@@ -140,7 +140,7 @@ foreach (i = seq_along(base_maps)) %do% {
   # remove the temp mask maps.
   file.remove(paste0(sub_catch_dir, tmp_mask))
 }
-stopCluster(c1)
+# stopCluster(c1)
 
 } else {
   # single thread option

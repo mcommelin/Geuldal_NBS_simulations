@@ -64,7 +64,8 @@ pcrcalc <- function(options = "", work_dir) {
   
   sys_type <- Sys.info()['sysname']
   exe <- ifelse(sys_type == "Windows", ".exe", "")
-  command <- paste0(pcr_dir, "pcrcalc", exe, " ", options)
+  quotes <- ifelse(sys_type == "Windows", "", "'")
+  command <- paste0(pcr_dir, "pcrcalc", exe, " ", quotes, options, quotes)
   system(command)
   setwd(projwd)
 }
