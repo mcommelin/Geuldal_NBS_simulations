@@ -167,14 +167,14 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       calc_ldd = FALSE, # only recalculate ldd if first time or dem is changed, takes some time!!
-      parallel = FALSE  # the map resampling can be done parallel, on windows this can cause errors, then set to false.
+      parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
 
-#base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = FALSE)
+#base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = FALSE, parallel = FALSE)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
