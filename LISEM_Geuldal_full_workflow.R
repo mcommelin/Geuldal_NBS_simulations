@@ -166,7 +166,8 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = FALSE # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = FALSE, # only recalculate ldd if first time or dem is changed, takes some time!!
+      parallel = FALSE  # the map resampling can be done parallel, on windows this can cause errors, then set to false.
     )
   }
 }

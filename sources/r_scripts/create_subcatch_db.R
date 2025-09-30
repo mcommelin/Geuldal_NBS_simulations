@@ -5,7 +5,8 @@
 base_maps_subcatchment <- function(
     cell_size = NULL,
     sub_catch_number = NULL, # adjust the number to select the subcatchment you want
-    calc_ldd = FALSE
+    calc_ldd = FALSE,
+    parallel = TRUE
     ) {
 
 # load subcatchment points csv file
@@ -43,7 +44,7 @@ for (i in seq_along(base_maps)) {
 # pcraster create map with selected outpoint
 pcrcalc(
   work_dir = sub_catch_dir,
-  options = paste0("'sub_point.map=boolean(if(base_outpoints.map eq ", subcatch$point, ", 1))'")
+  options = paste0("sub_point.map=boolean(if(base_outpoints.map eq ", subcatch$point, ", 1))")
 )
 # delineate the subcatchment
 pcr_script(
@@ -60,9 +61,9 @@ map2asc(
 )
 
 # vectorize subcatchment
-ras <- rast(paste0(sub_catch_dir, "/sub.asc"))
+ras <- rast(paste0(sub_catch_dir, "sub.asc"))
 pol <- as.polygons(ras)
-writeVector(pol, paste0(sub_catch_dir, "/sub.shp"), overwrite = TRUE)
+writeVector(pol, paste0(sub_catch_dir, "sub.shp"), overwrite = TRUE)
 
 # use polygon of subcatchment to cut the raster
 # general settings
@@ -71,12 +72,12 @@ method = "near"
 
 # gdal warp with cutline
 gdalwarp(
-  srcfile = paste0(sub_catch_dir, "/sub.asc"),
-  dstfile = paste0(sub_catch_dir, "/catchment.asc"),
+  srcfile = paste0(sub_catch_dir, "sub.asc"),
+  dstfile = paste0(sub_catch_dir, "catchment.asc"),
   s_srs = srs,
   t_srs = srs,
   tr = rep(res, 2),
-  cutline = paste0(sub_catch_dir, "/sub.shp"),
+  cutline = paste0(sub_catch_dir, "sub.shp"),
   crop_to_cutline = T,
   of = "AAIgrid",
   r = method,
@@ -88,7 +89,7 @@ gdalwarp(
 
 # read the catchment.asc
 options(digits = 10)
-subcatch_header <- readLines(paste0(sub_catch_dir, "/catchment.asc"), n = 5)
+subcatch_header <- readLines(paste0(sub_catch_dir, "catchment.asc"), n = 5)
 # extract only digits or '.' from the strings in subcatch_header
 subcatch_header <- gsub("[^0-9.]", "", subcatch_header)
 
@@ -115,18 +116,19 @@ base_maps <- gsub("^catchment\\.map$", "", base_maps)
 base_maps <- base_maps[base_maps != ""]  # Remove empty lines
 
 # resample the base maps to the new mask.map
-# make parrallel
+
+if (parallel == TRUE) {
 
 # resample with parallel processes to speed up
   n_cores <- detectCores() # number of cores
-  registerDoParallel(cores = n_cores - 2) # register the cluster
-
+  c1 <- makeCluster(n_cores - 2)
+  registerDoParallel(c1) # register the cluster
+  # make tmp mask maps otherwise resample crashes 
   for (i in seq_along(base_maps)) {
     file.copy(paste0(sub_catch_dir, "mask.map"), paste0(sub_catch_dir, i, ".map"))
   }
   
-foreach (i = seq_along(base_maps)) %dopar% {
-#for (i in seq_along(base_maps)) {
+foreach (i = seq_along(base_maps)) %do% {
   tmp_mask <- paste0(i, ".map")
   
   resample(
@@ -135,7 +137,22 @@ foreach (i = seq_along(base_maps)) %dopar% {
     map_out = base_maps[i],
     dir = sub_catch_dir
   )
+  # remove the temp mask maps.
   file.remove(paste0(sub_catch_dir, tmp_mask))
+}
+stopCluster(c1)
+
+} else {
+  # single thread option
+  for (i in seq_along(base_maps)) {
+
+  resample(
+    clone = "mask.map",
+    map_in = paste0("base_", base_maps[i]),
+    map_out = base_maps[i],
+    dir = sub_catch_dir
+  )
+}
 }
 
 # run pcraster script to create base maps for subcatch
