@@ -110,10 +110,6 @@ report smax = if(smax_eq eq 8, 0.59*lai**0.88, smax);
 roadwidth = roads * celllength();
 report roadwidth = if(boolean(catchment), roadwidth);
 
-# combine landuse with soil map for swatre
-profile = profile + 100 * lu;
-report profile = if(profile lt 1000, 100, profile);
-
 #################### 
 ### CHANNEL MAPS ###
 ####################
