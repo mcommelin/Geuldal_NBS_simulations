@@ -83,7 +83,7 @@ soil_params <- bind_cols(sr_params, rosetta_params) %>%
 write_csv(soil_params, swatre_out)
 }
 
-
+# here we can add code to include observed porosity and ksat before making the swatre tables
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
