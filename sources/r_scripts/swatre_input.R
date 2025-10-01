@@ -76,6 +76,10 @@ soil_params <- bind_cols(sr_params, rosetta_params) %>%
 # here we can adjust many parameters for each variable during testing
 write_csv(soil_params, swatre_out)
 }
+
+## 1.3b MERGE FIELD MEASUREMENTS KSAT AND PORE ----------------------------------
+
+
 ## 1.4 theta - h - k table ------------------------------------------------
 
 make_swatre_tables <- function(cal_file = "",

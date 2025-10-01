@@ -43,7 +43,7 @@ for (i in seq_along(base_maps)) {
 # pcraster create map with selected outpoint
 pcrcalc(
   work_dir = sub_catch_dir,
-  options = paste0("'sub_point.map=boolean(if(base_outpoints.map eq ", subcatch$point, ", 1))'")
+  options = paste0("sub_point.map=boolean(if(base_outpoints.map eq ", subcatch$point, ", 1))")
 )
 # delineate the subcatchment
 pcr_script(
@@ -60,9 +60,9 @@ map2asc(
 )
 
 # vectorize subcatchment
-ras <- rast(paste0(sub_catch_dir, "/sub.asc"))
+ras <- rast(paste0(sub_catch_dir, "sub.asc"))
 pol <- as.polygons(ras)
-writeVector(pol, paste0(sub_catch_dir, "/sub.shp"), overwrite = TRUE)
+writeVector(pol, paste0(sub_catch_dir, "sub.shp"), overwrite = TRUE)
 
 # use polygon of subcatchment to cut the raster
 # general settings
@@ -71,12 +71,12 @@ method = "near"
 
 # gdal warp with cutline
 gdalwarp(
-  srcfile = paste0(sub_catch_dir, "/sub.asc"),
-  dstfile = paste0(sub_catch_dir, "/catchment.asc"),
+  srcfile = paste0(sub_catch_dir, "sub.asc"),
+  dstfile = paste0(sub_catch_dir, "catchment.asc"),
   s_srs = srs,
   t_srs = srs,
   tr = rep(res, 2),
-  cutline = paste0(sub_catch_dir, "/sub.shp"),
+  cutline = paste0(sub_catch_dir, "sub.shp"),
   crop_to_cutline = T,
   of = "AAIgrid",
   r = method,
@@ -88,7 +88,7 @@ gdalwarp(
 
 # read the catchment.asc
 options(digits = 10)
-subcatch_header <- readLines(paste0(sub_catch_dir, "/catchment.asc"), n = 5)
+subcatch_header <- readLines(paste0(sub_catch_dir, "catchment.asc"), n = 5)
 # extract only digits or '.' from the strings in subcatch_header
 subcatch_header <- gsub("[^0-9.]", "", subcatch_header)
 

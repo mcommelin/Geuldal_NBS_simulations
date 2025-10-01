@@ -18,7 +18,7 @@ source("sources/r_scripts/configuration.R")
 
 #Notes on manual adjustments!
 
-## 1.2 cathment delineation ----------------------------------------------------
+## 1.2 catchment delineation ----------------------------------------------------
 # catchment delineation based on DEM and the local drain direction on 20
 # meter resolution. 
 # currently done manually with steps:
