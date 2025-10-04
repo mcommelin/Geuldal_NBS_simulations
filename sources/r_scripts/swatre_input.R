@@ -3,41 +3,47 @@
 # Initialization --------------------------------------------------------------
 # we expect this to run inside the full workflow, so all libraries required are
 # loaded already.
-
-# Calculate params -------------------------------------------------------------
 soil_landuse_to_swatre <- function(file = "",
                                    swatre_out = "")
 {
+# 1. Calculate params -------------------------------------------------------------
+
 #load the UBC codes including texture, gravel
 ubc_in <- read_csv(file)
-# load landuse classes with OM
+# load landuse classes with OM and O depth
 lu_in <- read.table("LISEM_data/tables/lu.tbl")[-1, ] %>%
-  select(1, 4) %>%
-  rename_with(~ c("lu", "om")) %>%
+  select(1, 4, 7) %>%
+  rename_with(~ c("lu", "om", "od")) %>%
   mutate(lu = lu * 100)
 
-ubc_a <- ubc_in %>%
+# the measured OM values from the field campaign are applied to the upper
+# x centimeters of the A horizon, below that values from the original soil
+# are used.
+
+# In the UBC dataset now A = 1.5, B = 1, C = 0.5 OM where does this come from?
+
+# adjust O horizons for organic matter related to landuse
+ubc_o <- ubc_in %>%
   filter(str_detect(CODE, "-A")) %>%
   select(-om)
 # combine the landuse and soil data to all possible combinations
-ubc_lu <- expand_grid(UBC = ubc_a$UBC, lu = lu_in$lu) %>%
+ubc_lu <- expand_grid(UBC = ubc_o$UBC, lu = lu_in$lu) %>%
   mutate(ubclu = UBC + lu) %>%
   left_join(lu_in, by = "lu") %>%
-  left_join(ubc_a, by = "UBC") %>%
-  select(-UBC, -lu) %>%
-  rename("UBC" = "ubclu")
+  left_join(ubc_o, by = "UBC") %>%
+  select(-UBC, -lu, -depth) %>%
+  rename("UBC" = "ubclu") %>%
+  rename("depth" = "od") %>%
+  mutate(CODE = str_replace(CODE, "-A", "-O")) %>%
+  filter(depth != 0)
 
-ubc_lower <- ubc_in %>%
-  filter(!str_detect(CODE, "-A"))
-
-ubc_all <- bind_rows(ubc_lu, ubc_lower) %>%
+ubc_all <- bind_rows(ubc_lu, ubc_in) %>%
   mutate(horizon = str_extract(CODE, "-.*$"),
          CODE = paste0(UBC, horizon),
          CODE = str_remove(CODE, "NA")) %>%
   select(-horizon)
-# adjust A horizons for organic matter related to landuse
 
-## 1.2 UBS to S&R --------------------------------------------------------------
+## 1.2 Saxton & Rawls --------------------------------------------------------------
 
 # to apply the S&R calculation we make use of code provided by: rcropmod
 # https://github.com/ldemaz/rcropmod
@@ -81,12 +87,15 @@ write_csv(soil_params, swatre_out)
 
 
 ## 1.4 theta - h - k table ------------------------------------------------
+# here we can add code to include observed porosity and ksat before making the swatre tables
 
 make_swatre_tables <- function(cal_file = "",
                                swatre_dir = NULL
                                ) 
 {
-
+# 2. SWATRE tables LISEM-----------------------------------
+  
+  ## 2.1 theta - h - k table ------------------------------------------------
 soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file)) %>%
   filter(!is.na(clay)) %>%
   mutate(CODE = str_replace(CODE, "-", "_"))
@@ -134,7 +143,7 @@ file.copy("sources/setup/swatre/97.tbl", tbl_dir, overwrite = T)
 }
 
 
-## 1.5 update profile.inp ------------------------------------------------------
+## 2.2 update profile.inp ------------------------------------------------------
 
 # load template .inp
 inp <- readLines("sources/setup/swatre/profile_template.inp")
@@ -145,26 +154,26 @@ soil_params <-soil_params %>%
   mutate(ubc_soil = str_extract(UBC, "^\\d\\d\\d"),
          horizon = str_extract(CODE, ".$"))
 
-a_soils <- soil_params %>% 
-  filter(horizon %in% c("A", "0"))
+o_soils <- soil_params %>% 
+  filter(horizon %in% c("O", "0"))
 
 lower_soils <- soil_params %>%
-  anti_join(a_soils, by = "UBC")
+  anti_join(o_soils, by = "UBC")
 
-ubc <- unique(a_soils$UBC)
+ubc <- unique(o_soils$UBC)
 
 for (i in seq_along(ubc)) {
 
   # write horizon data
   ubc_n <- ubc[i]
-  ubc_s <- a_soils$ubc_soil[i]
+  ubc_s <- o_soils$ubc_soil[i]
   string <- paste0("\n", ubc_n)
   write(string, file = file, append = T)  
   
   low <- lower_soils %>%
     filter(ubc_soil == ubc_s)
   
-  ubc_pars <- a_soils %>%
+  ubc_pars <- o_soils %>%
     filter(UBC == ubc_n) %>%
     bind_rows(low)
  

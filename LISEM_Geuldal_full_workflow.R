@@ -77,17 +77,27 @@ lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv")
 
 lu_add <- lu_tbl %>%
   filter(rr != -9) %>%
-  select(-description, -smax_eq, - notes)
+  select(-description, -smax_eq, - notes) 
 
 s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 
+# the O horizon has the high OM values measured in the fieldcampaign
+# a value between 1 and < 30 cm can be chosen for each landuse
+# a value of 30 or more will give errors in the current code!
+# lu types: 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras,
+# 5 = verhard, 6 = water, 7 = naaldbos
+O_depth <- c(10, 20, 10, 10, 5, 1, 20)
+
+# NOT USED AT THE MOMENT!
 #option to calibrate input parameters
 # multiply OM observed:
 cal_factors <- tibble(cf = c(0.7, 1, 0.5, 0.8, 1, 0, 0))
+# NOT USED AT THE MOMENTR!
 
 lu_pars <- bind_rows(pars_lu, lu_add) %>%
-  left_join(s_eq, by = "lu_nr") %>%
-  mutate(om = om * cal_factors$cf)
+  left_join(s_eq, by = "lu_nr")%>%
+  arrange(lu_nr) %>%
+  mutate(od = O_depth)
 
 nms <- as.character(seq(0, ncol(lu_pars) - 1))
 names(lu_pars) <- nms
@@ -166,14 +176,15 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = FALSE # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = FALSE, # only recalculate ldd if first time or dem is changed, takes some time!!
+      parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
 
-#base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = FALSE)
+#base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = FALSE, parallel = FALSE)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -377,3 +388,4 @@ mat <- matrix(sample(10:99, 1500 * 27000, replace = TRUE), nrow = 1500, ncol = 2
 
 
 # 5. Scenario simulations ------------------------------------------------------
+

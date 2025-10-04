@@ -5,7 +5,8 @@
 base_maps_subcatchment <- function(
     cell_size = NULL,
     sub_catch_number = NULL, # adjust the number to select the subcatchment you want
-    calc_ldd = FALSE
+    calc_ldd = FALSE,
+    parallel = TRUE
     ) {
 
 # load subcatchment points csv file
@@ -115,18 +116,19 @@ base_maps <- gsub("^catchment\\.map$", "", base_maps)
 base_maps <- base_maps[base_maps != ""]  # Remove empty lines
 
 # resample the base maps to the new mask.map
-# make parrallel
+
+if (parallel == TRUE) {
 
 # resample with parallel processes to speed up
   n_cores <- detectCores() # number of cores
+#  c1 <- makeCluster(n_cores - 2)
   registerDoParallel(cores = n_cores - 2) # register the cluster
-
+  # make tmp mask maps otherwise resample crashes 
   for (i in seq_along(base_maps)) {
     file.copy(paste0(sub_catch_dir, "mask.map"), paste0(sub_catch_dir, i, ".map"))
   }
   
 foreach (i = seq_along(base_maps)) %dopar% {
-#for (i in seq_along(base_maps)) {
   tmp_mask <- paste0(i, ".map")
   
   resample(
@@ -135,7 +137,22 @@ foreach (i = seq_along(base_maps)) %dopar% {
     map_out = base_maps[i],
     dir = sub_catch_dir
   )
+  # remove the temp mask maps.
   file.remove(paste0(sub_catch_dir, tmp_mask))
+}
+# stopCluster(c1)
+
+} else {
+  # single thread option
+  for (i in seq_along(base_maps)) {
+
+  resample(
+    clone = "mask.map",
+    map_in = paste0("base_", base_maps[i]),
+    map_out = base_maps[i],
+    dir = sub_catch_dir
+  )
+}
 }
 
 # run pcraster script to create base maps for subcatch
