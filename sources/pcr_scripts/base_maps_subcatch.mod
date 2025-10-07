@@ -30,5 +30,7 @@ report outpoint = if(boolean(catchment), outpoint);
 report id = if(boolean(catchment), id);
 
 # combine landuse with soil map for swatre
-profile = profile + 100 * lu;
-report profile = if(profile lt 1000, 100, profile);
+
+report profile = if (profile == 100,100,profile + 100 * lu);
+report profn.map=nominal(profile);
+

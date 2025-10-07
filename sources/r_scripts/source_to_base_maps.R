@@ -49,7 +49,7 @@ source_to_base_maps <- function(
     file.remove(paste0(main_dir, "mask.asc"))
     
     tempfile <- paste0(main_dir, "maps/", map_out, ".asc")
-    
+    message("gdalwarp: ",map_in)
     # GDAL warp the source map
     gdalwarp(
       srcfile = map_in,

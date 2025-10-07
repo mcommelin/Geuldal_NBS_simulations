@@ -47,12 +47,12 @@ source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to 
 
 chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
               "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif",
-              "culverts_bool.tif")
+              "culverts_bool.tif","soilcodeUBC_5m.tif")
 outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow",
-             "culvertmask")
+             "culvertmask","profile")
 
 for (i in seq_along(chanmaps)) {
-  source_to_base_maps(
+    source_to_base_maps(
     map_in = paste0("data/processed_data/GIS_data/base_rasters/", chanmaps[i]),
     map_out = outmaps[i],
     resample_method = "max"
@@ -62,6 +62,7 @@ for (i in seq_along(chanmaps)) {
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
 
 # load fieldwork results
+# OM divided by 4 and 0.5 added. stoniness reduced
 pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv") %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
@@ -78,6 +79,7 @@ lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv")
 lu_add <- lu_tbl %>%
   filter(rr != -9) %>%
   select(-description, -smax_eq, - notes) 
+
 
 s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 
@@ -101,7 +103,7 @@ lu_pars <- bind_rows(pars_lu, lu_add) %>%
 
 nms <- as.character(seq(0, ncol(lu_pars) - 1))
 names(lu_pars) <- nms
-
+# tables folder must be created
 write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
@@ -165,8 +167,8 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-#points_id <- c(10, 12) # use if you want to update multiple subcatchments on the go
-
+points_id <- c(14) # use if you want to update multiple subcatchments on the go
+reso <- c(5,20)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
@@ -176,7 +178,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = FALSE, # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = TRUE, # only recalculate ldd if first time or dem is changed, takes some time!!
       parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
@@ -216,8 +218,10 @@ for (i in seq_along(points_id)) {
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
 
-#points_id <- c(10, 12) # use if you want to update multiple subcatchments on the go
+points_id <- c(14) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
+
+reso = c(5, 20) # 5 or 20
 
 # TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
@@ -254,138 +258,4 @@ source("sources/r_scripts/create_graphs_observations_simulations.R")
 # WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
 graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T,
                        run_date = "20230622", res_dir = "res")
-
-
-
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# From here the code is under development for different part of the WRL project.
-
-# first we explore the available precipitation and discharge data 
-# to select events for calibration
-# in the script 'discharge_rain_exploration.R' a first exploration and selection
-# of events for the whole Geul catchment is done. This is also described in the
-# document: 'selectie_regenbuien.docx'
-
-# Based on this we further:
-# 1: check the quality of the 5 minute resolution rainfall radar
-source("sources/r_scripts/create_graphs_observations_simulations.R")
-
-## 2.4 Explore precipitation and discharge --------------------------------------
-# explore the available discharge and precipitation data
-ev_nums <- c(8,9,5,6)
-events <- read_csv("sources/selected_events.csv") %>%
-  mutate(ts_start = ymd_hms(event_start),
-         ts_end = ymd_hms(event_end)) %>%
-  filter(ev_num %in% ev_nums)
-
-# check the quality of the 5 minute rainfall data
-# for 2 subcatchments:
-points_id <- c(12, 4) # add 4 and 18 later
-# load subcatchment points csv file
-points <- read_csv("sources/setup/outpoints_description.csv")
-
-
-# Prepare all combinations of points, events, and temporal resolutions
-Tres <- c("hour", "min")
-combos <- expand.grid(point = points_id, event = events$ts_start,
-  tres = Tres, stringsAsFactors = FALSE)
-
-rain_list <- vector("list", nrow(combos))
-for (x in seq_len(nrow(combos))) {
-  point_id <- combos$point[x]
-  event_idx <- combos$event[x]
-  tres_val <- combos$tres[x]
-  
-  # select subcatchment
-  subcatch <- points %>%
-    filter(point == point_id) %>%
-    filter(cell_size == 5)
-  subcatch_name <- subcatch$subcatch_name
-  wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
-  evdate <- date(combos$event[x])
-  # run the function to compare precipitation sources
-  rain_list[[x]] <- subcatch_rain_compare(
-    wdir = wdir,
-    ev_date = evdate,
-    tres = tres_val
-  )
-}
-
-# combine the plots
-# Extract total values from rain_list (assuming total P is in the 2nd list)
-combos$total <- sapply(rain_list, function(x) x[[2]])
-x = nrow(combos) / 2
-# with cowplot combine the figures and save
-for (i in 1:x) {
-  plot_grid(rain_list[[i]][[1]], rain_list[[i + x]][[1]], nrow = 2, align = "hv")
-  ggsave(
-    paste0("images/rain_compare_", date(combos$event[i]), "_", combos$point[i],".png")
-  )
-}
-
-# Based on this analysis we first will work with the event on 2023-06-22
-
-# points of subcatchments
-p_id <- c(10, 14, 4, 18, 12)
-# event_dates
-ev_dates <- c("2023-06-22")
-# mkae figures with combined rain and discharge
-graph_subcatch_qp(points_id = p_id, event_dates = ev_dates)
-
-# 3. Calibration ---------------------------------------------------------------
-
-## 3.1 manual calibration ------------------------------------------------------
-
-
-
-# run your simulation and make evaluation figures:
-# WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
-graph_lisem_simulation(point_id = 14, resolution = 20, clean_up = T)
-
-qobs <- read_csv("data/processed_data/obs_discharge/observed_discharge_high_res.csv")
-
-q_run <- qobs %>%
-  filter(ev_num == 9) %>%
-  filter(point %in% c(14)) %>%
-  mutate(qtot = Q * 300)
-  
-q_sum <- sum(q_run$qtot)
-  
-# load functions to run lisem many times for calibration etc.
-source("sources/r_scripts/lisem_auto_functions.R")
-
-## 3.2 First explorative runs --------------------------------------------------
-
-# process the selected calibration parameters to prepare for random sampling
-input_parameters_OL()
-
-# sample parameters for QRN run
-set.seed(4571)  #random seed, to be able to reproduce sampling
-
-# to draw the sample, we use the 'sensobol' package. For initial exploration 
-# runs we only need the 'A' matrix and we will draw 64 parameter sets.
-sample_QRN_sim(file = "LISEM_data/setup/vars_openlisem.csv", n = 128, 
-               matrix = "A", 
-               out_file = "LISEM_data/params/sim_runoff_params.csv")
-
-# further steps of adjustment if needed.
-
-# prepare runs based on selected parameters and create script to run on hpc
-# this is all done in th the script auto_runs_input_lisem.r
-
-
-# 4. Baseline simulations ------------------------------------------------------
-
-# prepare catchment etc.
-source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
-
-source_to_base_maps(map_in = "data/processed_data/GIS_data/dhydro_raster_line.tif",
-                    map_out = "dhydro_line")
-
-# Create a matrix of random 2-digit numbers (10 to 99)
-set.seed(123) # Optional: for reproducibility
-mat <- matrix(sample(10:99, 1500 * 27000, replace = TRUE), nrow = 1500, ncol = 27000)
-
-
-# 5. Scenario simulations ------------------------------------------------------
 

@@ -95,41 +95,42 @@ create_lisem_run <- function(
     resolution = NULL,
     catch_num = NULL,
     swatre_file = "base_swatre_params.csv") {
-catch_info <- points %>%
-  filter(point == catch_num) %>%
-  filter(cell_size == resolution)
-## copy basemaps to a lisem_runs folder ---------------------------------------
-catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m/")
-
-base_dir <- paste0("LISEM_data/", catch_dir)
-# if catch_num > 1 add subcatchements after LISEM_data/
-if (catch_num > 1) {
-  base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
-}
-
-run_dir <- paste0("LISEM_runs/", catch_dir)
-
-# create subdir for the run
-if (!dir.exists(run_dir)) {
-  dir.create(run_dir, recursive = TRUE)
-}
-
-# create the following folders in the run_dir: maps, rain, res, runfiles
-dirs <- c("maps", "swatre", "res", "runfiles")
-for (dir in dirs) {
-  dir_path <- paste0(run_dir, dir)
-  if (!dir.exists(dir_path)) {
-    dir.create(dir_path)
+    catch_info <- points %>%
+      filter(point == catch_num) %>%
+      filter(cell_size == resolution)
+    
+    ## copy basemaps to a lisem_runs folder ---------------------------------------
+    catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m/")
+    base_dir <- paste0("LISEM_data/", catch_dir)
+    
+    # if catch_num > 1 add subcatchements after LISEM_data/
+    if (catch_num > 1) {
+      base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
   }
-}
 
-base_maps <- readLines("sources/base_maps.txt")
-# copy the maps to the run_dir
-subdir <- paste0(run_dir, "maps/")
-for (map in base_maps) {
-  file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
-            overwrite = TRUE)
-}
+  run_dir <- paste0("LISEM_runs/", catch_dir)
+
+  # create subdir for the run
+  if (!dir.exists(run_dir)) {
+    dir.create(run_dir, recursive = TRUE)
+  }
+  
+  # create the following folders in the run_dir: maps, rain, res, runfiles
+  dirs <- c("maps", "swatre", "res", "runfiles")
+  for (dir in dirs) {
+    dir_path <- paste0(run_dir, dir)
+    if (!dir.exists(dir_path)) {
+      dir.create(dir_path)
+    }
+  }
+
+  base_maps <- readLines("sources/base_maps.txt")
+  # copy the maps to the run_dir
+  subdir <- paste0(run_dir, "maps/")
+  for (map in base_maps) {
+    file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
+              overwrite = TRUE)
+  }
 
   # #copy landuse and channel table to subdir
   file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
@@ -205,7 +206,7 @@ for (map in base_maps) {
   file.remove(paste0(subdir, "chan.tbl"))
   file.remove(paste0(subdir, "lu.tbl"))
   #file.remove(paste0(subdir, "soil.tbl"))
-  
+  message(swatre_file)
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
                      swatre_dir = paste0(run_dir, "swatre/"))

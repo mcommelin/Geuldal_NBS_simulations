@@ -81,6 +81,15 @@ area = dem * 0 + 1;
 report one = dem * 0 + 1; # map with value 1
 report zero = dem * 0; # map with value 0
 lu = if(lu eq 0, 5, lu); # adjust 0 values to urban area
+report lu *= area; # apply ctachment mask
+
+###########################
+### PROFILE  ### 
+########################### 
+report profile = (profile+100*lu)*area;
+report profn.map = nominal(profile);
+
+
 ###########################
 ### MAPS WITH RAINFALL  ### 
 ########################### 
