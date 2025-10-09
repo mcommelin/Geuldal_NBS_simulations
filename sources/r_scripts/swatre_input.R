@@ -48,7 +48,7 @@ soil_landuse_to_swatre <- function(file = "",
   # to apply the S&R calculation we make use of code provided by: rcropmod
   # https://github.com/ldemaz/rcropmod
   # Containing an Apache 2.0 license
-  
+  message("pedotransfer.r")
   source("modules/rcropmod/pedotransfer.R")
   
   sr_params <- ubc_all %>%
@@ -64,6 +64,7 @@ soil_landuse_to_swatre <- function(file = "",
   # are found. To run this we install the rosetta-soil python package inside 
   # a conda environment and the rosettaPTF package in R see also:
   # https://ncss-tech.github.io/rosettaPTF/
+  message("rosetta")
   
   # we give the 6 available parameters to rosetta in the correct order.
   soildat <- sr_params %>%
@@ -78,16 +79,15 @@ soil_landuse_to_swatre <- function(file = "",
   soil_params <- bind_cols(sr_params, rosetta_params) %>%
     mutate_at(vars(matches("^log10")), ~ 10^.) %>% # recalculate all log10 values
     rename_with(~ str_remove(., "^log10_")) # update names
-  # folder LISEM_data/calibration must exist
-  # write the soil_params to LISEM_data/calibration
-  # here we can adjust many parameters for each variable during testing
-  write_csv(soil_params, swatre_out)
-  
+    # folder LISEM_data/calibration must exist
+    # write the soil_params to LISEM_data/calibration
+    # here we can adjust many parameters for each variable during testing
+    write_csv(soil_params, swatre_out)
   }
   
   ## 1.3b MERGE FIELD MEASUREMENTS KSAT AND PORE ----------------------------------
   
-  
+
   ## 1.4 theta - h - k table ------------------------------------------------
   # here we can add code to include observed porosity and ksat before making the swatre tables
   
@@ -96,7 +96,7 @@ soil_landuse_to_swatre <- function(file = "",
                                  ) 
   {
     # 2. SWATRE tables LISEM-----------------------------------
-      
+    message("make_swatre_tables")    
       ## 2.1 theta - h - k table ------------------------------------------------
     soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file)) %>%
       filter(!is.na(clay)) %>%
@@ -165,7 +165,6 @@ soil_landuse_to_swatre <- function(file = "",
   ubc <- unique(o_soils$UBC)
 
   for (i in seq_along(ubc)) {
-  
     # write horizon data
     ubc_n <- ubc[i]
     ubc_s <- o_soils$ubc_soil[i]

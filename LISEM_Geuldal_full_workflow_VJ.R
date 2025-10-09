@@ -165,9 +165,13 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # the aim of this function is to only do data management and not influence 
 # important settings for calibration etc, these all should be part of the next
 # function.
+# WARNING: 1 = the whole catchment - very long processing times
+# Subcatchments for calibration are: Watervalderbeek = 10, Eyserbeek = 14, Gulp = 4,
+# Lemiers = 12, Kelmis = 18 and a 1km2 test catchment - Sippenaeken = 90.
 
-points_id <- c(4,10,12,14,18) # use if you want to update multiple subcatchments on the go
-
+#points_id <- c(4,10,12,14,18) # use if you want to update multiple subcatchments on the go
+points_id <- c(14) # use if you want to update multiple subcatchments on the go
+reso <- c(5,20)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
@@ -177,7 +181,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = TRUE, # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = FALSE, # only recalculate ldd if first time or dem is changed, takes some time!!
       parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
@@ -221,8 +225,8 @@ for (i in seq_along(points_id)) {
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
 # TODO redefine begin and end times for subcatch events based on P and Q observed
-source("sources/r_scripts/create_lisem_run.R")
 
+source("sources/r_scripts/create_lisem_run.R")
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(

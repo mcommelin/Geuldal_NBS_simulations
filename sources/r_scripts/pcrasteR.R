@@ -91,7 +91,7 @@ pcr_script <- function(script, script_dir, work_dir, script_path_rel = TRUE) {
   if (!exists("pcr_dir")) {
     stop("Please set PCraster installation with 'set_pcraster()")
   }
-  message("pcr_script: ",script, work_dir)
+  message("pcr_script: ",script,"-", work_dir)
   sys_type <- Sys.info()['sysname']
   exe <- ifelse(sys_type == "Windows", ".exe", "")
   # set working directory to execute command - return to project at end of function

@@ -86,7 +86,8 @@ report lu *= area; # apply ctachment mask
 ###########################
 ### PROFILE  ### 
 ########################### 
-report profile = (profile+100*lu)*area;
+profile = if(profile eq 100, 100,profile+100*lu)*area;
+report profile = if(profile le 1000,100,profile)
 report profn.map = nominal(profile);
 
 

@@ -155,7 +155,6 @@ base_maps_subcatchment <- function(
     }
   }
 
-  message("ldd_subcatch.mod")
   # run pcraster script to create base maps for subcatch
   if (calc_ldd == TRUE) {
     pcr_script(
@@ -164,7 +163,7 @@ base_maps_subcatchment <- function(
       work_dir = sub_catch_dir
     )
   }
-  message("base_maps_subcatch.mod ", sub_catch_dir)
+
   pcr_script(
     script = "base_maps_subcatch.mod",
     script_dir = "sources/pcr_scripts",

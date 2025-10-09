@@ -92,20 +92,20 @@ make_runfile_lisem <- function(work_dir = NULL,
 
 # function create_lisem_run
 create_lisem_run <- function(
-    resolution = NULL,
-    catch_num = NULL,
-    swatre_file = "base_swatre_params.csv") {
-    catch_info <- points %>%
-      filter(point == catch_num) %>%
-      filter(cell_size == resolution)
-    
-    ## copy basemaps to a lisem_runs folder ---------------------------------------
-    catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m/")
-    base_dir <- paste0("LISEM_data/", catch_dir)
-    
-    # if catch_num > 1 add subcatchements after LISEM_data/
-    if (catch_num > 1) {
-      base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
+  resolution = NULL,
+  catch_num = NULL,
+  swatre_file = "base_swatre_params.csv") {
+  catch_info <- points %>%
+    filter(point == catch_num) %>%
+    filter(cell_size == resolution)
+  
+  ## copy basemaps to a lisem_runs folder ---------------------------------------
+  catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m/")
+  base_dir <- paste0("LISEM_data/", catch_dir)
+  
+  # if catch_num > 1 add subcatchements after LISEM_data/
+  if (catch_num > 1) {
+    base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
   }
 
   run_dir <- paste0("LISEM_runs/", catch_dir)
@@ -139,18 +139,20 @@ create_lisem_run <- function(
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   
   # run pcraster script to finalize run database.
+  message("PCR prepare_db.mod")
   pcr_script(
     script = "prepare_db.mod",
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
   # run pcraster script to make storm drains.
+  message("PCR storm_drains.mod")
   pcr_script(
     script = "storm_drains.mod",
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
-  
+    
   # # run pcraster script to make buffer features.
   # pcr_script(
   #   script = "prepare_buffer_features.mod",
@@ -189,24 +191,24 @@ create_lisem_run <- function(
     file.rename(paste0(subdir, "baseflow.map"),
                 paste0(subdir, "baseflow_", date_event, ".map"))
     
-  # make runfile  
-  make_runfile_lisem(
-    work_dir = run_dir,
-    rain_dir = "LISEM_data/rain/",
-    infil_dir = paste0(run_dir, "swatre/tables/"),
-    inp_file = paste0(run_dir, "swatre/profile.inp"),
-    evdate = date(events$ts_start[i]),
-    start_time = 0,
-    end_time = events$event_length[i],
-    resolution = resolution
-  )
+    # make runfile  
+    make_runfile_lisem(
+      work_dir = run_dir,
+      rain_dir = "LISEM_data/rain/",
+      infil_dir = paste0(run_dir, "swatre/tables/"),
+      inp_file = paste0(run_dir, "swatre/profile.inp"),
+      evdate = date(events$ts_start[i]),
+      start_time = 0,
+      end_time = events$event_length[i],
+      resolution = resolution
+    )
   }
     
   #delete intermediate files
   file.remove(paste0(subdir, "chan.tbl"))
   file.remove(paste0(subdir, "lu.tbl"))
   #file.remove(paste0(subdir, "soil.tbl"))
-  message(swatre_file)
+  message("do swatre_input.R")
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
                      swatre_dir = paste0(run_dir, "swatre/"))
