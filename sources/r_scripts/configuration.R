@@ -39,6 +39,7 @@ library(tidyverse)
 library(sensobol)
 library(foreach)
 library(doParallel)
+library(reticulate)
 
 # load configuration
 

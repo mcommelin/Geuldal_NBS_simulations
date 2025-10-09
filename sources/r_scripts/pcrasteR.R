@@ -39,9 +39,7 @@ asc2map <- function(clone = "mask.map", asc_header = TRUE, options = "", map_in 
   sys_type <- Sys.info()['sysname']
   exe <- ifelse(sys_type == "Windows", ".exe", "")
   asc_option = ifelse(asc_header == T, "-a ", " ") 
-  message("map_in: ", map_in)
-  message("map_out: ", map_out)
-  
+
   command <- paste0(pcr_dir, "asc2map", exe, " --clone ", sub_dir, clone, " ", asc_option,
                     options, " ", sub_dir, map_in, " ", sub_dir, map_out)
   system(command)
@@ -91,7 +89,9 @@ pcr_script <- function(script, script_dir, work_dir, script_path_rel = TRUE) {
   if (!exists("pcr_dir")) {
     stop("Please set PCraster installation with 'set_pcraster()")
   }
-  message("pcr_script: ",script,"-", work_dir)
+  
+  if(DEBUGm) message("pcr_script: ",script," - ", work_dir)
+  
   sys_type <- Sys.info()['sysname']
   exe <- ifelse(sys_type == "Windows", ".exe", "")
   # set working directory to execute command - return to project at end of function
@@ -165,8 +165,6 @@ resample <- function(clone = "mask.map", map_in = "in.map", map_out = "out.map",
   
   sys_type <- Sys.info()['sysname']
   exe <- ifelse(sys_type == "Windows", ".exe", "")
-  message("resample map_in: ", map_in)
-  message("resample map_out: ", map_out)
   command <- paste0(pcr_dir, "resample", exe, " --clone ", dir, clone, " ", 
                     dir, map_in, " ", dir, map_out)
   system(command)
@@ -218,9 +216,7 @@ map2asc <- function(asc_header = TRUE, options = "", map_in = "in.map", map_out 
   sys_type <- Sys.info()['sysname']
   exe <- ifelse(sys_type == "Windows", ".exe", "")
   asc_option = ifelse(asc_header == T, "-a ", " ") 
-  
-  message("map_in: ", map_in)
-  message("map_out: ", map_out)
+
   command <- paste0(pcr_dir, "map2asc", exe, " ", asc_option,
                     options, " ", sub_dir, map_in, " ", sub_dir, map_out)
   system(command)

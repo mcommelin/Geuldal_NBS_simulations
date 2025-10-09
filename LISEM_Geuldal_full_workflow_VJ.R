@@ -5,6 +5,9 @@
 
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
+
+DEBUGm = TRUE
+show_col_types = FALSE
 #
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers
@@ -52,10 +55,10 @@ outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow"
              "culvertmask","profile")
 
 for (i in seq_along(chanmaps)) {
-    source_to_base_maps(
+    source_to_base_maps (
     map_in = paste0("data/processed_data/GIS_data/base_rasters/", chanmaps[i]),
     map_out = outmaps[i],
-    resample_method = "max"
+    resample_method = "near"
   )
 }
 
@@ -181,13 +184,13 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = FALSE, # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = TRUE, # only recalculate ldd if first time or dem is changed, takes some time!!
       parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
 }
 
-# you can also run for one specific subcatchment e.g.
+## you can also run for one specific subcatchment e.g.
 
 #base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = FALSE, parallel = FALSE)
 

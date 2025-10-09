@@ -34,6 +34,5 @@ report id = if(boolean(catchment), id);
 profile = profile + 100 * lu;
 profile = if (profile lt 1000,100,profile);
 report profile = if (lu eq 5,100,profile);
-report profilevj.map = if (lu eq 5,100,profile);
 report profn.map=nominal(profile);
 

@@ -28,7 +28,7 @@ def resample_to_reference(input_tif, reference_tif, output_tif, epsg, method):
         "-te", str(xmin), str(ymin), str(xmax), str(ymax),
         "-ts", str(x_size), str(y_size),
         "-r", method, 
-	"-overwrite",
+	      "-overwrite",
         input_tif, "gdw.tif"
     ]
     #print("gdalwarp","-t_srs ", proj,"-te", str(xmin), str(ymin), str(xmax), str(ymax),"-ts", str(x_size), str(y_size),"-r", "near", input_tif, output_tif)
@@ -41,20 +41,20 @@ def resample_to_reference(input_tif, reference_tif, output_tif, epsg, method):
       "-of", "PCRaster",
       "-mo", "PCRASTER_VALUESCALE=VS_SCALAR",
       "gdw.tif",
-      output_tif
+      output_map
     ]
     subprocess.check_call(cmd)
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 6:
-        print("Usage: python resample.py <input.map> <clone.map> <output.map> <epsg number> <rmethod>")
+        print("Usage: python resamplewarp.py <input.map> <clone.map> <output.map> <epsg number> <rmethod>")
         sys.exit(1)
 
     input_tif = sys.argv[1]
     reference_tif = sys.argv[2]
     output_tif = sys.argv[3]
     epsg = sys.argv[4]
-    rmethod = sys.argv[4]
+    rmethod = sys.argv[5]
 
     resample_to_reference(input_tif, reference_tif, output_tif, epsg, rmethod)

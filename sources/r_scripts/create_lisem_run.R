@@ -139,14 +139,12 @@ create_lisem_run <- function(
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   
   # run pcraster script to finalize run database.
-  message("PCR prepare_db.mod")
   pcr_script(
     script = "prepare_db.mod",
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
   # run pcraster script to make storm drains.
-  message("PCR storm_drains.mod")
   pcr_script(
     script = "storm_drains.mod",
     script_dir = "sources/pcr_scripts",
@@ -208,7 +206,6 @@ create_lisem_run <- function(
   file.remove(paste0(subdir, "chan.tbl"))
   file.remove(paste0(subdir, "lu.tbl"))
   #file.remove(paste0(subdir, "soil.tbl"))
-  message("do swatre_input.R")
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
                      swatre_dir = paste0(run_dir, "swatre/"))
