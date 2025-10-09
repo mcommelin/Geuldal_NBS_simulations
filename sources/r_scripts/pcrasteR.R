@@ -84,7 +84,7 @@ pcrcalc <- function(options = "", work_dir) {
 #work_dir: directory where the script should be executed
 #script_path_rel: (default = TRUE) relative or absolute path for script_dir
 
-pcr_script <- function(script, script_dir, work_dir, script_path_rel = TRUE) {
+ pcr_script <- function(script, script_dir, work_dir, script_path_rel = TRUE) {
   # check if pcr_dir exists
   if (!exists("pcr_dir")) {
     stop("Please set PCraster installation with 'set_pcraster()")
@@ -101,11 +101,13 @@ pcr_script <- function(script, script_dir, work_dir, script_path_rel = TRUE) {
   if (!script_path_rel) {
     script_prefix <- paste0(script_dir, "/")
   } else {
-  script_prefix <- paste0(projwd, "/", script_dir, "/")
+    script_prefix <- paste0(projwd, "/", script_dir, "/")
   }
+
   command <- paste0(pcr_dir, "pcrcalc", exe, " -f ", script_prefix, script)
   system(command)
   setwd(projwd)
+  
 }
 
 # make a new map - newmap

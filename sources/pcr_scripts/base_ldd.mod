@@ -17,4 +17,3 @@ initial
 
 report dem = if(boolean(catch), dem);
 report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
-report ddchan= lddcreate(dem*chanmask,1e20,1e20,1e20,1e20); 

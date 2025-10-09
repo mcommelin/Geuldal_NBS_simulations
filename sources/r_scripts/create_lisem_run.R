@@ -12,9 +12,10 @@ make_runfile_lisem <- function(work_dir = NULL,
                                evdate = NULL,
                                resolution = 5,
                                start_time = 0,
-                               end_time = 100) {
-  # Adjust runfile lisem 
-  run_template <- readLines("sources/setup/runfile_template.run")
+                               end_time = 100) 
+{
+    # Adjust runfile lisem 
+    run_template <- readLines("sources/setup/runfile_template.run")
   
     #load template
     run_temp <- run_template
@@ -45,7 +46,7 @@ make_runfile_lisem <- function(work_dir = NULL,
     if (resolution > 10) {
       run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
     }
-      
+    
     
     # set timestep
     dt <- ceiling(resolution * 0.75)
@@ -94,7 +95,8 @@ make_runfile_lisem <- function(work_dir = NULL,
 create_lisem_run <- function(
   resolution = NULL,
   catch_num = NULL,
-  swatre_file = "base_swatre_params.csv") {
+  swatre_file = "base_swatre_params.csv") 
+{
   catch_info <- points %>%
     filter(point == catch_num) %>%
     filter(cell_size == resolution)
@@ -137,7 +139,7 @@ create_lisem_run <- function(
  
    #copy chan.tbl
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
-  
+ message("hier ",subdir)  
   # run pcraster script to finalize run database.
   pcr_script(
     script = "prepare_db.mod",
