@@ -63,7 +63,7 @@ for (i in seq_along(chanmaps)) {
 
 # load fieldwork results
 # OM divided by 4 and 0.5 added. stoniness reduced
-pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv") %>%
+pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
   filter(is.na(nbs_type)) %>%
@@ -74,7 +74,7 @@ pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv") %>%
          per = round(mean(per), digits = 2))
 
 # load lu table
-lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv")
+lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv", show_col_types = FALSE)
 
 lu_add <- lu_tbl %>%
   filter(rr != -9) %>%

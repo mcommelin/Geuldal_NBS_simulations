@@ -8,7 +8,7 @@
 source_to_base_maps <- function(
     map_in = "",
     map_out = "",
-    resample_method = "near"
+    resample_method = "max"
     ) 
 {
   

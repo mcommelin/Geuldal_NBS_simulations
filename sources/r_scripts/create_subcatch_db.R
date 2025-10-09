@@ -61,7 +61,8 @@ base_maps_subcatchment <- function(
   map_clone = paste0(sub_catch_dir, "sub.map")
   map_clone_tif = paste0(sub_catch_dir, "sub.tif")
   map_clone_cut_tif = paste0(sub_catch_dir, "subc.tif")
-  
+
+  #make sub..map into a tif to read the header
   gdal_translate(
     src_dataset = map_clone,
     dst_dataset = map_clone_tif,
@@ -89,7 +90,7 @@ base_maps_subcatchment <- function(
   ymax <- ymax(ref)
   ncol <- ncol(ref)
   nrow <- nrow(ref)
-  message(ref)
+  if (DEBUGm) message(ref)
   
   # #remove ldd map because cannot be resampled.
   base_maps <- gsub("^ldd\\.map$", "", base_maps)

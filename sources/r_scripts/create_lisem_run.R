@@ -134,12 +134,11 @@ create_lisem_run <- function(
               overwrite = TRUE)
   }
 
-  # #copy landuse and channel table to subdir
+  #copy landuse and channel table to subdir
   file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
  
-   #copy chan.tbl
+  #copy chan.tbl
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
- message("hier ",subdir)  
   # run pcraster script to finalize run database.
   pcr_script(
     script = "prepare_db.mod",
@@ -153,12 +152,12 @@ create_lisem_run <- function(
     work_dir = subdir
   )
     
-  # # run pcraster script to make buffer features.
-  # pcr_script(
-  #   script = "prepare_buffer_features.mod",
-  #   script_dir = "sources/pcr_scripts",
-  #   work_dir = subdir
-  # )
+  # run pcraster script to make buffer features.
+  pcr_script(
+    script = "prepare_buffer_features.mod",
+    script_dir = "sources/pcr_scripts",
+    work_dir = subdir
+  )
   
   
   # add runfiles for selected events

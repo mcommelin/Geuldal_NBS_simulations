@@ -9,7 +9,7 @@ soil_landuse_to_swatre <- function(file = "",
   # 1. Calculate params -------------------------------------------------------------
   
   #load the UBC codes including texture, gravel
-  ubc_in <- read_csv(file)
+  ubc_in <- read_csv(file, show_col_types = FALSE)
   # load landuse classes with OM and O depth
   lu_in <- read.table("LISEM_data/tables/lu.tbl")[-1, ] %>%
     select(1, 4, 7) %>%
@@ -98,7 +98,7 @@ soil_landuse_to_swatre <- function(file = "",
     # 2. SWATRE tables LISEM-----------------------------------
     if (DEBUGm) message("make_swatre_tables")    
       ## 2.1 theta - h - k table ------------------------------------------------
-    soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file)) %>%
+    soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file), show_col_types = FALSE) %>%
       filter(!is.na(clay)) %>%
       mutate(CODE = str_replace(CODE, "-", "_"))
     

@@ -63,7 +63,7 @@ points_id <- config$subcatchments #, 18, 4, 12, 90)
 reso <- config$resolution
 
 # load subcatchment points csv file
-points <- read_csv("sources/setup/outpoints_description.csv")
+points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
 
 
 # swatre file

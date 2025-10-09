@@ -7,7 +7,7 @@
 source("sources/r_scripts/configuration.R")
 
 DEBUGm = TRUE
-show_col_types = FALSE
+
 #
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers
@@ -58,14 +58,14 @@ for (i in seq_along(chanmaps)) {
     source_to_base_maps (
     map_in = paste0("data/processed_data/GIS_data/base_rasters/", chanmaps[i]),
     map_out = outmaps[i],
-    resample_method = "near"
+    resample_method = "max"
   )
 }
 
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
 
 # load fieldwork results
-pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv") %>%
+pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
   filter(is.na(nbs_type)) %>%
@@ -76,7 +76,7 @@ pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv") %>%
          per = round(mean(per), digits = 2))
 
 # load lu table
-lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv")
+lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv", show_col_types = FALSE)
 
 lu_add <- lu_tbl %>%
   filter(rr != -9) %>%
@@ -172,8 +172,8 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # Subcatchments for calibration are: Watervalderbeek = 10, Eyserbeek = 14, Gulp = 4,
 # Lemiers = 12, Kelmis = 18 and a 1km2 test catchment - Sippenaeken = 90.
 
-#points_id <- c(4,10,12,14,18) # use if you want to update multiple subcatchments on the go
-points_id <- c(14) # use if you want to update multiple subcatchments on the go
+points_id <- c(4,10,12,14,18) # use if you want to update multiple subcatchments on the go
+#points_id <- c(14) # use if you want to update multiple subcatchments on the go
 reso <- c(5,20)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
@@ -185,7 +185,7 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       calc_ldd = TRUE, # only recalculate ldd if first time or dem is changed, takes some time!!
-      parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
+      parallel = TRUE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
 }

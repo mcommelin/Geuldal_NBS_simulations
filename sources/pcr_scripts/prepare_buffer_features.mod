@@ -15,8 +15,8 @@ buffers = buffers.map;      # map with boolean location of retention buffers
 dem = dem.map;
 catchment = catchment.map;
 grad = grad.map;
-
-
+dem1 = dembuf.map;
+grad1 = gradbuf.map;
 buffers1 = buffers1.map;
 bufvolest = bufvolest.map;
 
@@ -35,8 +35,8 @@ report buffers1=if(s eq 2,1,if(s eq 0,-1,0))*catchment;
 
 a = clump(nominal(buffers1 eq -1));
 buffloor = areaminimum(dem, a); #/(areaarea(a.map)/cellarea())
-dem1 = if(buffers1 eq -1, buffloor, dem);
-grad1 = if(buffers1 eq -1, 0.01, grad);
+report dem1 = if(buffers1 eq -1, buffloor, dem);
+report grad1 = if(buffers1 eq -1, 0.01, grad);
 
  
 #geschat volume als je in lisem buffers aanzet met kaart buffers1.map
