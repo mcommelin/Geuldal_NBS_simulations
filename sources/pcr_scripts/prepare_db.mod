@@ -108,7 +108,8 @@ report outlet = pit(Ldd);
 ####################
 ### SURFACE MAPS ### 
 ####################
-report rr = lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
+calbrRR = scalar(10.0);
+report rr = calbrRR*lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
 report mann = lookupscalar(lutbl, 2, lu); # Manning's n
 # calculate interception
 smax_eq = lookupscalar(lutbl, 5, lu);

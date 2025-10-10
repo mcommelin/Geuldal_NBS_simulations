@@ -161,7 +161,7 @@ create_lisem_run <- function(
   
   
   # add runfiles for selected events
-  events <- read_csv("sources/selected_events.csv") %>%
+  events <- read_csv("sources/selected_events.csv", show_col_types = FALSE) %>%
     filter(use != "none") %>%
     mutate(ts_start = ymd_hms(event_start),
            ts_end = ymd_hms(event_end),
@@ -171,7 +171,7 @@ create_lisem_run <- function(
   for (i in seq_along(events$event_start)) {
     #make baseflow
     date_event <- str_remove_all(as.character(date(events$ts_start[i])), "-")
-    baseqtbl <- read_csv("sources/base_flow_cal_events.csv") %>%
+    baseqtbl <- read_csv("sources/base_flow_cal_events.csv",show_col_types = FALSE) %>%
       filter(date == str_remove_all(as.character(date(events$ts_start[i])), "-")) %>%
       select(-date)
     nms <- as.character(seq(0, ncol(baseqtbl) - 1))

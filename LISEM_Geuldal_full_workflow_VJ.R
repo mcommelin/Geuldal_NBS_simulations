@@ -172,9 +172,11 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # Subcatchments for calibration are: Watervalderbeek = 10, Eyserbeek = 14, Gulp = 4,
 # Lemiers = 12, Kelmis = 18 and a 1km2 test catchment - Sippenaeken = 90.
 
+# NOTE: changes in mods: RR*10! max channel slope <= 0.1
+
 points_id <- c(4,10,12,14,18) # use if you want to update multiple subcatchments on the go
 #points_id <- c(14) # use if you want to update multiple subcatchments on the go
-reso <- c(5,20)
+reso <- c(5, 20)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 

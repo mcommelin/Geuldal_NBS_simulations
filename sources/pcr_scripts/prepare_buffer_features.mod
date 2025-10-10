@@ -25,7 +25,7 @@ initial
 # edge buffers krijgt waarde 1 en de rest van de buffer -1
 
 buf = nominal(cover(buffers*0,catchment));
-s = if(spread(nominal(buf),0,1) eq 5,2,buf);
+s = if(spread(nominal(buf),0,1) eq 5,2,buf); #this should be celllength() instead of 5 but with 20m this does not work
 
 report buffers1=if(s eq 2,1,if(s eq 0,-1,0))*catchment;
 
