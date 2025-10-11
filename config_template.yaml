@@ -4,18 +4,21 @@
 
 ## Preparation ------------------
 
-#. 0 Do you want to automatically install packages that are required for this project?
+#. 1 Do you want to automatically install packages that are required for this project?
 install_packages: "Y"   # choose Y or N
 
-# 1. Path to your local Miniconda installation.
+#. 2 Do you want debug messages during the execution of functions?
+debug_messages: "Y"     # choose Y on N
+
+# 3. Path to your local Miniconda installation.
 # Example: "/home/username/miniconda3"
 miniconda_path: "~/ProgramFiles/miniconda3"
 
-# 2. Name of the conda environment where pcraster is installed
+# 4. Name of the conda environment where pcraster is installed
 # Example: "lisem"
 conda_env: "lisem"
 
-# 3. List of subcatchment numbers to analyse.
+# 5. List of subcatchment numbers to analyse.
 # see the file /LISEM_data/setup/outpoints_description.csv
 # for subcatchment names and numbers.
 # WARNING: 1 = the whole catchment - very long processing times
@@ -24,10 +27,10 @@ conda_env: "lisem"
 # You can specify one or more numbers, e.g. [10, 12, 18]
 subcatchments: [10, 12]
 
-# 4. resolution to work on, available are 5 and 20, both is also possible
+# 6. resolution to work on, available are 5 and 20, both is also possible
 resolution: [5, 20]
 
-# 5. Name of the table containing swatre data to make in your LISEM dataset.
+# 7. Name of the table containing swatre data to make in your LISEM dataset.
 # Example: "soil_layers_infiltration.csv"
 infiltration_table: "cal_OM_swatre.csv"
 

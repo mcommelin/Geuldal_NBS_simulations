@@ -20,6 +20,7 @@ if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("sensobol")) install.packages("sensobol")
 if (!require("foreach")) install.packages("foreach")
 if (!require("doParallel")) install.packages("doParallel")
+if (!require("reticulate")) install.packages("reticulate")
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
 } else {
   print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
@@ -42,7 +43,7 @@ library(doParallel)
 library(reticulate)
 
 # load configuration
-
+DEBUGm <- if (config$debug_messages == "Y") {TRUE} else {FALSE}
 
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
