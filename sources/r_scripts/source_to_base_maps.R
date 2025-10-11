@@ -5,83 +5,56 @@
 
 # Source 2 base ---------------------------------------------------------------
 
-# map_in = "data/processed_data/lulc_osm_10m_region.tif"
-# map_out = "landuse"
-# resample_method = "near"
-
-
 source_to_base_maps <- function(
     map_in = "",
     map_out = "",
-    resample_method = "near") {
+    resample_method = "max"
+    ) 
+{
   
   resolution <- c(5, 20)
-  srs = "EPSG:28992"
   for (i in seq_along(resolution)) {
     
     # set the main directory
     main_dir <- paste0("LISEM_data/Geul_", resolution[i], "m/")
+    map_clone = paste0(main_dir, "maps/mask.map")
+    map_out_name = paste0(main_dir, "maps/", map_out, ".map")
+    tmp_tif = paste0(main_dir, "maps/tmp.tif")
+    srs = "EPSG:28992"
+
+    if (DEBUGm) message("creating => ",map_out_name)
     
-    # get the extent of the mask.map
-    map2asc(
-      map_in = paste0(main_dir, "maps/mask.map"),
-      map_out = paste0(main_dir, "mask.asc")
-    )
+    # Extract extent, resolution, etc. from the reference raster
+    ref <- raster(map_clone)
+    xmin <- xmin(ref)
+    ymin <- ymin(ref)
+    xmax <- xmax(ref)
+    ymax <- ymax(ref)
+    ncol <- ncol(ref)
+    nrow <- nrow(ref)
     
-    # calculate extent from ascii header
-    # read the header
-    header <- readLines(paste0(main_dir, "mask.asc"), n = 5)
-    # extract only digits or '.' from the strings in header
-    header <- gsub("[^0-9.]", "", header)
-    
-    # convert to numeric
-    header <- as.numeric(header, digits = 10)
-    
-    # get the extent
-    extent <- c(
-      header[3], # xllcorner
-      header[4], # yllcorner
-      header[3] + header[1] * header[5], # xurcorner
-      header[4] + header[2] * header[5]  # yurcorner
-    )
-    
-    #remove the mask.asc
-    file.remove(paste0(main_dir, "mask.asc"))
-    
-    tempfile <- paste0(main_dir, "maps/", map_out, ".asc")
-    
-    # GDAL warp the source map
+    # gdalwarp makes a tif, PCRaster cannot be done directly because of valuescale
     gdalwarp(
       srcfile = map_in,
-      dstfile = tempfile,
-      s_srs = srs,
-      t_srs = srs,
-      te_srs = srs,
-      tr = rep(resolution[i], 2),
-      of = "AAIgrid",
-      te = extent,
-      r = resample_method,
-      dryrun = F,
-      overwrite = T
+      dstfile = tmp_tif,
+      t_srs   = srs,         
+      te      = c(xmin, ymin, xmax, ymax),
+      ts      = c(ncol, nrow),
+      r       = resample_method,    
+      overwrite = TRUE
     )
     
-    # convert the ascii to pcraster
-    asc2map(clone = paste0(main_dir, "maps/mask.map"),
-            map_in = tempfile,
-            map_out = paste0(main_dir, "maps/", map_out, ".map"),
-            options = "-S")
-    
-    # clean up
-    # remove the ascii file
-    file.remove(tempfile)
-    file.remove(paste0(main_dir, "maps/", map_out, ".prj"))
-    # remove all aux.xml files
-    subdir <- paste0(main_dir, "maps/")
-    aux_files <- list.files(subdir, pattern = "aux.xml", full.names = TRUE)
-    if (length(aux_files) > 0) {
-      file.remove(aux_files)
-    }
-    
+    # use gdaltranslate to create PCRaster map  
+    if (file.exists(map_out_name)) file.remove(map_out_name)
+    gdal_translate(
+      src_dataset = tmp_tif,
+      dst_dataset = map_out_name,
+      ot = "Float32",
+      of = "PCRaster",
+      mo = "PCRASTER_VALUESCALE=VS_SCALAR"
+    )
+
   } # end of resolution loop
 
 } # end of function
+

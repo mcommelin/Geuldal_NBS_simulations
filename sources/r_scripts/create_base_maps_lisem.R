@@ -28,7 +28,7 @@ options(digits = 10)
 # load the outpoints csv file
 # if more subcatchment or outpoints are required, these can manually be added
 # to this file
-points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+points <- read_csv("LISEM_data/setup/outpoints_description.csv", show_col_types = FALSE)
 cell_size <- unique(points$cell_size)
 
 # loop over resolutions
@@ -87,7 +87,7 @@ road_surfaces <- road_types %>%
 #write_csv(road_surfaces, "sources/GIS_manual/road_surface_types.csv")
 
 # read manual assigned road surfaces
-road_surfaces <- read_csv("sources/GIS_manual/road_surface_types.csv")
+road_surfaces <- read_csv("sources/GIS_manual/road_surface_types.csv", show_col_types = FALSE)
 
 # add new surface to road types
 road_types <- road_types %>%
@@ -105,7 +105,7 @@ a <- osm_data %>%
 st_write(a, "data/temp.gpkg", layer = "temp", delete_layer = TRUE)
 
 # read the new road types with all surfaces assigned
-road_types <- read_csv("sources/GIS_manual/road_types.csv")
+road_types <- read_csv("sources/GIS_manual/road_types.csv", show_col_types = FALSE)
 
 # add new hard and compacted surfaces to osm data
 osm_data <- osm_data %>%
@@ -153,7 +153,7 @@ road_widths <- osm_data %>%
 #write_csv(road_widths, "sources/GIS_manual/road_widths.csv")
 
 # read the road widths with manual adjustments
-road_widths <- read_csv("sources/GIS_manual/road_widths.csv")
+road_widths <- read_csv("sources/GIS_manual/road_widths.csv", show_col_types = FALSE)
 
 # add road widths to osm data
 osm_data <- osm_data %>%
@@ -185,7 +185,7 @@ chan <- ranked_chan %>%
 
 #histogram of Shreve order to make classes for width
 # see sources/GIS_manual/Schreve_width_channels.csv
-shreve_lookup <- read_csv("sources/GIS_manual/Shreve_width_channels.csv")
+shreve_lookup <- read_csv("sources/GIS_manual/Shreve_width_channels.csv", show_col_types = FALSE)
 
 # the channel width from OSM only covers a few features and does not seem useful
 # so for now we neglect it.
