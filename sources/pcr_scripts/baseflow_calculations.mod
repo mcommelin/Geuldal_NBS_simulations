@@ -46,7 +46,8 @@ chanclean = accuflux(lddchan, 5); # 5 choosen by trial and error to get good cha
 chanclean = if(chanclean > celllength(), 1);
 chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20); 
-report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
-report chanman=chanmask*scalar(Chanman); 
+
+report changrad = min(0.1, max(0.001,sin(atan(slope(chanmask*dem))))); 
+report chanman = chanmask*scalar(Chanman); 
 report chandiam = if(culvert eq 1, chanwidth * 1000);
 report chanculvert = scalar(if(culvert eq 1, 2, 0)); # for now we assumme all culverts in channels are circular.

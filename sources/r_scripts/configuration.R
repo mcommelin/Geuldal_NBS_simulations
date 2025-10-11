@@ -20,6 +20,7 @@ if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("sensobol")) install.packages("sensobol")
 if (!require("foreach")) install.packages("foreach")
 if (!require("doParallel")) install.packages("doParallel")
+if (!require("reticulate")) install.packages("reticulate")
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
 } else {
   print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
@@ -39,9 +40,10 @@ library(tidyverse)
 library(sensobol)
 library(foreach)
 library(doParallel)
+library(reticulate)
 
 # load configuration
-
+DEBUGm <- if (config$debug_messages == "Y") {TRUE} else {FALSE}
 
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
@@ -62,7 +64,7 @@ points_id <- config$subcatchments #, 18, 4, 12, 90)
 reso <- config$resolution
 
 # load subcatchment points csv file
-points <- read_csv("sources/setup/outpoints_description.csv")
+points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
 
 
 # swatre file

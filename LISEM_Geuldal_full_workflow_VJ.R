@@ -6,6 +6,9 @@
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
 
+DEBUGm = TRUE
+
+#
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers
 # for the whole Geul catchment
@@ -52,7 +55,7 @@ outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow"
              "culvertmask","profile")
 
 for (i in seq_along(chanmaps)) {
-    source_to_base_maps(
+    source_to_base_maps (
     map_in = paste0("data/processed_data/GIS_data/base_rasters/", chanmaps[i]),
     map_out = outmaps[i],
     resample_method = "max"
@@ -62,7 +65,6 @@ for (i in seq_along(chanmaps)) {
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
 
 # load fieldwork results
-# OM divided by 4 and 0.5 added. stoniness reduced
 pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
@@ -166,9 +168,15 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # the aim of this function is to only do data management and not influence 
 # important settings for calibration etc, these all should be part of the next
 # function.
+# WARNING: 1 = the whole catchment - very long processing times
+# Subcatchments for calibration are: Watervalderbeek = 10, Eyserbeek = 14, Gulp = 4,
+# Lemiers = 12, Kelmis = 18 and a 1km2 test catchment - Sippenaeken = 90.
 
-points_id <- c(14) # use if you want to update multiple subcatchments on the go
-reso <- c(5,20)
+# NOTE: changes in mods: RR*10! max channel slope <= 0.1
+
+points_id <- c(4,10,12,14,18) # use if you want to update multiple subcatchments on the go
+#points_id <- c(14) # use if you want to update multiple subcatchments on the go
+reso <- c(5, 20)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
@@ -179,12 +187,12 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       calc_ldd = TRUE, # only recalculate ldd if first time or dem is changed, takes some time!!
-      parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
+      parallel = TRUE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
 }
 
-# you can also run for one specific subcatchment e.g.
+## you can also run for one specific subcatchment e.g.
 
 #base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = FALSE, parallel = FALSE)
 
@@ -212,20 +220,18 @@ for (i in seq_along(points_id)) {
 #' 1.  baseflow_cal.mod  = calculates baseflow for subcatchments on 20230622 
 #'                - if more events/subcatch needed adjust code and csv file
 #' 2. prepare_db.mod     = main script making most of the maps, channels and culverts
-#' 3. storm_drans.mod    = script making storm drains in urban area 
+#' 3. storm_drains.mod    = script making storm drains in urban area 
 #'                          - contains hard coded drain size!
 
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
 
-points_id <- c(14) # use if you want to update multiple subcatchments on the go
+#points_id <- c(4,10,12,14,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
-reso = c(5, 20) # 5 or 20
-
 # TODO redefine begin and end times for subcatch events based on P and Q observed
-source("sources/r_scripts/create_lisem_run.R")
 
+source("sources/r_scripts/create_lisem_run.R")
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(
@@ -238,24 +244,4 @@ for (i in seq_along(points_id)) {
 
 # you can also run for one specific subcatchment e.g.
 #create_lisem_run(resolution = 20, catch_num = 10, swatre_file = "cal_OM_swatre.csv")
-
-## 2.3 Simulation and figure ---------------------------------------------------
-# select a subcatchment and event from the LISEM_runs folder structure
-# manually execute the LISEM run
-# when finished this function below will make a graph of the discharge including
-# a Goodness-of-fit calculation
-# point_id = number of the subcatchment point
-# resolution = resolution of the simulation (5 or 20 m)
-# clean_up = do you want to empty the results directory after the figure
-#             is made - advise is TRUE!
-# if the runfile name has changed from the default date format set
-# run_date = "20230622" # the date as character string
-# if the result directory is not 'res' set
-# res_dir = <res_folder_name>
-
-# the resulting figure is stored in ./images/simulations/
-source("sources/r_scripts/create_graphs_observations_simulations.R")
-# WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
-graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T,
-                       run_date = "20230622", res_dir = "res")
 

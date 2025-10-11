@@ -14,9 +14,6 @@ soil = soils.map;           # field id's for texture/soil map
 outpoint = outpoints.map;  # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
 id = ID.map;
-profile = profile.map;	# map with ubc soil codes for swatre
-
-
 Ldd = ldd.map;
 
 initial
@@ -29,6 +26,4 @@ report buildings = if(boolean(catchment), buildings);
 report outpoint = if(boolean(catchment), outpoint);
 report id = if(boolean(catchment), id);
 
-# combine landuse with soil map for swatre
-profile = profile + 100 * lu;
-report profile = if(profile lt 1000, 100, profile);
+

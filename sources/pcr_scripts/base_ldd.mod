@@ -9,7 +9,7 @@ binding
 # input maps
 catch = catchment.map;
 dem = dem.map;
-
+chanmask = chanmask.map;  
 # output maps
 Ldd = ldd.map;
 
