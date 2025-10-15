@@ -28,7 +28,7 @@ options(digits = 10)
 # load the outpoints csv file
 # if more subcatchment or outpoints are required, these can manually be added
 # to this file
-points <- read_csv("LISEM_data/setup/outpoints_description.csv", show_col_types = FALSE)
+points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
 cell_size <- unique(points$cell_size)
 
 # loop over resolutions
