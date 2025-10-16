@@ -8,6 +8,7 @@ ID.map
 buildings.map
 subcatch.map
 roads_fraction.map
+road_tile_mask.map
 chanmask.map
 chanwidth.map
 chandepth.map

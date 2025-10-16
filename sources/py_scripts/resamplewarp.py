@@ -2,7 +2,7 @@ import subprocess
 import sys
 from osgeo import gdal
 
-def resample_to_reference(input_tif, reference_tif, output_tif, epsg, method):
+def resample_to_reference(input_tif, reference_tif, output_tif, epsg, rmethod):
     # Open reference dataset
     ref_ds = gdal.Open(reference_tif)
     if ref_ds is None:
@@ -27,8 +27,8 @@ def resample_to_reference(input_tif, reference_tif, output_tif, epsg, method):
         "-t_srs", proj,
         "-te", str(xmin), str(ymin), str(xmax), str(ymax),
         "-ts", str(x_size), str(y_size),
-        "-r", method, 
-	      "-overwrite",
+        "-r", rmethod, 
+	"-overwrite",
         input_tif, "gdw.tif"
     ]
     #print("gdalwarp","-t_srs ", proj,"-te", str(xmin), str(ymin), str(xmax), str(ymax),"-ts", str(x_size), str(y_size),"-r", "near", input_tif, output_tif)
@@ -41,14 +41,14 @@ def resample_to_reference(input_tif, reference_tif, output_tif, epsg, method):
       "-of", "PCRaster",
       "-mo", "PCRASTER_VALUESCALE=VS_SCALAR",
       "gdw.tif",
-      output_map
+      output_tif
     ]
     subprocess.check_call(cmd)
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 6:
-        print("Usage: python resamplewarp.py <input.map> <clone.map> <output.map> <epsg number> <rmethod>")
+        print("Usage: python resample.py <input.map> <clone.map> <output.map> <epsg number> <rmethod>")
         sys.exit(1)
 
     input_tif = sys.argv[1]

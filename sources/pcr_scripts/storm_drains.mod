@@ -10,7 +10,8 @@ binding
 
 # input maps
 bua = bua.map; # build up area map
-roads = roads_fraction.map;
+#roads = roads_fraction.map;
+roads = road_tile_mask.map;
 dem = dem.map;
 catchment = catchment.map;
 
@@ -35,8 +36,11 @@ initial
 tilemask = if(bua == 1 and roads > 0, 1);
 tiledem = lddcreatedem(dem * tilemask, 1e20, 1e20, 1e20, 1e20);
 lddtile = lddcreate(tiledem, 1e20, 1e20, 1e20, 1e20);
+#tilemask = areaarea(clump(nominal(lddtile))) gt 2*cellarea(); 
+
+
 tilemask = if(accuflux(lddtile, 1) > 2, 1);
-#lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
+lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
 #tilemask = if(accuflux(lddtile, 1) > 1, 1);
 #lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
 #tilemask = if(accuflux(lddtile, 1) > 1, 1);

@@ -15,6 +15,7 @@ soil_landuse_to_swatre <- function(file = "",
     select(1, 4, 7) %>%
     rename_with(~ c("lu", "om", "od")) %>%
     mutate(lu = lu * 100)
+  if (DEBUGm) message("Making all soil horizon codes")
   
   # the measured OM values from the field campaign are applied to the upper
   # x centimeters of the A horizon, below that values from the original soil

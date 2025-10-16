@@ -12,7 +12,7 @@ source_to_base_maps <- function(
     ) 
 {
   
-  resolution <- c(5, 20)
+  resolution <- c(5) #, 20)
   for (i in seq_along(resolution)) {
     
     # set the main directory
