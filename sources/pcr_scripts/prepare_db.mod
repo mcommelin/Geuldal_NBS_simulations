@@ -149,7 +149,7 @@ report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
 # place culvert in buffer
 chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
 
-
-report chandiam = scalar(if(cover(chanculvert, 0) eq 2, 0.6, chandiam));
-report chanculvert = scalar(if(cover(culvert, 0) eq 1, 2, chanculvert)); # for now we assumme all culverts in channels are circular.
+report chandiam = scalar(if(cover(chanculvert, 0) gt 1, 0.6, chandiam));
+chanculvert = scalar(if(cover(culvert, 0) eq 1, 2, chanculvert)); # for now we assumme all culverts in channels are circular.
+report chanculvert = if (bua eq 1 and cover(culvert, 0) gt 0,5,chanculvert) * chanmask;
 report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman);
