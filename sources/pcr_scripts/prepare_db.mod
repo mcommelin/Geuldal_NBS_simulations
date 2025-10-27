@@ -23,7 +23,7 @@ buildings = buildings.map;  # fraction of buildings in cell. (optional)
 #grass = grasswid.map;      # only if buffers are included
 id = ID.map;                # rainfall id grid
 bua = bua.map; 		     # map with build up area.
-buffers = buffers.map;      # map with boolean location of retention buffers
+buffers = buffermask.map;      # map with boolean location of retention buffers
 #per = per.map; 		     # input map with cover based on NDVI
 lai = lai.map;		     # map with lai based on NDVI (202306)
 profile = profile.map;	# map with ubc soil codes for swatre
@@ -133,7 +133,8 @@ chanclean = accuflux(lddchan, 5); # 5 choosen by trial and error to get good cha
 chanclean = if(chanclean > celllength(), 1);
 chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20); 
-report changrad=max(0.001,sin(atan(slope(chanmask*dem)))); 
+changrad=max(0.005,sin(atan(slope(chanmask*dem)))); 
+report changrad=windowaverage(changrad,60)*chanmask; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
 
 # calculate mannings for channel
 bua = cover(bua, 0);
@@ -141,7 +142,11 @@ chanclass = if(bua eq 1,chantype, chantype + 2);
 chanman = lookupscalar(chantbl, 1, chanclass);
 chandiam = if(culvert eq 1, chanwidth);
 
+report chanwidth = chanwidth * chanmask;
+report chandepth = chandepth * chanmask;
+
 # adjust channel in buffers
+# do this in buffers! not here?
 buffers = cover(buffers, 0);
 report chanwidth = if(buffers eq 1, 3, chanwidth) * chanmask;
 report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;

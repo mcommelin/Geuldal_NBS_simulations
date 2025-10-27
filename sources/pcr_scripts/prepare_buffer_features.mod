@@ -11,13 +11,13 @@
 binding
 
 # input maps
-buffers = buffers.map;      # map with boolean location of retention buffers
+buffers = buffermask.map;      # map with boolean location of retention buffers
 dem = dem.map;
 catchment = catchment.map;
 grad = grad.map;
 dem1 = dembuf.map;
 grad1 = gradbuf.map;
-buffers1 = buffers1.map;
+buffers1 = buffers.map;
 bufvolest = bufvolest.map;
 
 initial
@@ -27,16 +27,16 @@ initial
 buf = nominal(cover(buffers*0,catchment));
 s = if(spread(nominal(buf),0,1) eq 5,2,buf); #this should be celllength() instead of 5 but with 20m this does not work
 
-report buffers1=if(s eq 2,1,if(s eq 0,-1,0))*catchment;
+#report buffers1=if(s eq 2,1,if(s eq 0,-1,0))*catchment; # with 1 meter wall but that stops overland flow
+report buffers1=if(s eq 2,0,if(s eq 0,-1,0))*catchment;
 
- 
 
 # bodem van de buffer krijgt de laagste waarde van de dem in de buffer
 
 a = clump(nominal(buffers1 eq -1));
 buffloor = areaminimum(dem, a); #/(areaarea(a.map)/cellarea())
 report dem1 = if(buffers1 eq -1, buffloor, dem);
-report grad1 = if(buffers1 eq -1, 0.01, grad);
+report grad1 = if(buffers1 eq -1, 0.005, grad);
 
  
 #geschat volume als je in lisem buffers aanzet met kaart buffers1.map

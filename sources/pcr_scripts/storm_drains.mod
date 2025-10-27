@@ -34,17 +34,18 @@ initial
 
 # simplify the network by removing very small branches.
 tilemask = if(bua == 1 and roads > 0, 1);
+tma = araarea(clump(nominal(tilemask))) gt 2*cellarea();
+tilenmask = if(tma,tilemask);
+
 tiledem = lddcreatedem(dem * tilemask, 1e20, 1e20, 1e20, 1e20);
 lddtile = lddcreate(tiledem, 1e20, 1e20, 1e20, 1e20);
-#tilemask = areaarea(clump(nominal(lddtile))) gt 2*cellarea(); 
 
-
-tilemask = if(accuflux(lddtile, 1) > 2, 1);
-lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
+#tilemask = if(accuflux(lddtile, 1) > 2, 1);
+#lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
 #tilemask = if(accuflux(lddtile, 1) > 1, 1);
 #lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
 #tilemask = if(accuflux(lddtile, 1) > 1, 1);
-report lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
+#report lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
 
 # calculate diameter of drains based on required storage
 bua = if(boolean(catchment), bua);
