@@ -11,8 +11,8 @@ make_runfile_lisem <- function(work_dir = NULL,
                                inp_file = NULL,
                                evdate = NULL,
                                resolution = 5,
-                               start_time = 0,
-                               end_time = 100) 
+                               start_time = NULL,
+                               end_time = NULL) 
 {
     # Adjust runfile lisem 
     run_template <- readLines("sources/setup/runfile_template.run")
@@ -55,7 +55,7 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model 
     
     # set start time
-    run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0("0000")) # 
+    run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0(start_time)) # 
     
     # set end time
     run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
@@ -165,7 +165,14 @@ create_lisem_run <- function(
     filter(use != "none") %>%
     mutate(ts_start = ymd_hms(event_start),
            ts_end = ymd_hms(event_end),
-           event_length = as.numeric(ts_end - ts_start) * 1440)
+           str_start = paste0(str_pad(as.character(yday(ts_start)), width = 3,
+                               side = "left", pad = "0"), ":",
+                              str_pad(as.character(hour(ts_start) * 60 + minute(ts_start)), width = 4,
+                                      side = "left", pad = "0")),
+           str_end = paste0(str_pad(as.character(yday(ts_end)), width = 3,
+                                    side = "left", pad = "0"), ":",
+                            str_pad(as.character(hour(ts_end) * 60 + minute(ts_end)), width = 4,
+                                    side = "left", pad = "0")))
   
   
   for (i in seq_along(events$event_start)) {
@@ -197,8 +204,8 @@ create_lisem_run <- function(
       infil_dir = paste0(run_dir, "swatre/tables/"),
       inp_file = paste0(run_dir, "swatre/profile.inp"),
       evdate = date(events$ts_start[i]),
-      start_time = 0,
-      end_time = events$event_length[i],
+      start_time = events$str_start[i],
+      end_time = events$str_end[i],
       resolution = resolution
     )
   }
