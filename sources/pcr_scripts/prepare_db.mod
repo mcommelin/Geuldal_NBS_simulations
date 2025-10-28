@@ -89,7 +89,7 @@ report lu *= area; # apply ctachment mask
 ### PROFILE  ### 
 ################ 
 profile = if(profile eq 100, 100,profile+100*lu)*area;
-report profile = if(profile le 1000,100,profile);
+report profile = if(profile le 1000,100,profile)*area;
 report profn.map = nominal(profile);
 
 
@@ -142,8 +142,8 @@ chanclass = if(bua eq 1,chantype, chantype + 2);
 chanman = lookupscalar(chantbl, 1, chanclass);
 chandiam = if(culvert eq 1, chanwidth);
 
-report chanwidth = chanwidth * chanmask;
-report chandepth = chandepth * chanmask;
+chanwidth = chanwidth * chanmask;
+chandepth = chandepth * chanmask;
 
 # adjust channel in buffers
 # do this in buffers! not here?
