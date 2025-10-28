@@ -180,7 +180,7 @@ for (k in seq_along(events$ts_start)) {
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
          ts_end = ymd_hms(event_end)) %>%
-  filter(use != "none")
+  filter(use == "cal")
 
 rain_5min <- read_csv("data/processed_data/neerslag/KNMI_rain_5min.csv")
 
@@ -216,10 +216,13 @@ for (k in seq_along(events$ts_start)) {
   # make the rain table 
   precip <- rain_5min %>%
     filter(timestamp >= event_start & timestamp <= event_end) %>%
-    mutate(mins = as.numeric((timestamp - timestamp[1]) / 60),
+    mutate(mins = hour(timestamp) * 60 + minute(timestamp),
+           yd = yday(timestamp),
+           d_str = str_pad(as.character(yd), width = 3,
+                           side = "left", pad = "0"),
            t_str = str_pad(as.character(mins), width = 4,
                            side = "left", pad = "0"),
-           t_str = paste0("001:", t_str)) %>%
+           t_str = paste0(d_str, ":", t_str)) %>%
     select(t_str, everything()) %>%
     select(-mins, - timestamp)
   # append the table to the header
