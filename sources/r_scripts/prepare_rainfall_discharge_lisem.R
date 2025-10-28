@@ -164,7 +164,7 @@ for (k in seq_along(events$ts_start)) {
                           side = "left", pad = "0"),
           t_str = paste0(d_str, ":", t_str)) %>%
     select(t_str, everything()) %>%
-    select(-mins, - timestamp)
+    select(-mins, - timestamp, -yd, -d_str)
   # append the table to the header
   write.table(precip, file = rain_file, append = T, col.names = F,
               row.names = F, sep = " ", quote = F)
@@ -224,7 +224,7 @@ for (k in seq_along(events$ts_start)) {
                            side = "left", pad = "0"),
            t_str = paste0(d_str, ":", t_str)) %>%
     select(t_str, everything()) %>%
-    select(-mins, - timestamp)
+    select(-mins, - timestamp, -d_str, -yd)
   # append the table to the header
   write.table(precip, file = rain_file, append = T, col.names = F,
               row.names = F, sep = " ", quote = F)
