@@ -98,15 +98,19 @@ for (i in seq_along(resolution)) {
   #load the events
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
-         ts_end = ymd_hms(event_end))
+         ts_end = ymd_hms(event_end)) %>%
+  filter(use == "cal")
 
 # set options to enough digits for accuracy extent
 options(digits = 10)
 
+# prepare rain data up to 2 weeks before the event so theta initial can be estimated
+# times in the rainfiles are in julian days and than minutes in the day
 for (k in seq_along(events$ts_start)) {
   event_start <- events$ts_start[k]
+  event_pre <- event_start - days(14)
   event_end <- events$ts_end[k]
-  hours <- seq(event_start, event_end, by = "hours")
+  hours <- seq(event_pre, event_end, by = "hours")
   
   map_names <- str_remove(hours, ":.*") %>%
     str_replace_all("-", "") %>%
@@ -120,7 +124,7 @@ for (k in seq_along(events$ts_start)) {
   ev_name <- as.character(event_start) %>%
     str_remove_all("-") %>%
     str_extract("^([0-9]{8})") %>%
-    paste0("rain_", .)
+    paste0("rain_hourly_", .)
   
   # find the number of idzones in the radar map
   id_raster <- raster(paste0("data/processed_data/ID_zones_KNMI_radar.asc"))
@@ -152,10 +156,13 @@ for (k in seq_along(events$ts_start)) {
   }
   # add the timestamp to the table
   precip <- t %>%
-   mutate(mins = as.numeric((timestamp - timestamp[1]) / 60),
+   mutate(mins = hour(timestamp) * 60 + minute(timestamp),
+          yd = yday(timestamp),
+          d_str = str_pad(as.character(yd), width = 3,
+                          side = "left", pad = "0"),
           t_str = str_pad(as.character(mins), width = 4,
                           side = "left", pad = "0"),
-          t_str = paste0("001:", t_str)) %>%
+          t_str = paste0(d_str, ":", t_str)) %>%
     select(t_str, everything()) %>%
     select(-mins, - timestamp)
   # append the table to the header
