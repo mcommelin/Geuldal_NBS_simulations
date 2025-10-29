@@ -175,6 +175,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 
 # NOTE: changes in mods: RR*10! max channel slope <= 0.1
 
+
 points_id <- c(4,10,12,14,18) # use if you want to update multiple subcatchments on the go
 #points_id <- c(14) # use if you want to update multiple subcatchments on the go
 reso <- c(5, 20)
@@ -187,7 +188,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = TRUE, # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = FALSE, # only recalculate ldd if first time or dem is changed, takes some time!!
       parallel = TRUE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
@@ -243,6 +244,6 @@ for (i in seq_along(points_id)) {
   }
 }
 
-# you can also run for one specific subcatchment e.g.
+q# you can also run for one specific subcatchment e.g.
 #create_lisem_run(resolution = 20, catch_num = 10, swatre_file = "cal_OM_swatre.csv")
 

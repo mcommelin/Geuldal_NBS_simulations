@@ -4,7 +4,7 @@ library(yaml)
 config <- yaml.load_file("config.yaml")
 
 ins <- config$install_packages
-if (ins == "Y") {
+#if (ins == "Y") {
 # install packages if needed
 # if (!require("pacman")) install.packages("pacman")
 # pacman::p_load(yaml, hydroGOF, gdalUtilities, terra, raster, cowplot, sf, 
@@ -22,10 +22,10 @@ if (!require("foreach")) install.packages("foreach")
 if (!require("doParallel")) install.packages("doParallel")
 if (!require("reticulate")) install.packages("reticulate")
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
-} else {
-  print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
-  Sys.sleep(2)
-}
+#} else {
+ # print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
+#  Sys.sleep(2)
+#}
 # load all packages
 
 library(hydroGOF)
@@ -43,7 +43,7 @@ library(doParallel)
 library(reticulate)
 
 # load configuration
-DEBUGm <- if (config$debug_messages == "Y") {TRUE} else {FALSE}
+DEBUGm = TRUE #<- if (config$debug_messages == "Y") {TRUE} else {FALSE}
 
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")

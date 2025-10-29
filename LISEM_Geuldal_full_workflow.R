@@ -47,9 +47,9 @@ source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to 
 
 chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
               "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif",
-              "culverts_bool.tif","soilcodeUBC_5m.tif")
+              "culverts_bool.tif") 
 outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow",
-             "culvertmask","profile")
+             "culvertmask")
 
 for (i in seq_along(chanmaps)) {
     source_to_base_maps(
