@@ -165,6 +165,9 @@ osm_data <- osm_data %>%
 # save the roads data
 st_write(osm_data, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = "roads_region", delete_layer = TRUE)
 
+# make raster 
+# with terra write to LISEM_data
+
 # 3. channels and culverts -----------------------------------------------------
 
 # the channel layer are digitized to 1 connected network in QGIS.

@@ -131,7 +131,8 @@ soil_landuse_to_swatre <- function(file = "",
              h = formatC(h, format = "e", digits = 2),
              S = signif((theta - theta_r) / (theta_s - theta_r), digits = 3),
              theta = round(theta, digits = 3),
-             k = formatC(ks * sqrt(S) * (1 - (1 - S^(1/m))^m)^2, format = "e", digits = 2)) %>%
+             k = ks * sqrt(S) * (1 - (1 - S^(1/m))^m)^2,
+             k = formatC(k, format = "e", digits = 2)) %>%
       select(theta, h, k)
     
     # write the profile tables

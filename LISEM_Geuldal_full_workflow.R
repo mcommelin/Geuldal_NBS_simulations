@@ -186,7 +186,7 @@ for (i in seq_along(points_id)) {
 
 # you can also run for one specific subcatchment e.g.
 
-#base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = FALSE, parallel = FALSE)
+#base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = T, parallel = FALSE)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
