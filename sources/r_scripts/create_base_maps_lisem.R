@@ -227,10 +227,77 @@ st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channel
 # channels_width.tif : select field = width
 # culverts_bool.tif : select field = culvert
 
+## 3.1 buffer features --------------------------------------------------------
 
+# load WL data
+wl_data_dir <- "data/data_wl/Data_buffers_Geul_openLisem_WRL/"
+
+# hoogtelijnen buffers
+hoogtel <- st_read(paste0(wl_data_dir, 
+                          "DAMO_buffers_openLisem_Geul_20251017.gpkg"), 
+                   layer = "hoogtelijnbuffer")
+# afsluitmiddel_Geul
+afsluit <- st_read(paste0(wl_data_dir, 
+                          "DAMO_buffers_openLisem_Geul_20251017.gpkg"), 
+                   layer = "afsluitmiddel_Geul")
+# duikersifonhevel_Geul
+duiker <- st_read(paste0(wl_data_dir, 
+                          "DAMO_buffers_openLisem_Geul_20251017.gpkg"), 
+                   layer = "duikersifonhevel_Geul")
+
+# from the general dataset load the buffer features:
+buffers <- st_read("data/processed_data/GIS_data/channels.gpkg", layer = "buffers")
+
+# merge buffers and hoogtelijnen - select hoogtelijnen if available
+hl <- hoogtel %>%
+  st_drop_geometry() %>%
+  mutate(RegenwaterbufferCOMPCode = as.character(RegenwaterbufferCOMPCode))
+hl2 <- hoogtel %>%
+  rename('CODE' = 'RegenwaterbufferCOMPCode') %>%
+  select(CODE) %>%
+  mutate(CODE = as.character(CODE))
+
+buffeat <- buffers %>%
+  anti_join(hl, by = c('CODE' = 'RegenwaterbufferCOMPCode')) %>%
+  select(CODE) %>%
+  bind_rows(hl2)
+
+# select all duikers in buffer
+duik_buf <- duiker %>%
+  select(HOOGTEOPENING) %>%
+  st_intersection(buffeat)
+
+# add 50 meter buffer around selected buffers to include correct afsluiter points
+buf_range <- buffeat %>%
+  st_buffer(20)
+
+# select all afsluitmiddel in buffer
+af_buf <- afsluit %>%
+  select(WS_SCHUIFHOOGTEINST) %>%
+  st_intersection(buf_range)
+
+
+# calculate new culvert diameter based on orig diameter and height of weir
+
+# save buffer new layer as .map on 5m and gpkg layer
+
+# save duiker as .map on 5m and gpkg layer
+
+# adjust PCRASTER code
 
 
 # 4. stormdrains ---------------------------------------------------------------
+
+# Load WL data
+# riooleringsgebied
+
+# load build_up_area
+# load roads
+
+# make map with storm drain area ID
+# make lookuptable with stormdrain volume per ID
+
+# further calculations in PCRASTER code
 
 #calculate drain diameter based on the Strahler order of the 5 m resolution
 #assign buffer capacity to all pits (ldd = 5) based on the upstream area
