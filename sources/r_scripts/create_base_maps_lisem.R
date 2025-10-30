@@ -262,22 +262,43 @@ buffeat <- buffers %>%
   select(CODE) %>%
   bind_rows(hl2)
 
+st_write(buffeat, "data/processed_data/GIS_data/test_buffer.gpkg", layer = "buf_new")
+
 # select all duikers in buffer
 duik_buf <- duiker %>%
   select(HOOGTEOPENING) %>%
   st_intersection(buffeat)
 
 # add 50 meter buffer around selected buffers to include correct afsluiter points
-buf_range <- buffeat %>%
-  st_buffer(20)
+duik_range <- duik_buf %>%
+  st_buffer(50)
 
-# select all afsluitmiddel in buffer
+# select all afsluitmiddel for duikers in buffer
+# calculate new culvert diameter based on orig diameter and height of weir
 af_buf <- afsluit %>%
   select(WS_SCHUIFHOOGTEINST) %>%
-  st_intersection(buf_range)
+  st_intersection(duik_range) %>%
+  mutate(WS_SCHUIFHOOGTEINST = if_else(WS_SCHUIFHOOGTEINST > 2, 
+                                       WS_SCHUIFHOOGTEINST / 100, 
+                                       WS_SCHUIFHOOGTEINST)) %>%
+  group_by(CODE) %>%
+  summarise(WS_SCHUIFHOOGTEINST = mean(WS_SCHUIFHOOGTEINST, na.rm = T),
+            HOOGTEOPENING = mean(HOOGTEOPENING, na.rm = T)) %>%
+  ungroup() %>%
+  mutate(WS_SCHUIFHOOGTEINST = if_else(is.na(WS_SCHUIFHOOGTEINST), 
+                                       0.1, 
+                                       WS_SCHUIFHOOGTEINST),
+         HOOGTEOPENING = if_else(is.na(HOOGTEOPENING), 
+                                       0.4, 
+                                       HOOGTEOPENING),
+         r = HOOGTEOPENING / 2,
+         h = HOOGTEOPENING - WS_SCHUIFHOOGTEINST,
+         theta = 2 * acos((r - h)/r),
+         A = pi * r^2 - (r^2 * (theta - sin(theta)))/2,
+         d_new = round(sqrt(A/pi) * 2, digits = 2),
+         d_new = if_else(d_new > 0.07, 0.07, d_new)) %>% # culverts cannot be fully closed.
+  select(CODE, d_new)
 
-
-# calculate new culvert diameter based on orig diameter and height of weir
 
 # save buffer new layer as .map on 5m and gpkg layer
 
