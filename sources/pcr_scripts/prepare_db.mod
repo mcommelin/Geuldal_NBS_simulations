@@ -17,6 +17,7 @@ chanmask = chanmask.map;    # location of channels value = 1 (optional)
 culvert = culvertmask.map;  # location of culverts
 chanwidth = chanwidth.map;  # width of channels
 chandepth = chandepth.map;  # depth of channels
+chanside=chanside.map;
 chantype = chantype.map;    # either stream (1) or ditch (2)
 outpoint = outpoints.map;  # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
@@ -108,7 +109,7 @@ report outlet = pit(Ldd);
 ####################
 ### SURFACE MAPS ### 
 ####################
-calbrRR = scalar(10.0);
+calbrRR = scalar(10.0); ## the field data were not very conclusive, at least multiply by 10 or more!
 report rr = calbrRR*lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
 report mann = lookupscalar(lutbl, 2, lu); # Manning's n
 # calculate interception
@@ -142,15 +143,15 @@ chanclass = if(bua eq 1,chantype, chantype + 2);
 chanman = lookupscalar(chantbl, 1, chanclass);
 chandiam = if(culvert eq 1, chanwidth);
 
-report chanwidth = chanwidth * chanmask;
-report chandepth = chandepth * chanmask;
+#report chanwidth = chanwidth * chanmask;
+#report chandepth = chandepth * chanmask;
 
 # adjust channel in buffers
 # do this in buffers! not here?
 buffers = cover(buffers, 0);
 report chanwidth = if(buffers eq 1, 3, chanwidth) * chanmask;
 report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
-
+report chanside=chanmask;
 # place culvert in buffer
 chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
 

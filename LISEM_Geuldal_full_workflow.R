@@ -62,7 +62,10 @@ for (i in seq_along(chanmaps)) {
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
 
 # load fieldwork results
-# OM divided by 4 and 0.5 added. stoniness reduced
+
+# field OM was not possible, too hig. OM divided by 4 and 0.5 added, based on nothing!
+cal1 = 0.25
+cal2 = 0.5
 pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
@@ -70,7 +73,7 @@ pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv", show_col_typ
   group_by(lu_nr) %>%
   summarise(rr = round(mean(rr), digits = 2),
          n = round(mean(n), digits = 2),
-         om = round(mean(om), digits = 2),
+         om = round(mean(om)*cal1+cal2, digits = 2),
          per = round(mean(per), digits = 2))
 
 # load lu table
@@ -107,7 +110,8 @@ names(lu_pars) <- nms
 write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
-
+#note: here only cols 1,2 and 5 are used 1=RR; 2=n; 5=SMAX
+# the other columns are used in SWATRE creation, swatre_input.R
 
 ## 1.6 make SWATRE soil tables -------------------------------------------------
 

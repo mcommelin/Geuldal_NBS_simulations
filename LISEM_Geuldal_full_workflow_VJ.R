@@ -176,7 +176,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # NOTE: changes in mods: RR*10! max channel slope <= 0.1
 
 
-points_id <- c(4,10,12,14,18) # use if you want to update multiple subcatchments on the go
+points_id <- c(1)#4,10,12,14,18) # use if you want to update multiple subcatchments on the go
 #points_id <- c(14) # use if you want to update multiple subcatchments on the go
 reso <- c(5, 20)
 # load the function for subcatchment preparation
