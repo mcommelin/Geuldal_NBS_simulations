@@ -207,6 +207,7 @@ Aggregate stability calibration=1.00
 [Output maps]
 Erosion map units (0/1/2)=0
 Output interval=40
+Output maps end=0
 OutRunoff=0
 OutWH=0
 OutV=0

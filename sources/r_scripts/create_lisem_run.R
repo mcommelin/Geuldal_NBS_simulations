@@ -95,7 +95,8 @@ make_runfile_lisem <- function(work_dir = NULL,
 create_lisem_run <- function(
   resolution = NULL,
   catch_num = NULL,
-  swatre_file = "base_swatre_params.csv") 
+  swatre_file = "base_swatre_params.csv",
+  do_runfile = TRUE) 
 {
   catch_info <- points %>%
     filter(point == catch_num) %>%
@@ -198,6 +199,7 @@ create_lisem_run <- function(
                 paste0(subdir, "baseflow_", date_event, ".map"))
     
     # make runfile  
+    if (do_runfile == TRUE) {
     make_runfile_lisem(
       work_dir = run_dir,
       rain_dir = "LISEM_data/rain/",
@@ -208,6 +210,7 @@ create_lisem_run <- function(
       end_time = events$str_end[i],
       resolution = resolution
     )
+    }
   }
     
   #delete intermediate files

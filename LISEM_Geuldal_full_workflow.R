@@ -235,7 +235,8 @@ for (i in seq_along(points_id)) {
     create_lisem_run(
       resolution = reso[j], 
       catch_num = points_id[i],
-      swatre_file = swatre_file
+      swatre_file = swatre_file,
+      do_runfile = TRUE
     )
   }
 }
