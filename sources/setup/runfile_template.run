@@ -43,13 +43,13 @@ Filename landunit output=totlandunit.csv
 Flood stats=floodstats.csv
 
 [Simulation times]
-Begin time=001:<<start_time>>
-End time=001:<<end_time>>
+Begin time=<<start_time>>
+End time=<<end_time>>
 Timestep=<<dt>>
 
 [Meteo]
 Include Rainfall=1
-Event based=1
+Event based=0
 Rainfall file=<<rain_file>>
 Rainfall Directory=<<rain_dir>>
 Rainfall ID interpolation=0
@@ -66,6 +66,9 @@ Use ET maps=0
 ET maplist name=
 ET Map Directory=
 ET Bias Correction=1.00
+ET latitude=52.2
+ET start day=180
+long timestep=300.0
 Rainfall ET threshold=2.0
 Include channel inflow=0
 Discharge inflow file=
@@ -231,6 +234,7 @@ Correct MB with WH=0
 Flood max iterations=200
 Use time avg V=1
 Erosion outside 2D loop=1
+Minimum WH and V flow=1e-6
 Pit Value=1.00
 Use linked list=0
 Use Perimeter KW=0

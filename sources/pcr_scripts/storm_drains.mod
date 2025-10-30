@@ -34,7 +34,7 @@ initial
 
 # simplify the network by removing very small branches.
 tilemask = if(bua == 1 and roads > 0, 1);
-tma = araarea(clump(nominal(tilemask))) gt 2*cellarea();
+tma = areaarea(clump(nominal(tilemask))) gt 2*cellarea();
 tilenmask = if(tma,tilemask);
 
 tiledem = lddcreatedem(dem * tilemask, 1e20, 1e20, 1e20, 1e20);
