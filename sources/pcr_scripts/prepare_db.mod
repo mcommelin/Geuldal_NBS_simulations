@@ -27,7 +27,7 @@ buffers = buffermask.map;      # map with boolean location of retention buffers
 #per = per.map; 		     # input map with cover based on NDVI
 lai = lai.map;		     # map with lai based on NDVI (202306)
 profile = profile.map;	# map with ubc soil codes for swatre
-
+buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 
 ### INPUT TABLES ### 
 
@@ -142,19 +142,14 @@ chanclass = if(bua eq 1,chantype, chantype + 2);
 chanman = lookupscalar(chantbl, 1, chanclass);
 chandiam = if(culvert eq 1, chanwidth);
 
-chanwidth = chanwidth * chanmask;
-chandepth = chandepth * chanmask;
+# all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
+bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
 
-# adjust channel in buffers
-# do this in buffers! not here?
-buffers = cover(buffers, 0);
-report chanwidth = if(buffers eq 1, 3, chanwidth) * chanmask;
-report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
+chanculvert = scalar(if(cover(culvert, 0) eq 1, 5)); 
+report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert);
+report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam));
 
-# place culvert in buffer
-chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
+#report chanculvert = if (bua eq 1 and cover(culvert, 0) gt 0,5,chanculvert) * chanmask;
+report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman); 
 
-report chandiam = scalar(if(cover(chanculvert, 0) gt 1, 0.6, chandiam));
-chanculvert = scalar(if(cover(culvert, 0) eq 1, 2, chanculvert)); # for now we assumme all culverts in channels are circular.
-report chanculvert = if (bua eq 1 and cover(culvert, 0) gt 0,5,chanculvert) * chanmask;
-report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman);
+

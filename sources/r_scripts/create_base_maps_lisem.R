@@ -266,7 +266,7 @@ buffeat <- buffers %>%
   st_make_valid()
 
 # save for QGIS manual editing
-st_write(buffeat, "data/processed_data/GIS_data/test_buffer.gpkg", layer = "buf_new",
+st_write(buffeat, "data/processed_data/GIS_data/buffers.gpkg", layer = "buf_new",
          delete_layer = T)
 
 # select all duikers in buffer
@@ -307,11 +307,11 @@ af_buf <- duik_buf %>%
 
 
 # save for QGIS manual editing
-st_write(af_buf, "data/processed_data/GIS_data/test_buffer.gpkg", layer = "culvert_new",
+st_write(af_buf, "data/processed_data/GIS_data/buffers.gpkg", layer = "culvert_new",
          delete_layer = T)
 
-# load adjusted layers from QGIS
-
+# save buffers as boolean .tif on 5m
+# save outlet_diameter .tif on 5m
 
 # adjust PCRASTER code
 

@@ -47,9 +47,10 @@ source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to 
 
 chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
               "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif",
-              "culverts_bool.tif","soilcodeUBC_5m.tif")
+              "culverts_bool.tif","soilcodeUBC_5m.tif", "buffers_bool.tif",
+              "buffer_outlet_diam.tif")
 outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow",
-             "culvertmask","profile")
+             "culvertmask","profile", "buffermask", "buffer_outlet")
 
 for (i in seq_along(chanmaps)) {
     source_to_base_maps(
@@ -221,7 +222,7 @@ for (i in seq_along(points_id)) {
 points_id <- c(14) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
-reso = c(5, 20) # 5 or 20
+reso = c(5) # 5 or 20
 
 # TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
