@@ -233,9 +233,10 @@ st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channel
 wl_data_dir <- "data/data_wl/Data_buffers_Geul_openLisem_WRL/"
 
 # hoogtelijnen buffers
+# for ease of operation the hoogtelijnen are converted to polygons in QGIS
 hoogtel <- st_read(paste0(wl_data_dir, 
                           "DAMO_buffers_openLisem_Geul_20251017.gpkg"), 
-                   layer = "hoogtelijnbuffer")
+                   layer = "hoogtelijnen_polygon")
 # afsluitmiddel_Geul
 afsluit <- st_read(paste0(wl_data_dir, 
                           "DAMO_buffers_openLisem_Geul_20251017.gpkg"), 
@@ -244,6 +245,7 @@ afsluit <- st_read(paste0(wl_data_dir,
 duiker <- st_read(paste0(wl_data_dir, 
                           "DAMO_buffers_openLisem_Geul_20251017.gpkg"), 
                    layer = "duikersifonhevel_Geul")
+
 
 # from the general dataset load the buffer features:
 buffers <- st_read("data/processed_data/GIS_data/channels.gpkg", layer = "buffers")
@@ -260,24 +262,28 @@ hl2 <- hoogtel %>%
 buffeat <- buffers %>%
   anti_join(hl, by = c('CODE' = 'RegenwaterbufferCOMPCode')) %>%
   select(CODE) %>%
-  bind_rows(hl2)
+  bind_rows(hl2) %>%
+  st_make_valid()
 
-st_write(buffeat, "data/processed_data/GIS_data/test_buffer.gpkg", layer = "buf_new")
+# save for QGIS manual editing
+st_write(buffeat, "data/processed_data/GIS_data/test_buffer.gpkg", layer = "buf_new",
+         delete_layer = T)
 
 # select all duikers in buffer
 duik_buf <- duiker %>%
   select(HOOGTEOPENING) %>%
-  st_intersection(buffeat)
+  st_filter(buffeat, .predicate = st_intersects)
+
 
 # add 50 meter buffer around selected buffers to include correct afsluiter points
-duik_range <- duik_buf %>%
-  st_buffer(50)
+af_range <- afsluit %>%
+  st_buffer(5) %>%
+  select(WS_SCHUIFHOOGTEINST, CODE)
 
 # select all afsluitmiddel for duikers in buffer
 # calculate new culvert diameter based on orig diameter and height of weir
-af_buf <- afsluit %>%
-  select(WS_SCHUIFHOOGTEINST) %>%
-  st_intersection(duik_range) %>%
+af_buf <- duik_buf %>%
+  st_join(af_range) %>%
   mutate(WS_SCHUIFHOOGTEINST = if_else(WS_SCHUIFHOOGTEINST > 2, 
                                        WS_SCHUIFHOOGTEINST / 100, 
                                        WS_SCHUIFHOOGTEINST)) %>%
@@ -296,13 +302,16 @@ af_buf <- afsluit %>%
          theta = 2 * acos((r - h)/r),
          A = pi * r^2 - (r^2 * (theta - sin(theta)))/2,
          d_new = round(sqrt(A/pi) * 2, digits = 2),
-         d_new = if_else(d_new > 0.07, 0.07, d_new)) %>% # culverts cannot be fully closed.
+         d_new = if_else(d_new < 0.07, 0.07, d_new)) %>% # culverts cannot be fully closed.
   select(CODE, d_new)
 
 
-# save buffer new layer as .map on 5m and gpkg layer
+# save for QGIS manual editing
+st_write(af_buf, "data/processed_data/GIS_data/test_buffer.gpkg", layer = "culvert_new",
+         delete_layer = T)
 
-# save duiker as .map on 5m and gpkg layer
+# load adjusted layers from QGIS
+
 
 # adjust PCRASTER code
 
