@@ -15,6 +15,7 @@ soil_landuse_to_swatre <- function(file = "",
     select(1, 4, 7) %>%
     rename_with(~ c("lu", "om", "od")) %>%
     mutate(lu = lu * 100)
+  
   if (DEBUGm) message("Making all soil horizon codes")
   
   # the measured OM values from the field campaign are applied to the upper
@@ -22,6 +23,7 @@ soil_landuse_to_swatre <- function(file = "",
   # are used.
   
   # In the UBC dataset now A = 1.5, B = 1, C = 0.5 OM where does this come from?
+  # TODO verify with literature! from fieldwork akkerbouw = 1.46, not bad!
   
   # adjust O horizons for organic matter related to landuse
   ubc_o <- ubc_in %>%

@@ -29,11 +29,11 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
                                 paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
     # rain files
-    rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
-    run_temp <- str_replace_all(run_temp, "<<rain_dir>>", 
-                                paste0(proj_wd, "/", rain_dir))
-    run_temp <- str_replace_all(run_temp, "<<rain_file>>", 
-                                rain_file)
+  #  rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
+  #  run_temp <- str_replace_all(run_temp, "<<rain_dir>>", 
+  #                              paste0(proj_wd, "/", rain_dir))
+  #  run_temp <- str_replace_all(run_temp, "<<rain_file>>", 
+  #                              rain_file)
     
     # infiltration files
     run_temp <- str_replace(run_temp, "<<swatre_inp>>",
@@ -49,10 +49,10 @@ make_runfile_lisem <- function(work_dir = NULL,
     
     
     # set timestep
-    dt <- ceiling(resolution * 0.75)
-    ts <- str_pad(as.character(dt), width = 3,
-            side = "left", pad = "0")
-    run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model 
+  # dt <- ceiling(resolution * 0.75)
+  # ts <- str_pad(as.character(dt), width = 3,
+  #         side = "left", pad = "0")
+  # run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model 
     
     # set start time
     run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0(start_time)) # 
@@ -95,7 +95,8 @@ make_runfile_lisem <- function(work_dir = NULL,
 create_lisem_run <- function(
   resolution = NULL,
   catch_num = NULL,
-  swatre_file = "base_swatre_params.csv") 
+  swatre_file = "base_swatre_params.csv",
+  do_runfile = TRUE) 
 {
   catch_info <- points %>%
     filter(point == catch_num) %>%
@@ -198,6 +199,7 @@ create_lisem_run <- function(
                 paste0(subdir, "baseflow_", date_event, ".map"))
     
     # make runfile  
+    if (do_runfile == TRUE) {
     make_runfile_lisem(
       work_dir = run_dir,
       rain_dir = "LISEM_data/rain/",
@@ -208,6 +210,7 @@ create_lisem_run <- function(
       end_time = events$str_end[i],
       resolution = resolution
     )
+    }
   }
     
   #delete intermediate files
