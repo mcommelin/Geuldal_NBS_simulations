@@ -38,7 +38,7 @@ tma = areaarea(clump(nominal(tilemask))) gt 2*cellarea();
 tilenmask = if(tma,tilemask);
 
 tiledem = lddcreatedem(dem * tilemask, 1e20, 1e20, 1e20, 1e20);
-lddtile = lddcreate(tiledem, 1e20, 1e20, 1e20, 1e20);
+report lddtile = lddcreate(tiledem, 1e20, 1e20, 1e20, 1e20);
 
 #tilemask = if(accuflux(lddtile, 1) > 2, 1);
 #lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
