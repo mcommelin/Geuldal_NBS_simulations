@@ -9,7 +9,8 @@
 binding
 
 # input maps
-bua = bua.map; # build up area map
+#bua = bua.map; # map of build up area
+tilestore = tilestorage.map; # mm of runoff to fit in storm drains.
 #roads = roads_fraction.map;
 roads = road_tile_mask.map;
 dem = dem.map;
@@ -17,7 +18,6 @@ catchment = catchment.map;
 
 # input vars
 ntile = 0.012; # the mannings n of storm drains.
-tilestore = 7.0; # mm of runoff on bua to fit in storm drains.
 pi = 3.141592;
 
 #output maps
@@ -33,7 +33,7 @@ vol_sd = vol_sd.map;
 initial
 
 # simplify the network by removing very small branches.
-tilemask = if(bua == 1 and roads > 0, 1);
+tilemask = if(tilestore > 0 and roads > 0, 1);
 tma = areaarea(clump(nominal(tilemask))) gt 2*cellarea();
 tilenmask = if(tma,tilemask);
 
@@ -48,13 +48,13 @@ report lddtile = lddcreate(tiledem, 1e20, 1e20, 1e20, 1e20);
 #report lddtile = lddcreate(tilemask * tiledem, 1e20, 1e20, 1e20, 1e20);
 
 # calculate diameter of drains based on required storage
-bua = if(boolean(catchment), bua);
-#area_bua = areaarea(nominal(bua)); #m2
-#tile_num = maptotal(tilemask); # number of cells with storm drain
-#vol_sd = (area_bua / tile_num) * tilestore; # liter storage per cell
+tilestore = if(boolean(catchment), tilestore);
+area_tile = areaarea(nominal(tilestore)); #m2
+tile_num = areatotal(tilemask, nominal(tilestore)); # number of cells with storm drain
+vol_sd = (area_tile div tile_num) * tilestore; # liter storage per cell
 
-#diamtile = 2 * sqrt((vol_sd / 1000) / (pi * celllength())); 
-diamtile = 0.8; # a diameter of ~800 mm results in a storag eof about 7mm
+diamtile = 2 * sqrt((vol_sd / 1000) / (pi * celllength())); #
+#diamtile = 0.8; # a diameter of ~800 mm results in a storage of about 7mm
 
 report tiledepth = tilemask * 0;
 report tilegrad = sin(atan(slope(tilemask * dem)));
