@@ -319,13 +319,30 @@ st_write(af_buf, "data/processed_data/GIS_data/buffers.gpkg", layer = "culvert_n
 # 4. stormdrains ---------------------------------------------------------------
 
 # Load WL data
+# load WL data
+wl_data_dir <- "data/data_wl/Data_buffers_Geul_openLisem_WRL/"
 # riooleringsgebied
+riool_NL <- st_read("data/processed_data/GIS_data/roads_buildings.gpkg", 
+                    layer = "riool_NL_geul")
 
-# load build_up_area
-# load roads
+# overstorten
+over_NL <- st_read(paste0(wl_data_dir, 
+                          "GEU_paved_data_update01_20251017.gpkg"), 
+                   layer = "GEU_overstorten_DHydamo")
+o2 <- st_drop_geometry(over_NL)
 
-# make map with storm drain area ID
-# make lookuptable with stormdrain volume per ID
+r2 <- riool_NL %>%
+  left_join(o2, by = c("code" = "codegerelateerdobject")) %>%
+  group_by(code) %>%
+  select(code, berging_in_riolering_totaal_mm) %>%
+  summarise(berging_in_riolering_totaal_mm = sum(berging_in_riolering_totaal_mm))
+
+# save new riool file
+st_write(r2, "data/processed_data/GIS_data/roads_buildings.gpkg", 
+         layer = "riool_NL_geul_corrected")
+# mean storage in NL for other regions:
+mean(r2$berging_in_riolering_totaal_mm, na.rm = T)
+# 11.7 mm
 
 # further calculations in PCRASTER code
 
