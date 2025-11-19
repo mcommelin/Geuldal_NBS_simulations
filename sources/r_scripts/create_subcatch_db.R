@@ -141,18 +141,69 @@ base_maps_subcatchment <- function(
     work_dir = sub_catch_dir
   )
   
+ 
+ 
+   # initial head per subcatch
+  # initial head maps
+  # if resolution = 20, copy from base to Geul
+  # if different, copy and resample
+  cal_events <- read_csv("sources/selected_events.csv") %>%
+    filter(use == "cal")
+  events <- str_extract(cal_events$event_start, "\\d*")
+  
+  ih_dir <- paste0("LISEM_data/Base_Geul_20m/inith_", events, "_20m/")
+  ih_maps <- dir(ih_dir[1], pattern = "\\d$")
+ 
+  # per event
+  for (j in seq_along(events)) {
+  for (i in seq_along(ih_maps)) {
+    # create folder for init head in subcatch
+    ih_ev <- paste0(sub_catch_dir, "inith_", events[j], "/")
+    if (!dir.exists(ih_ev)) dir.create(ih_ev)
+    
+    map_in = paste0(ih_dir[j], ih_maps[i])
+    map_out_name = paste0(ih_ev, ih_maps[i])
+    tmp_tif = paste0(sub_catch_dir, "tmp.tif")
+    if (DEBUGm) message("in ",map_in)
+    if (DEBUGm) message("out ",map_out_name)
+    
+    # gdalwarp makes a temp tif
+    gdalwarp(
+      srcfile = map_in,
+      dstfile = tmp_tif,
+      t_srs   = srs,         
+      te      = c(xmin, ymin, xmax, ymax),
+      ts      = c(ncol, nrow),         
+      r       = resample_method,    
+      overwrite = TRUE
+    )
+    
+    # use gdaltranslate to create a PCRaster map  
+    gdal_translate(
+      src_dataset = tmp_tif,
+      dst_dataset = map_out_name,
+      ot = "Float32",
+      of = "PCRaster",
+      mo = "PCRASTER_VALUESCALE=VS_SCALAR"
+    )
+    
+  } # end init head files loop
+  } # end event loop
+  
+  # clean up
   file.remove(
-   list.files(
-     path = sub_catch_dir,
-     pattern = "sub|base_|xml|tif",
-     full.names = TRUE
-   )
+    list.files(
+      path = sub_catch_dir,
+      pattern = "sub|base_|xml|tif",
+      full.names = TRUE
+    )
   )
-}  
+  
+}  # end function - create subcatch
   
   
   
-  
+
   
   
   
