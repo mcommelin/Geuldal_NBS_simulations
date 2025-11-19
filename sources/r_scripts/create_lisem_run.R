@@ -42,6 +42,12 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
                                 paste0(proj_wd, "/", infil_dir))
     
+   # set correct inithead for event
+    runname <- str_remove_all(as.character(evdate), "-")
+    ih_ev <- str_remove(runname, "^\\d\\d")
+    
+     run_temp <- str_replace_all(run_temp, "<<ih>>", 
+                                paste0("ih", ih_ev))
     # flow solution
     if (resolution > 10) {
       run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
@@ -60,7 +66,7 @@ make_runfile_lisem <- function(work_dir = NULL,
     # set end time
     run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
     
-    runname <- str_remove_all(as.character(evdate), "-")
+    
     
     # set baseflowmap
     run_temp <- str_replace(run_temp, "<<baseflow_map>>",
@@ -134,7 +140,14 @@ create_lisem_run <- function(
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
               overwrite = TRUE)
   }
-
+  # copy all inithead files
+  ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "ih2")
+  for (map in ih_maps) {
+    file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
+              overwrite = TRUE)
+  }
+  
+  
   #copy landuse and channel table to subdir
   file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
  

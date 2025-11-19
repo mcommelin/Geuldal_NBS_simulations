@@ -94,9 +94,11 @@ resample_base_maps <- function(resolution = 5) {
 
   # warning! need an existing mask.map! now only available for 20 and 5 m
   # should be placed in /LISEM_data/Base_Geul_xxm/maps/mask.map
+  # other resolution specific maps: outpoints, dem, ldd
   if (resolution != 5) {
-
-  map_clone = paste0("LISEM_data/Base_Geul_", resolution, "m/maps/mask.map")
+  
+  maps_manual <- dir(paste0("LISEM_data/Base_Geul_", resolution, "m/maps"), full.names = T)
+  map_clone = maps_manual[3]
   srs = "EPSG:28992"
   tmp_tif = paste0(main_dir, "maps/tmp.tif")
   if (DEBUGm) message("resampling => ", resolution, "m maps")
@@ -111,6 +113,7 @@ resample_base_maps <- function(resolution = 5) {
   nrow <- nrow(ref)
   
   map_in <- dir(paste0(main_dir, "maps"), full.names = T)
+  
   for (i in seq_along(map_in)) {
   # gdalwarp makes a tif, PCRaster cannot be done directly because of valuescale
   gdalwarp(
@@ -143,10 +146,11 @@ resample_base_maps <- function(resolution = 5) {
       full.names = TRUE
     )
   )
-  # place the correct mask.
-  file.remove(paste0(main_dir, "maps/mask.map"))
-  file.copy(from = map_clone,
-            to = paste0(main_dir, "maps/"))
-  
+  # add the files that are resolution specific
+  for (k in seq_along(maps_manual)) {
+  file.copy(from = maps_manual[k],
+            to = paste0(main_dir, "maps/"),
+            overwrite = TRUE)
+  }
    }
 }
