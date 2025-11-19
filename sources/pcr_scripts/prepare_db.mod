@@ -11,7 +11,7 @@ binding
 dem = dem.map;              # digital elevation model, area must be <= clone
 lu = landuse.map;           # field id's for landuse 
 catchment = catchment.map;  #
-soil = soils.map;           # field id's for texture/soil map
+#soil = soils.map;           # field id's for texture/soil map
 roads = roads_fraction.map; # fraction road coverage (optional)
 chanmask = chanmask.map;    # location of channels value = 1 (optional)
 culvert = culvertmask.map;  # location of culverts

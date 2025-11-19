@@ -1,7 +1,6 @@
 dem.map
 mask.map
 landuse.map
-soils.map
 profile.map
 catchment.map
 ID.map
@@ -21,8 +20,6 @@ buffermask.map
 buffer_outlet.map
 tilestorage.map
 hard_surface.map
-baseinflow.map
-baseflowinitvol.map
 lai.map
 per.map
 inithead.001

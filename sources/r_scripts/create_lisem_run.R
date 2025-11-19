@@ -190,7 +190,7 @@ create_lisem_run <- function(
                 quote = FALSE)
     # run pcraster script to make baseflow map.
     pcr_script(
-      script = "baseflow_cal.mod",
+      script = "baseflow_calibration.mod",
       script_dir = "sources/pcr_scripts",
       work_dir = subdir
     )
