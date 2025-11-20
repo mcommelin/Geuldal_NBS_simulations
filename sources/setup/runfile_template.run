@@ -283,7 +283,7 @@ profmap=profile.map
 profcrst=profcrst.map
 profcomp=profcomp.map
 profgras=profgras.map
-inithead=inithead
+inithead=<<ih>>
 [1st layer Green&Ampt/Smith&Parlange]
 ksat1=ksat1.map
 psi1=psi1.map
