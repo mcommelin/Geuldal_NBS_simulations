@@ -61,12 +61,16 @@ base_maps <- readLines("sources/base_maps.txt")
 #   )
 # }
 
-# copy the 5 m dataset and resample the 20 m dataset - 
-# other resolutions > 5m are theoretically also possible
-# but create a mask.map manually first!
-source("sources/r_scripts/source_to_base_maps.R")
-resample_base_maps(5) # copy for 5 meter
-resample_base_maps(20) # resample for 20 meter
+# WARNING - 2025-11-20 
+# code below not working, just copy the /maps folder from Base_Geul_xm to Geul_xm
+# after this everything should work.
+
+# # copy the 5 m dataset and resample the 20 m dataset - 
+# # other resolutions > 5m are theoretically also possible
+# # but create a mask.map manually first!
+# source("sources/r_scripts/source_to_base_maps.R")
+# resample_base_maps(5) # copy for 5 meter
+# resample_base_maps(20) # resample for 20 meter
 
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
 
