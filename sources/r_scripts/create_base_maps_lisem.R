@@ -48,7 +48,7 @@ for (j in seq_along(cell_size)) {
   # make the subcatchment map
   pcrcalc(
     work_dir = subdir,
-    options = paste0("'subcatch.map=subcatchment(ldd.map, outpoints.map)'")
+    options = paste0("subcatch.map=subcatchment(ldd.map, outpoints.map)")
   )
   
   # clean up

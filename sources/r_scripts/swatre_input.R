@@ -129,7 +129,7 @@ soil_landuse_to_swatre <- function(file = "",
     ubc_tbl <- tibble(
       theta = seq(from = theta_r + 0.001, to = theta_s,
         length.out = 15)) %>%
-      mutate(h = -1/ alpha * (((theta_s -theta_r) / (theta - theta_r))^(1/m)-1)^(1/n),
+      mutate(h = -1/ alpha * (((theta_s -theta_r) / (theta - theta_r))^(-1/m)-1)^(1/n),
              h = formatC(h, format = "e", digits = 2),
              S = signif((theta - theta_r) / (theta_s - theta_r), digits = 3),
              theta = round(theta, digits = 3),
