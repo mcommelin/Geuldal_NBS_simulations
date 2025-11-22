@@ -16,13 +16,14 @@ base_maps_subcatchment <- function(
   resample_method = "near"
   
   # load subcatchment points csv file
-  points <- read_csv("sources/setup/outpoints_description.csv")
+  points <- read_csv("sources/setup/outpoints_descriptionN.csv")
   
   # select subcatchment
   subcatch <- points %>%
     filter(point == sub_catch_number) %>% 
     filter(cell_size == res)
   subcatch_name <- subcatch$subcatch_name # give best describing name for the subcatchment
+
   # create dir for subcatch
   sub_catch_dir <- paste0("LISEM_data/subcatchments/", subcatch_name, "_", res, "m/maps/")
   main_dir <- paste0("LISEM_data/Geul_", res, "m/maps/")
@@ -62,7 +63,7 @@ base_maps_subcatchment <- function(
   map_clone_tif = paste0(sub_catch_dir, "sub.tif")
   map_clone_cut_tif = paste0(sub_catch_dir, "subc.tif")
 
-  #make sub..map into a tif to read the header
+  #make sub.map into a tif to read the header
   gdal_translate(
     src_dataset = map_clone,
     dst_dataset = map_clone_tif,
@@ -90,7 +91,7 @@ base_maps_subcatchment <- function(
   ymax <- ymax(ref)
   ncol <- ncol(ref)
   nrow <- nrow(ref)
-  if (DEBUGm) message(ref)
+  if (DEBUGm) message("hoi",ref)
   
   # #remove ldd map because cannot be resampled.
   base_maps <- gsub("^ldd\\.map$", "", base_maps)
@@ -115,7 +116,7 @@ base_maps_subcatchment <- function(
       r       = resample_method,    
       overwrite = TRUE
     )
-    
+    print(map_out_name)
     # use gdaltranslate to create a PCRaster map  
     gdal_translate(
       src_dataset = tmp_tif,
@@ -188,13 +189,13 @@ base_maps_subcatchment <- function(
   } # end event loop
   
   # clean up
-  file.remove(
-    list.files(
-      path = sub_catch_dir,
-      pattern = "sub|base_|xml|tif",
-      full.names = TRUE
-    )
-  )
+ # file.remove(
+ #   list.files(
+ #     path = sub_catch_dir,
+ #     pattern = "sub|base_|xml|tif",
+ #     full.names = TRUE
+ #   )
+ # )
   
 }  # end function - create subcatch
   

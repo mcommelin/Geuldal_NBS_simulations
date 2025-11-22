@@ -55,7 +55,8 @@ make_runfile_lisem <- function(work_dir = NULL,
     
     
     # set timestep
-  dt <- ceiling(resolution * 0.75)
+  #dt <- ceiling(resolution * 0.75)
+  dt = 5
   ts <- str_pad(as.character(dt), width = 3,
           side = "left", pad = "0")
   run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model
@@ -91,7 +92,7 @@ make_runfile_lisem <- function(work_dir = NULL,
 
 
 #2. Run pcraster db script----------------------------------------------------
-#points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+#points <- read_csv("LISEM_data/setup/outpoints_descriptionN.csv")
 
 # settings
 # <- 5 # fill resolution here
@@ -102,8 +103,12 @@ create_lisem_run <- function(
   resolution = NULL,
   catch_num = NULL,
   swatre_file = "base_swatre_params.csv",
+  cal_alpha = 1.0,
+  cal_n = 1.0,
   do_runfile = TRUE) 
 {
+  points <- read_csv("sources/setup/outpoints_descriptionN.csv")
+  
   catch_info <- points %>%
     filter(point == catch_num) %>%
     filter(cell_size == resolution)
@@ -232,7 +237,9 @@ create_lisem_run <- function(
   #file.remove(paste0(subdir, "soil.tbl"))
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
-                     swatre_dir = paste0(run_dir, "swatre/"))
+                     swatre_dir = paste0(run_dir, "swatre/"),
+                     cal_alpha,
+                     cal_n)
   
 }
 

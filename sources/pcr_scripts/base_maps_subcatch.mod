@@ -10,7 +10,7 @@ binding
 catchment = catchment.map;
 dem = dem.map;
 lu = landuse.map;           # field id's for landuse 
-soil = soils.map;           # field id's for texture/soil map
+#soil = soils.map;           # field id's for texture/soil map
 outpoint = outpoints.map;  # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
 id = ID.map;
@@ -20,7 +20,7 @@ initial
 
 # remove data outside catchment area
 report dem = if(boolean(catchment), dem);
-report soil = if(boolean(catchment), soil);
+#report soil = if(boolean(catchment), soil);
 report lu = if(boolean(catchment), lu); 
 report buildings = if(boolean(catchment), buildings);
 report outpoint = if(boolean(catchment), outpoint);

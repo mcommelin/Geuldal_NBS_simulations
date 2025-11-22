@@ -52,8 +52,8 @@ report grad = if(buffers1 eq -1, 0.005, grad);
 
 # adjust channel in buffers
 # do this in buffers! not here?
-report chanwidth = if(buffers1 eq -1, 3, chanwidth);
-report chandepth = if(buffers1 eq -1, 0.2, chandepth);
+report chanwidth = if(buffers1 eq -1, 3, chanwidth)*chanmask;
+report chandepth = if(buffers1 eq -1, 0.2, chandepth)*chanmask;
  
 
 

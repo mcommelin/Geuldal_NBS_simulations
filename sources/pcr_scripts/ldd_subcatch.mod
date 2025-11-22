@@ -19,5 +19,5 @@ initial
 report dem = if(boolean(catchment), dem);
 
 # make ldd for the subcatchment
-#report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
-report Ldd = lddcreate(dem, 1e9,1e9,1e9,1e9); # correct topo for local depressions #
+report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
+#report Ldd = lddcreate(dem, 1e9,1e9,1e9,1e9); # correct topo for local depressions #

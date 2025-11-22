@@ -79,7 +79,7 @@ base_maps <- readLines("sources/base_maps.txt")
 # field OM was not possible, too hig. OM divided by 4 and 0.5 added, based on nothing!
 cal1 = 0.25
 cal2 = 0.5
-pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
+pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
   filter(is.na(nbs_type)) %>%
@@ -136,10 +136,13 @@ write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
 # Based on soil texture, organic matter and management we calculate the input
 # for SWATRE by first applying Saxton&Rawls 2006 equations and than the Rosetta
 # (v3) model.
+# larger alpha and smaller n give more rapid decrease of k(h)
+
 source("sources/r_scripts/swatre_input.R")
 soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
-                       swatre_out = paste0("sources/setup/calibration/", swatre_file))
-
+                       swatre_out = paste0("sources/setup/calibration/", swatre_file),
+                       cal_alpha,
+                       cal_n)
 
 # Additional preparation of baseflow
 
@@ -188,8 +191,8 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # update : add resample inithead to create_lisem_run - or separate function!
 # goal is to only prepare when needed for specific date.
 
-points_id <- c(10, 14) # use if you want to update multiple subcatchments on the go
-reso <- c(5,20)
+points_id <- c(14) # use if you want to update multiple subcatchments on the go
+reso <- c(10)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
@@ -242,7 +245,11 @@ for (i in seq_along(points_id)) {
 points_id <- c(14) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
-reso = c(5) # 5 or 20
+reso = c(10) # 5 or 20
+
+cal_alpha = 6.0 # higher alpha + lower n gives more rapid decrease of K(h) and theta(h)
+                # the shapes of the curves are more "sandy" but depends on Ksat
+cal_n = 0.9
 
 # TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
@@ -253,7 +260,9 @@ for (i in seq_along(points_id)) {
       resolution = reso[j], 
       catch_num = points_id[i],
       swatre_file = swatre_file,
-      do_runfile = TRUE
+      cal_alpha,
+      cal_n,
+      do_runfile = FALSE
     )
   }
 }

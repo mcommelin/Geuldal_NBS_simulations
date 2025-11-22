@@ -134,8 +134,9 @@ chanclean = accuflux(lddchan, 5); # 5 choosen by trial and error to get good cha
 chanclean = if(chanclean > celllength(), 1);
 chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20); 
-changrad=max(0.005,sin(atan(slope(chanmask*dem)))); 
-report changrad=windowaverage(changrad,60)*chanmask; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
+report chanmask=chanclean;
+changrad=max(0.005,sin(atan(slope(chanclean*dem)))); 
+report changrad=windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
 
 # calculate mannings for channel
 bua = cover(bua, 0);
@@ -147,10 +148,10 @@ chandiam = if(culvert eq 1, chanwidth);
 bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
 
 chanculvert = scalar(if(cover(culvert, 0) eq 1, 5)); 
-report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert);
-report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam));
+report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
+report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
 
-#report chanculvert = if (bua eq 1 and cover(culvert, 0) gt 0,5,chanculvert) * chanmask;
-report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman); 
+#report chanculvert = if (bua eq 1 and cover(culvert, 0) gt 0,5,chanculvert) * chanclean;
+report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
 
 
