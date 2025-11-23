@@ -111,7 +111,9 @@ report outlet = pit(Ldd);
 ####################
 calbrRR = scalar(10.0); ## the field data were not very conclusive, at least multiply by 10 or more!
 report rr = calbrRR*lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
+
 report mann = lookupscalar(lutbl, 2, lu); # Manning's n
+
 # calculate interception
 smax_eq = lookupscalar(lutbl, 5, lu);
 smax = if(smax_eq eq 1, 1.036+0.438*lai, 1);
@@ -153,5 +155,6 @@ report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
 
 #report chanculvert = if (bua eq 1 and cover(culvert, 0) gt 0,5,chanculvert) * chanclean;
 report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
+
 
 

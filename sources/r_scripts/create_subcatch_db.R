@@ -189,100 +189,18 @@ base_maps_subcatchment <- function(
   } # end event loop
   
   # clean up
- # file.remove(
- #   list.files(
- #     path = sub_catch_dir,
- #     pattern = "sub|base_|xml|tif",
- #     full.names = TRUE
- #   )
- # )
+  file.remove(
+    list.files(
+      path = sub_catch_dir,
+      pattern = "sub|base_|xml|tif",
+      full.names = TRUE
+    )
+  )
   
 }  # end function - create subcatch
   
   
-  
 
-  
-  
-  
-  
-  
-  
-  
-# 
-# # map2asc
-# map2asc(
-#   map_in = "sub.map",
-#   map_out = "sub.asc",
-#   sub_dir = sub_catch_dir
-# )
-# 
-# # vectorize subcatchment
-# ras <- rast(paste0(sub_catch_dir, "sub.asc"))
-# pol <- as.polygons(ras)
-# writeVector(pol, paste0(sub_catch_dir, "sub.shp"), overwrite = TRUE)
-# 
-# # use polygon of subcatchment to cut the raster
-# 
-# # gdal warp with cutline
-# gdalwarp(
-#   srcfile = paste0(sub_catch_dir, "sub.asc"),
-#   dstfile = paste0(sub_catch_dir, "catchment.asc"),
-#   s_srs = srs,
-#   t_srs = srs,
-#   tr = rep(res, 2),
-#   cutline = paste0(sub_catch_dir, "sub.shp"),
-#   crop_to_cutline = T,
-#   of = "AAIrid",
-#   r = method,
-#   dryrun = F,
-#   overwrite = T
-# )
-
-
-# #remove ldd map because cannot be resampled.
-# base_maps <- gsub("^ldd\\.map$", "", base_maps)
-# # remove catchment because it is already correct size
-# base_maps <- gsub("^catchment\\.map$", "", base_maps)
-# base_maps <- base_maps[base_maps != ""]  # Remove empty lines
-# 
-# # resample the base maps to the new mask.map
-# 
-# 
-#   for (i in seq_along(base_maps)) {
-#     resample(
-#       clone = "mask.map",
-#       map_in = paste0("base_", base_maps[i]),
-#       map_out = base_maps[i],
-#       dir = sub_catch_dir
-#     )
-#   }
-# }
-
-# # run pcraster script to create base maps for subcatch
-# if (calc_ldd == TRUE) {
-#   pcr_script(
-#     script = "ldd_subcatch.mod",
-#     script_dir = "sources/pcr_scripts",
-#     work_dir = sub_catch_dir
-#   )
-# }
-
-# pcr_script(
-#   script = "base_maps_subcatch.mod",
-#   script_dir = "sources/pcr_scripts",
-#   work_dir = sub_catch_dir
-# )
-
-# 
-# # remove all intermediate maps and files
-# file.remove(
-#   list.files(
-#     path = sub_catch_dir,
-#     pattern = "base_|sub|catchment\\.asc|\\.prj",
-#     full.names = TRUE
-#   )
-# )
 
 
 
