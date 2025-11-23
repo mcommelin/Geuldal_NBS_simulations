@@ -18,6 +18,7 @@ ldd.map
 bua.map
 buffermask.map
 buffer_outlet.map
+pondmask.map
 tilestorage.map
 hard_surface.map
 lai.map

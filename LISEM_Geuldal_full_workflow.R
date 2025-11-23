@@ -190,8 +190,8 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # update : add resample inithead to create_lisem_run - or separate function!
 # goal is to only prepare when needed for specific date.
 
-#points_id <- c(4,14,18) # use if you want to update multiple subcatchments on the go
-points_id <- c(18) # use if you want to update multiple subcatchments on the go
+points_id <- c(4,14,18) # use if you want to update multiple subcatchments on the go
+#points_id <- c(18) # use if you want to update multiple subcatchments on the go
 reso <- c(10)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
@@ -242,7 +242,7 @@ for (i in seq_along(points_id)) {
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
 
-points_id <- c(18) # use if you want to update multiple subcatchments on the go
+points_id <- c(4,14,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
 reso = c(10) # 5 or 20
