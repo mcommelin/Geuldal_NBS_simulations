@@ -204,8 +204,8 @@ chanshape <- chan %>%
 
 chandim <- left_join(chanshape, shreve_lookup, 
                      join_by(closest(ValueShreve >= ClassShreve))) %>%
-  mutate(width = if_else(tunnel == "culvert", diameter, width)) %>%
-  select(waterway, width, depth, shape, tunnel, baseflow) %>%
+  #mutate(width = if_else(tunnel == "culvert", diameter, width)) %>%
+  select(waterway, width, depth, shape, tunnel, diameter, baseflow) %>%
   mutate(culvert_bool = if_else(tunnel == "culvert", 1, 0),
          chan_type = if_else(waterway == "stream", 1, 2))
 
