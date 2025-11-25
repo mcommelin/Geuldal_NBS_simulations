@@ -209,7 +209,7 @@ for (i in seq_along(points_id)) {
 
 # you can also run for one specific subcatchment e.g.
 
-#base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = T, parallel = FALSE)
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T, parallel = FALSE)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -267,7 +267,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-#create_lisem_run(resolution = 10, catch_num = 14, swatre_file = swatre_file, cal_alpha, cal_n, T)
+create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, cal_alpha, cal_n, T)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
 # select a subcatchment and event from the LISEM_runs folder structure

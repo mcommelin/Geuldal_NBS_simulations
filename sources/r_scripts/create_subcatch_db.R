@@ -98,9 +98,12 @@ base_maps_subcatchment <- function(
   # # remove catchment because it is already correct size
   base_maps <- gsub("^catchment\\.map$", "", base_maps)
   base_maps <- base_maps[base_maps != ""]  # Remove empty lines  
+  base_maps[24] <- "sub_point.map"
   
   for (i in seq_along(base_maps)) {
     map_in = paste0(sub_catch_dir,"base_", base_maps[i])
+    if (base_maps[i] == "sub_point.map") {
+    map_in = paste0(sub_catch_dir, base_maps[i])}
     map_out_name = paste0(sub_catch_dir, base_maps[i])
     tmp_tif = paste0(sub_catch_dir, "tmp.tif")
   if (DEBUGm) message("in ",map_in)
