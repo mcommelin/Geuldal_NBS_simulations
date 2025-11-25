@@ -107,7 +107,7 @@ create_lisem_run <- function(
   cal_n = 1.0,
   do_runfile = TRUE) 
 {
-  points <- read_csv("sources/setup/outpoints_descriptionN.csv")
+  points <- read_csv("sources/setup/outpoints_description.csv")
   
   catch_info <- points %>%
     filter(point == catch_num) %>%

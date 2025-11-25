@@ -91,7 +91,7 @@ base_maps_subcatchment <- function(
   ymax <- ymax(ref)
   ncol <- ncol(ref)
   nrow <- nrow(ref)
-  if (DEBUGm) message("hoi",ref)
+  if (DEBUGm) message(ref)
   
   # #remove ldd map because cannot be resampled.
   base_maps <- gsub("^ldd\\.map$", "", base_maps)
