@@ -36,28 +36,41 @@ source("sources/r_scripts/configuration.R")
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
-## 1.4 convert to PCRaster maps ------------------------------------------------
+## 1.4 prepare base dataset  ------------------------------------------------
 # convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
+# the function below can be used if base tif maps are adjusted, normally not required!
 
 # load the list of base maps.
 base_maps <- readLines("sources/base_maps.txt")
 
-# convert the required base maps
-source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
+# # convert the required base maps
+# source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
+# 
+# chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
+#               "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif",
+#               "culverts_bool.tif","soilcodeUBC_5m.tif", "buffers_bool.tif",
+#               "buffer_outlet_diam.tif")
+# outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow",
+#              "culvertmask","profile", "buffermask", "buffer_outlet")
+# 
+# for (i in seq_along(chanmaps)) {
+#     source_to_base_maps(
+#     map_in = paste0("data/processed_data/GIS_data/base_rasters/", chanmaps[i]),
+#     map_out = outmaps[i],
+#     resample_method = "max"
+#   )
+# }
 
-chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
-              "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif",
-              "culverts_bool.tif") 
-outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow",
-             "culvertmask")
+# WARNING - 2025-11-20 
+# code below not working, just copy the /maps folder from Base_Geul_xm to Geul_xm
+# after this everything should work.
 
-for (i in seq_along(chanmaps)) {
-    source_to_base_maps(
-    map_in = paste0("data/processed_data/GIS_data/base_rasters/", chanmaps[i]),
-    map_out = outmaps[i],
-    resample_method = "max"
-  )
-}
+# # copy the 5 m dataset and resample the 20 m dataset - 
+# # other resolutions > 5m are theoretically also possible
+# # but create a mask.map manually first!
+# source("sources/r_scripts/source_to_base_maps.R")
+# resample_base_maps(5) # copy for 5 meter
+# resample_base_maps(20) # resample for 20 meter
 
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
 
@@ -66,7 +79,7 @@ for (i in seq_along(chanmaps)) {
 # field OM was not possible, too hig. OM divided by 4 and 0.5 added, based on nothing!
 cal1 = 0.25
 cal2 = 0.5
-pars_lu <- read_csv("data/processed_data/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
+pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
   filter(is.na(nbs_type)) %>%
@@ -123,10 +136,12 @@ write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
 # Based on soil texture, organic matter and management we calculate the input
 # for SWATRE by first applying Saxton&Rawls 2006 equations and than the Rosetta
 # (v3) model.
+# larger alpha and smaller n give more rapid decrease of k(h)
+
 source("sources/r_scripts/swatre_input.R")
 soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
-                       swatre_out = paste0("sources/setup/calibration/", swatre_file))
-
+                       swatre_out = paste0("sources/setup/calibration/", swatre_file)
+                       )
 
 # Additional preparation of baseflow
 
@@ -171,8 +186,13 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-points_id <- c(14) # use if you want to update multiple subcatchments on the go
-reso <- c(5,20)
+
+# update : add resample inithead to create_lisem_run - or separate function!
+# goal is to only prepare when needed for specific date.
+
+points_id <- c(4,14,18) # use if you want to update multiple subcatchments on the go
+#points_id <- c(18) # use if you want to update multiple subcatchments on the go
+reso <- c(10)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
@@ -182,7 +202,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = TRUE, # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = FALSE, # only recalculate ldd if first time or dem is changed, takes some time!!
       parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
@@ -222,10 +242,14 @@ for (i in seq_along(points_id)) {
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
 
-points_id <- c(14) # use if you want to update multiple subcatchments on the go
+points_id <- c(4,14,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
-reso = c(5, 20) # 5 or 20
+reso = c(10) # 5 or 20
+
+cal_alpha = 6.0 # higher alpha + lower n gives more rapid decrease of K(h) and theta(h)
+                # the shapes of the curves are more "sandy" but depends on Ksat
+cal_n = 0.9
 
 # TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
@@ -236,7 +260,9 @@ for (i in seq_along(points_id)) {
       resolution = reso[j], 
       catch_num = points_id[i],
       swatre_file = swatre_file,
-      do_runfile = TRUE
+      cal_alpha,
+      cal_n,
+      do_runfile = FALSE
     )
   }
 }

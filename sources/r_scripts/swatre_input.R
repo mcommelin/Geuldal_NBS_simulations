@@ -95,8 +95,9 @@ soil_landuse_to_swatre <- function(file = "",
   # here we can add code to include observed porosity and ksat before making the swatre tables
   
   make_swatre_tables <- function(cal_file = "",
-                                 swatre_dir = NULL
-                                 ) 
+                                 swatre_dir = NULL,
+                                 cal_alpha = 1.0,
+                                 cal_n = 1.0) 
   {
     # 2. SWATRE tables LISEM-----------------------------------
     if (DEBUGm) message("make_swatre_tables")    
@@ -121,17 +122,22 @@ soil_landuse_to_swatre <- function(file = "",
     theta_r <- soil_params$theta_r_mean[i]
     theta_s <- soil_params$theta_s_mean[i]
     n <- soil_params$npar_mean[i]
+    silt <- soil_params$silt[i]
+    if (silt > 0.450) {
+      alpha = alpha*cal_alpha
+      n = max(1.1,n*cal_n)
+    }
+    #message(silt, " ",alpha,"| ", n)
     m <- 1 - (1/n)
     ks <- soil_params$Ksat_mean[i]
-    
-    
+
     # theta values between theta_r and theta_s
     ubc_tbl <- tibble(
       theta = seq(from = theta_r + 0.001, to = theta_s,
-        length.out = 15)) %>%
-      mutate(h = -1/ alpha * (((theta_s -theta_r) / (theta - theta_r))^(1/m)-1)^(1/n),
+        length.out = 30)) %>%
+      mutate(S = signif((theta - theta_r) / (theta_s - theta_r), digits = 6),
+             h = -1/ alpha * (S^(-1/m)-1)^(1/n),
              h = formatC(h, format = "e", digits = 2),
-             S = signif((theta - theta_r) / (theta_s - theta_r), digits = 3),
              theta = round(theta, digits = 3),
              k = ks * sqrt(S) * (1 - (1 - S^(1/m))^m)^2,
              k = formatC(k, format = "e", digits = 2)) %>%

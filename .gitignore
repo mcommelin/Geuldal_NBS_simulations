@@ -11,6 +11,7 @@ images/*
 LISEM_runs/*
 documenten_en_literatuur/*
 LISEM_data/Geul_*
+LISEM_data/Base_*
 LISEM_data/subcatchments/*
 LISEM_data/rain/*
 LISEM_data/calibration/*

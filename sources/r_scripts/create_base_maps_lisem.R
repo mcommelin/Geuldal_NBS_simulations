@@ -48,7 +48,7 @@ for (j in seq_along(cell_size)) {
   # make the subcatchment map
   pcrcalc(
     work_dir = subdir,
-    options = paste0("'subcatch.map=subcatchment(ldd.map, outpoints.map)'")
+    options = paste0("subcatch.map=subcatchment(ldd.map, outpoints.map)")
   )
   
   # clean up
@@ -204,8 +204,8 @@ chanshape <- chan %>%
 
 chandim <- left_join(chanshape, shreve_lookup, 
                      join_by(closest(ValueShreve >= ClassShreve))) %>%
-  mutate(width = if_else(tunnel == "culvert", diameter, width)) %>%
-  select(waterway, width, depth, shape, tunnel, baseflow) %>%
+  #mutate(width = if_else(tunnel == "culvert", diameter, width)) %>%
+  select(waterway, width, depth, shape, tunnel, diameter, baseflow) %>%
   mutate(culvert_bool = if_else(tunnel == "culvert", 1, 0),
          chan_type = if_else(waterway == "stream", 1, 2))
 
@@ -227,10 +227,124 @@ st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channel
 # channels_width.tif : select field = width
 # culverts_bool.tif : select field = culvert
 
+## 3.1 buffer features --------------------------------------------------------
 
+# load WL data
+wl_data_dir <- "data/data_wl/Data_buffers_Geul_openLisem_WRL/"
+
+# hoogtelijnen buffers
+# for ease of operation the hoogtelijnen are converted to polygons in QGIS
+hoogtel <- st_read(paste0(wl_data_dir, 
+                          "DAMO_buffers_openLisem_Geul_20251017.gpkg"), 
+                   layer = "hoogtelijnen_polygon")
+# afsluitmiddel_Geul
+afsluit <- st_read(paste0(wl_data_dir, 
+                          "DAMO_buffers_openLisem_Geul_20251017.gpkg"), 
+                   layer = "afsluitmiddel_Geul")
+# duikersifonhevel_Geul
+duiker <- st_read(paste0(wl_data_dir, 
+                          "DAMO_buffers_openLisem_Geul_20251017.gpkg"), 
+                   layer = "duikersifonhevel_Geul")
+
+
+# from the general dataset load the buffer features:
+buffers <- st_read("data/processed_data/GIS_data/channels.gpkg", layer = "buffers")
+
+# merge buffers and hoogtelijnen - select hoogtelijnen if available
+hl <- hoogtel %>%
+  st_drop_geometry() %>%
+  mutate(RegenwaterbufferCOMPCode = as.character(RegenwaterbufferCOMPCode))
+hl2 <- hoogtel %>%
+  rename('CODE' = 'RegenwaterbufferCOMPCode') %>%
+  select(CODE) %>%
+  mutate(CODE = as.character(CODE))
+
+buffeat <- buffers %>%
+  anti_join(hl, by = c('CODE' = 'RegenwaterbufferCOMPCode')) %>%
+  select(CODE) %>%
+  bind_rows(hl2) %>%
+  st_make_valid()
+
+# save for QGIS manual editing
+st_write(buffeat, "data/processed_data/GIS_data/buffers.gpkg", layer = "buf_new",
+         delete_layer = T)
+
+# select all duikers in buffer
+duik_buf <- duiker %>%
+  select(HOOGTEOPENING) %>%
+  st_filter(buffeat, .predicate = st_intersects)
+
+
+# add 50 meter buffer around selected buffers to include correct afsluiter points
+af_range <- afsluit %>%
+  st_buffer(5) %>%
+  select(WS_SCHUIFHOOGTEINST, CODE)
+
+# select all afsluitmiddel for duikers in buffer
+# calculate new culvert diameter based on orig diameter and height of weir
+af_buf <- duik_buf %>%
+  st_join(af_range) %>%
+  mutate(WS_SCHUIFHOOGTEINST = if_else(WS_SCHUIFHOOGTEINST > 2, 
+                                       WS_SCHUIFHOOGTEINST / 100, 
+                                       WS_SCHUIFHOOGTEINST)) %>%
+  group_by(CODE) %>%
+  summarise(WS_SCHUIFHOOGTEINST = mean(WS_SCHUIFHOOGTEINST, na.rm = T),
+            HOOGTEOPENING = mean(HOOGTEOPENING, na.rm = T)) %>%
+  ungroup() %>%
+  mutate(WS_SCHUIFHOOGTEINST = if_else(is.na(WS_SCHUIFHOOGTEINST), 
+                                       0.1, 
+                                       WS_SCHUIFHOOGTEINST),
+         HOOGTEOPENING = if_else(is.na(HOOGTEOPENING), 
+                                       0.4, 
+                                       HOOGTEOPENING),
+         r = HOOGTEOPENING / 2,
+         h = HOOGTEOPENING - WS_SCHUIFHOOGTEINST,
+         theta = 2 * acos((r - h)/r),
+         A = pi * r^2 - (r^2 * (theta - sin(theta)))/2,
+         d_new = round(sqrt(A/pi) * 2, digits = 2),
+         d_new = if_else(d_new < 0.07, 0.07, d_new)) %>% # culverts cannot be fully closed.
+  select(CODE, d_new)
+
+
+# save for QGIS manual editing
+st_write(af_buf, "data/processed_data/GIS_data/buffers.gpkg", layer = "culvert_new",
+         delete_layer = T)
+
+# save buffers as boolean .tif on 5m
+# save outlet_diameter .tif on 5m
+
+# adjust PCRASTER code
 
 
 # 4. stormdrains ---------------------------------------------------------------
+
+# Load WL data
+# load WL data
+wl_data_dir <- "data/data_wl/Data_buffers_Geul_openLisem_WRL/"
+# riooleringsgebied
+riool_NL <- st_read("data/processed_data/GIS_data/roads_buildings.gpkg", 
+                    layer = "riool_NL_geul")
+
+# overstorten
+over_NL <- st_read(paste0(wl_data_dir, 
+                          "GEU_paved_data_update01_20251017.gpkg"), 
+                   layer = "GEU_overstorten_DHydamo")
+o2 <- st_drop_geometry(over_NL)
+
+r2 <- riool_NL %>%
+  left_join(o2, by = c("code" = "codegerelateerdobject")) %>%
+  group_by(code) %>%
+  select(code, berging_in_riolering_totaal_mm) %>%
+  summarise(berging_in_riolering_totaal_mm = sum(berging_in_riolering_totaal_mm))
+
+# save new riool file
+st_write(r2, "data/processed_data/GIS_data/roads_buildings.gpkg", 
+         layer = "riool_NL_geul_corrected")
+# mean storage in NL for other regions:
+mean(r2$berging_in_riolering_totaal_mm, na.rm = T)
+# 11.7 mm
+
+# further calculations in PCRASTER code
 
 #calculate drain diameter based on the Strahler order of the 5 m resolution
 #assign buffer capacity to all pits (ldd = 5) based on the upstream area

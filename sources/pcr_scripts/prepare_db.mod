@@ -11,7 +11,7 @@ binding
 dem = dem.map;              # digital elevation model, area must be <= clone
 lu = landuse.map;           # field id's for landuse 
 catchment = catchment.map;  #
-soil = soils.map;           # field id's for texture/soil map
+#soil = soils.map;           # field id's for texture/soil map
 roads = roads_fraction.map; # fraction road coverage (optional)
 chanmask = chanmask.map;    # location of channels value = 1 (optional)
 culvert = culvertmask.map;  # location of culverts
@@ -28,7 +28,7 @@ buffers = buffermask.map;      # map with boolean location of retention buffers
 #per = per.map; 		     # input map with cover based on NDVI
 lai = lai.map;		     # map with lai based on NDVI (202306)
 profile = profile.map;	# map with ubc soil codes for swatre
-
+buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 
 ### INPUT TABLES ### 
 
@@ -111,7 +111,9 @@ report outlet = pit(Ldd);
 ####################
 calbrRR = scalar(10.0); ## the field data were not very conclusive, at least multiply by 10 or more!
 report rr = calbrRR*lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
+
 report mann = lookupscalar(lutbl, 2, lu); # Manning's n
+
 # calculate interception
 smax_eq = lookupscalar(lutbl, 5, lu);
 smax = if(smax_eq eq 1, 1.036+0.438*lai, 1);
@@ -134,8 +136,9 @@ chanclean = accuflux(lddchan, 5); # 5 choosen by trial and error to get good cha
 chanclean = if(chanclean > celllength(), 1);
 chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean,1e20,1e20,1e20,1e20); 
-changrad=max(0.005,sin(atan(slope(chanmask*dem)))); 
-report changrad=windowaverage(changrad,60)*chanmask; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
+report chanmask=chanclean;
+changrad=max(0.005,sin(atan(slope(chanclean*dem)))); 
+report changrad=windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
 
 # calculate mannings for channel
 bua = cover(bua, 0);
@@ -143,19 +146,15 @@ chanclass = if(bua eq 1,chantype, chantype + 2);
 chanman = lookupscalar(chantbl, 1, chanclass);
 chandiam = if(culvert eq 1, chanwidth);
 
-#report chanwidth = chanwidth * chanmask;
-#report chandepth = chandepth * chanmask;
+# all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
+bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
 
-# adjust channel in buffers
-# do this in buffers! not here?
-buffers = cover(buffers, 0);
-report chanwidth = if(buffers eq 1, 3, chanwidth) * chanmask;
-report chandepth = if(buffers eq 1, 0.2, chandepth) * chanmask;
-report chanside=chanmask;
-# place culvert in buffer
-chanculvert = scalar(if(downstream(lddchan, buffers) eq 0 and buffers eq 1, 2));
+chanculvert = scalar(if(cover(culvert, 0) eq 1, 5)); 
+report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
+report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
 
-report chandiam = scalar(if(cover(chanculvert, 0) gt 1, 0.6, chandiam));
-chanculvert = scalar(if(cover(culvert, 0) eq 1, 2, chanculvert)); # for now we assumme all culverts in channels are circular.
-report chanculvert = if (bua eq 1 and cover(culvert, 0) gt 0,5,chanculvert) * chanmask;
-report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman);
+#report chanculvert = if (bua eq 1 and cover(culvert, 0) gt 0,5,chanculvert) * chanclean;
+report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
+
+
+

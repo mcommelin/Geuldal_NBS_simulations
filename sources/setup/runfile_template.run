@@ -99,7 +99,7 @@ Swatre table directory=<<swatre_dir>>
 SWATRE internal minimum timestep=1
 Swatre output=0
 Swatre dry=1
-Matric head files=inithead
+Matric head files=<<ih>>
 Include tile drains=0
 Tile entry suction=-10
 SoilWB nodes 1=3
@@ -283,7 +283,7 @@ profmap=profile.map
 profcrst=profcrst.map
 profcomp=profcomp.map
 profgras=profgras.map
-inithead=inithead
+inithead=<<ih>>
 [1st layer Green&Ampt/Smith&Parlange]
 ksat1=ksat1.map
 psi1=psi1.map

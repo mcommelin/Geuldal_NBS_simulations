@@ -29,11 +29,11 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
                                 paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
     # rain files
-  #  rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
-  #  run_temp <- str_replace_all(run_temp, "<<rain_dir>>", 
-  #                              paste0(proj_wd, "/", rain_dir))
-  #  run_temp <- str_replace_all(run_temp, "<<rain_file>>", 
-  #                              rain_file)
+   rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
+   run_temp <- str_replace_all(run_temp, "<<rain_dir>>",
+                               paste0(proj_wd, "/", rain_dir))
+   run_temp <- str_replace_all(run_temp, "<<rain_file>>",
+                               rain_file)
     
     # infiltration files
     run_temp <- str_replace(run_temp, "<<swatre_inp>>",
@@ -42,6 +42,12 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
                                 paste0(proj_wd, "/", infil_dir))
     
+   # set correct inithead for event
+    runname <- str_remove_all(as.character(evdate), "-")
+    ih_ev <- str_remove(runname, "^\\d\\d")
+    
+     run_temp <- str_replace_all(run_temp, "<<ih>>", 
+                                paste0("ih", ih_ev))
     # flow solution
     if (resolution > 10) {
       run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
@@ -49,10 +55,11 @@ make_runfile_lisem <- function(work_dir = NULL,
     
     
     # set timestep
-  # dt <- ceiling(resolution * 0.75)
-  # ts <- str_pad(as.character(dt), width = 3,
-  #         side = "left", pad = "0")
-  # run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model 
+  #dt <- ceiling(resolution * 0.75)
+  dt = 5
+  ts <- str_pad(as.character(dt), width = 3,
+          side = "left", pad = "0")
+  run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model
     
     # set start time
     run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0(start_time)) # 
@@ -60,7 +67,7 @@ make_runfile_lisem <- function(work_dir = NULL,
     # set end time
     run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
     
-    runname <- str_remove_all(as.character(evdate), "-")
+    
     
     # set baseflowmap
     run_temp <- str_replace(run_temp, "<<baseflow_map>>",
@@ -85,7 +92,7 @@ make_runfile_lisem <- function(work_dir = NULL,
 
 
 #2. Run pcraster db script----------------------------------------------------
-#points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+#points <- read_csv("LISEM_data/setup/outpoints_descriptionN.csv")
 
 # settings
 # <- 5 # fill resolution here
@@ -96,8 +103,12 @@ create_lisem_run <- function(
   resolution = NULL,
   catch_num = NULL,
   swatre_file = "base_swatre_params.csv",
+  cal_alpha = 1.0,
+  cal_n = 1.0,
   do_runfile = TRUE) 
 {
+  points <- read_csv("sources/setup/outpoints_descriptionN.csv")
+  
   catch_info <- points %>%
     filter(point == catch_num) %>%
     filter(cell_size == resolution)
@@ -134,7 +145,14 @@ create_lisem_run <- function(
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
               overwrite = TRUE)
   }
-
+  # copy all inithead files
+  ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "ih2")
+  for (map in ih_maps) {
+    file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
+              overwrite = TRUE)
+  }
+  
+  
   #copy landuse and channel table to subdir
   file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
  
@@ -146,6 +164,7 @@ create_lisem_run <- function(
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
+  
   # run pcraster script to make storm drains.
   pcr_script(
     script = "storm_drains.mod",
@@ -159,7 +178,6 @@ create_lisem_run <- function(
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
-  
   
   # add runfiles for selected events
   events <- read_csv("sources/selected_events.csv", show_col_types = FALSE) %>%
@@ -190,7 +208,7 @@ create_lisem_run <- function(
                 quote = FALSE)
     # run pcraster script to make baseflow map.
     pcr_script(
-      script = "baseflow_cal.mod",
+      script = "baseflow_calibration.mod",
       script_dir = "sources/pcr_scripts",
       work_dir = subdir
     )
@@ -219,9 +237,11 @@ create_lisem_run <- function(
   #file.remove(paste0(subdir, "soil.tbl"))
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
-                     swatre_dir = paste0(run_dir, "swatre/"))
+                     swatre_dir = paste0(run_dir, "swatre/"),
+                     cal_alpha,
+                     cal_n)
   
-}
+} # end create_lisem_run
 
 
 
