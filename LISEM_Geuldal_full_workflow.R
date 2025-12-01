@@ -190,8 +190,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # update : add resample inithead to create_lisem_run - or separate function!
 # goal is to only prepare when needed for specific date.
 
-points_id <- c(4,14,18) # use if you want to update multiple subcatchments on the go
-#points_id <- c(18) # use if you want to update multiple subcatchments on the go
+points_id <- c(4,14, 18) # use if you want to update multiple subcatchments on the go
 reso <- c(10)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
@@ -202,7 +201,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = FALSE, # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = T, # only recalculate ldd if first time or dem is changed, takes some time!!
       parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
@@ -210,7 +209,7 @@ for (i in seq_along(points_id)) {
 
 # you can also run for one specific subcatchment e.g.
 
-#base_maps_subcatchment(cell_size = 20, sub_catch_number = 10, calc_ldd = T, parallel = FALSE)
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T, parallel = FALSE)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -260,15 +259,15 @@ for (i in seq_along(points_id)) {
       resolution = reso[j], 
       catch_num = points_id[i],
       swatre_file = swatre_file,
-      cal_alpha,
-      cal_n,
+      cal_alpha = cal_alpha,
+      cal_n = cal_n,
       do_runfile = FALSE
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-#create_lisem_run(resolution = 20, catch_num = 10, swatre_file = "cal_OM_swatre.csv")
+create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, cal_alpha, cal_n, T)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
 # select a subcatchment and event from the LISEM_runs folder structure

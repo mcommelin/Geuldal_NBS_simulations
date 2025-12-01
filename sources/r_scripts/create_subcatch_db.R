@@ -16,7 +16,7 @@ base_maps_subcatchment <- function(
   resample_method = "near"
   
   # load subcatchment points csv file
-  points <- read_csv("sources/setup/outpoints_descriptionN.csv")
+  points <- read_csv("sources/setup/outpoints_description.csv")
   
   # select subcatchment
   subcatch <- points %>%
@@ -91,16 +91,19 @@ base_maps_subcatchment <- function(
   ymax <- ymax(ref)
   ncol <- ncol(ref)
   nrow <- nrow(ref)
-  if (DEBUGm) message("hoi",ref)
+  if (DEBUGm) message(ref)
   
   # #remove ldd map because cannot be resampled.
   base_maps <- gsub("^ldd\\.map$", "", base_maps)
   # # remove catchment because it is already correct size
   base_maps <- gsub("^catchment\\.map$", "", base_maps)
   base_maps <- base_maps[base_maps != ""]  # Remove empty lines  
+  base_maps[24] <- "sub_point.map"
   
   for (i in seq_along(base_maps)) {
     map_in = paste0(sub_catch_dir,"base_", base_maps[i])
+    if (base_maps[i] == "sub_point.map") {
+    map_in = paste0(sub_catch_dir, base_maps[i])}
     map_out_name = paste0(sub_catch_dir, base_maps[i])
     tmp_tif = paste0(sub_catch_dir, "tmp.tif")
   if (DEBUGm) message("in ",map_in)
@@ -152,7 +155,7 @@ base_maps_subcatchment <- function(
     filter(use == "cal")
   events <- str_extract(cal_events$event_start, "\\d*")
   ih_ev <- str_remove(events, "^\\d\\d")
-  ih_dir <- paste0("LISEM_data/Base_Geul_20m/inith_", events, "_20m/")
+  ih_dir <- paste0("LISEM_data/Geul_20m/inith_", events, "_20m/")
   ih_maps <- dir(ih_dir[1], pattern = "\\d$")
   ih_end <- str_extract(ih_maps, "\\d*$")
  

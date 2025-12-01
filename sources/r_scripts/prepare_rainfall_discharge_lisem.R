@@ -340,7 +340,7 @@ qwb <- map2_dfr(events$ts_start, events$ts_end,
 #select qwb data for points that are relevant.
 # TODO remove hardcoding of Q points!
 # select all qwb points that align with an outpoint for LISEM modelling
-points <- read_csv("LISEM_data/setup/outpoints_description.csv")
+points <- read_csv("sources/setup/outpoints_description.csv")
 
 point_code <- points %>%
   distinct(point, code) %>%
@@ -479,3 +479,29 @@ for (k in seq_along(events$event_start)) {
 qtable <- bind_rows(qevent)
 write_csv(qtable, "data/processed_data/obs_discharge/observed_discharge_hourly.csv")
 
+# separate discharge for calibration ctachments
+# load high resolution
+
+hr_q <- read_csv("data/processed_data/obs_discharge/observed_discharge_high_res.csv")
+lr_q <- read_csv("data/processed_data/obs_discharge/observed_discharge_hourly.csv")
+
+# write 4 files with discharge for calibration events/ catchments
+# kelmis 2024-05-02
+kel_24 <- hr_q %>% filter(ev_num == 5 & point == 18) %>%
+  select(timestamp, code, Q) %>%
+  pivot_wider
+write_csv(kel_24, "data/processed_data/obs_discharge/kel_24.csv")
+
+# kelmis 2020-06-17 - only low resolution data available
+kel_20 <- lr_q %>% filter(ev_num == 8 & point == 18)
+
+
+# Gulp 2020-06-17
+gul_20 <- hr_q %>% filter(ev_num == 8 & point == 4)  %>%
+  select(timestamp, code, Q) %>%
+  pivot_wider(values_from = "Q", names_from = "code")
+write_csv(gul_20, "data/processed_data/obs_discharge/gulp_20.csv")
+
+# WVBeek 2020-06-17
+wvb_20 <- hr_q %>% filter(ev_num == 8 & point == 10) # no data available
+#write_csv(wvb_20, "data/processed_data/obs_discharge/wvb_20.csv")
