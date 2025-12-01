@@ -14,13 +14,21 @@ source("sources/r_scripts/configuration.R")
 
 ## 1.1 make base maps ----------------------------------------------------------
 # run the code from 'create_base_maps_lisem.R' this now includes a lot of 
-# manual work in QGIS - but it will result in tif files for all basemaps.
+# manual work in QGIS.
 
-#Notes on manual adjustments!
+# the resulting maps are stored online in the folder 'Geuldal_spatial_data'
+# from here a full automated workflow is possible.
+# if the base maps are changed the workflow has to be rerun to rebuild all 
+# influenced maps
 
 ## 1.2 catchment delineation ----------------------------------------------------
 # catchment delineation based on DEM and the local drain direction on 20
 # meter resolution. 
+#FEATURE1: automate delineation in separate function
+#' a-resample 5m dem to 20
+#' b-make catchment with outlet.txt
+#' step 3 - 5: produce dem, catchment and ldd for all resolutions.
+#' WARNING: make sure catchment alligns with current setup!!!!
 # currently done manually with steps:
 # 1. copy coordinates of outlet close to Juliana channel from QGIS to text file
 # 2. with PCRaster col2map make map of the outlet (mask = dem_region.map)
@@ -28,7 +36,7 @@ source("sources/r_scripts/configuration.R")
 # 4. resample based on the 5 and 20m mask.map to the correct extent
 # 5. run the pcr_script 'base_ldd.mod' to make the ldd.map
 
-# Result: based on this dem.map and catchment.map and ldd.map are made for 5 and 20 m.
+# Result: based on this dem.map and catchment.map and ldd.map are made for 5, 10 and 20 m.
 
 ## 1.3 preparation of precipitation and discharge data -------------------------
 # with the script 'prepare_rainfall_discharge_lisem.R' the radar precipitation
@@ -36,7 +44,15 @@ source("sources/r_scripts/configuration.R")
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
+#' FEATURE2: check that the correct data is produced
+#' a-correct rainfall for events
+#' b-correct discharge for final calibration catchments.
+
 ## 1.4 prepare base dataset  ------------------------------------------------
+#'FEATURE3: form base spatial data to input Geul_xxm for (5, 10 and 20 meter!)
+#'a-order all rasters and geopackage data on sharepoint
+#'b-write function to resample/rasterize all base spatial data to the correct rasters
+#'
 # convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
 # the function below can be used if base tif maps are adjusted, normally not required!
 
@@ -73,7 +89,8 @@ base_maps <- readLines("sources/base_maps.txt")
 # resample_base_maps(20) # resample for 20 meter
 
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
-
+#FEATURE4: define all calibration parameters in this main code
+#' put them in a csv file which is called from config?
 # load fieldwork results
 
 # field OM was not possible, too hig. OM divided by 4 and 0.5 added, based on nothing!
