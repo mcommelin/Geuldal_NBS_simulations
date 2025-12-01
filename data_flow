@@ -1,0 +1,46 @@
+# Order of data processing
+goal of this document is to structure where the base data for the Geuldal is stored
+and how this is processed to the final LISEM input database.
+
+# current problems
+1. single source maps not working well
+    the workflow from 1 base map to different resolutions is not working well
+    this causes problem switching between resolutions
+
+base maps + derivatives:
+
+rasters:
+dem_5m
+landuse_5m
+ndvi_10m - date specific !!!!
+
+vectors:
+ubc_soils_5m
+
+roads
+buildings
+build_up_area
+tilestorage
+hard_surface
+
+buffers
+buffer_outlet
+ponds
+channels
+    - location/mask
+    - width
+    - depth
+    - type (ditch/stream)
+    - culvert
+    - culvert diameter
+
+
+generated maps:
+ID.map
+subcatchments
+outpoints
+inithead_20m - date specific
+
+Idea:
+1. sharepoint version control directory for maps
+2. R code to go from vector to raster specific for each resolution.
