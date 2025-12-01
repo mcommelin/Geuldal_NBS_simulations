@@ -250,6 +250,20 @@ cal_alpha = 6.0 # higher alpha + lower n gives more rapid decrease of K(h) and t
                 # the shapes of the curves are more "sandy" but depends on Ksat
 cal_n = 0.9
 
+#TODO: 
+# naast de textuur hebben we n, alpha, stenigheid en OM, dat willen we ruimtelijk varieren dus dat Zou in een tabel kunnen
+# of willen ksat direct veranderen? als mogelijkheid erbij doen. ?
+# n maken via RR map en per map (want per is gebaseerd op NDVI)
+# chanwidth in buffer niet veranderen
+# chandepth op 0.1m zetten in een buffer
+# chanside op 1 zetten (45 graden) en de rest op 0 (rechthoekig)
+# er komt een laag met buffer dieptes per buffer -> VJ
+# kaart met dem correcties -> MC
+# script pcraster met arguments -> VJ
+# NDVI kaarten -> VJ
+
+
+
 # TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
 
