@@ -240,13 +240,16 @@ osm_data <- osm_data %>%
   mutate(width = as.numeric(width)) %>%
   mutate(m_width = if_else(is.na(width), m_width, width))
 
-# save the roads data
-st_write(osm_data, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = "roads_region", delete_layer = TRUE)
+# transform to EPSG:28992
+roads <- st_transform(osm_data, crs = " EPSG:28992")
 
-# make raster 
+# save the roads data
+st_write(roads, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = "roads_region", delete_layer = TRUE)
+
+# make polygon with buffer in QGIS and save as polygon
 # with terra write to LISEM_data
 
-# 3. channels and culverts -----------------------------------------------------
+# 3. channels, buffers and culverts -----------------------------------------------------
 
 # the channel layer are digitized to 1 connected network in QGIS.
 # with Lines Ranking plugin additional statistics are calculated.
@@ -287,7 +290,9 @@ chandim <- left_join(chanshape, shreve_lookup,
   mutate(culvert_bool = if_else(tunnel == "culvert", 1, 0),
          chan_type = if_else(waterway == "stream", 1, 2))
 
-st_write(chandim, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
+st_write(chandim, "spatial_data/channel_buffer.gpkg", layer = "channels", delete_layer = TRUE)
+
+#TODO update code below to produce correct rasters - or remove and write code elsewhere
 
 # for baseflow make a new layer that only contains channel sections with baseflow
 chan_bf <- chandim %>%
@@ -307,7 +312,7 @@ st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channel
 
 ## 3.1 buffer features --------------------------------------------------------
 
-# load WL data
+# load WL data (not openly available)
 wl_data_dir <- "data/data_wl/Data_buffers_Geul_openLisem_WRL/"
 
 # hoogtelijnen buffers
@@ -343,9 +348,11 @@ buffeat <- buffers %>%
   bind_rows(hl2) %>%
   st_make_valid()
 
+# after saving manual edits in QGIS are done to solve errors that are hard to code
+# so in general don't overwrite this layer except is you are sure that this is needed!
 # save for QGIS manual editing
-st_write(buffeat, "data/processed_data/GIS_data/buffers.gpkg", layer = "buf_new",
-         delete_layer = T)
+#st_write(buffeat, "spatial_data/channel_buffer.gpkg", layer = "buffers",
+#         delete_layer = T)
 
 # select all duikers in buffer
 duik_buf <- duiker %>%
@@ -383,15 +390,32 @@ af_buf <- duik_buf %>%
          d_new = if_else(d_new < 0.07, 0.07, d_new)) %>% # culverts cannot be fully closed.
   select(CODE, d_new)
 
-
+# after saving manual edits in QGIS are done to solve errors that are hard to code
+# so in general don't overwrite this layer except is you are sure that this is needed!
 # save for QGIS manual editing
-st_write(af_buf, "data/processed_data/GIS_data/buffers.gpkg", layer = "culvert_new",
+#st_write(af_buf, "spatial_data/channel_buffer.gpkg", layer = "buffer_outlet",
+#         delete_layer = T)
+
+## 3.2 natural ponds -----------------------------------------------------------
+
+# load osm natural water data
+osm_water <- st_read("data/osm_data.gpkg", layer = "natural_water") %>%
+  st_transform(crs = "EPSG:28992")
+
+# filter only the ponds; remove stream, river, wastewater etc
+unique(osm_water$water)
+
+pond_types <- c("lake", "pond", "moat", "basin", "reservoir", "unknown")
+
+ponds <- osm_water %>%
+  select(water) %>%
+  mutate(water = if_else(is.na(water), "unknown", water)) %>%
+  filter(water %in% pond_types)
+
+st_write(ponds, "spatial_data/channel_buffer.gpkg", layer = "ponds",
          delete_layer = T)
 
-# save buffers as boolean .tif on 5m
-# save outlet_diameter .tif on 5m
-
-# adjust PCRASTER code
+#TODO check with Victor how pondmask was made
 
 
 # 4. stormdrains ---------------------------------------------------------------

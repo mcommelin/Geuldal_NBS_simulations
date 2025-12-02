@@ -39,6 +39,8 @@ source("sources/r_scripts/configuration.R")
 
 #TODO: add additional event gulp/kelmis  
 
+#TODO add prepared rain + discharge in /ext_data/
+
 ## 1.4 prepare base dataset  ------------------------------------------------
 #'FEATURE3: form base spatial data to input Geul_xxm for (5, 10 and 20 meter!)
 #'a-order all rasters and geopackage data on sharepoint
