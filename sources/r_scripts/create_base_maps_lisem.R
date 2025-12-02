@@ -400,7 +400,7 @@ st_write(af_buf, "data/processed_data/GIS_data/buffers.gpkg", layer = "culvert_n
 # load WL data
 wl_data_dir <- "data/data_wl/Data_buffers_Geul_openLisem_WRL/"
 # riooleringsgebied
-riool_NL <- st_read("data/processed_data/GIS_data/roads_buildings.gpkg", 
+riool_NL <- st_read("spatial_data/urban.gpkg", 
                     layer = "riool_NL_geul")
 
 # overstorten
@@ -415,12 +415,26 @@ r2 <- riool_NL %>%
   select(code, berging_in_riolering_totaal_mm) %>%
   summarise(berging_in_riolering_totaal_mm = sum(berging_in_riolering_totaal_mm))
 
-# save new riool file
-st_write(r2, "data/processed_data/GIS_data/roads_buildings.gpkg", 
-         layer = "riool_NL_geul_corrected")
+# 
+# st_write(r2, "spatial_data/urban.gpkg", 
+#          layer = "riool_NL_geul_corrected")
 # mean storage in NL for other regions:
 mean(r2$berging_in_riolering_totaal_mm, na.rm = T)
 # 11.7 mm
+
+#combine with build_up_area outside NL to tilestorage map.
+r_other <- st_read("spatial_data/urban.gpkg", layer = "riool_other_geul") %>%
+  mutate(berging = 11.7) %>%
+  select(berging)
+
+r_nl <- r2 %>%
+  select(berging_in_riolering_totaal_mm) %>%
+  rename("berging" = "berging_in_riolering_totaal_mm")
+
+r_all <- r_other %>%
+  bind_rows(r_nl)
+# save new riool file
+st_write(r_all, "spatial_data/urban.gpkg", layer = "tilestorage")
 
 # further calculations in PCRASTER code
 
