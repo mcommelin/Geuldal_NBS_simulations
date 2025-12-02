@@ -23,18 +23,96 @@ set_pcraster(env = "lisem", miniconda = "~/ProgramFiles/miniconda3")
 options(digits = 10)
 
 
-# 1. create subcatchment maps -------------------------------------------------
+# 1. create (sub)catchment maps -------------------------------------------------
+
+# 1.1 delineate catchment
+# load base layers spatial data
+mask20 <- rast("spatial_data/mask_20m.map")
+base_dem_5m <- rast("spatial_data/dem_region_5m.map")
+
+#!!!!!!!!!!!!!!!!!!!!!!!
+# Code below to show workflow, not used due to slightly different results!!!
+
+# # resample dem with terra
+# base_dem_20 <- terra::resample(base_dem_5m, mask20, method = "average")
+# 
+# #write as PCRaster map
+# writeRaster(base_dem_20, "spatial_data/dem_region_20m.map" , filetype = "PCRaster", NAflag = -9999,
+#             overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+# 
+# # # resample dem with PCraster
+# # resample(clone = "mask_20m.map", map_in = "dem_region_5m.map", 
+# #          map_out = "dem_region_20m.map", dir = "spatial_data/")
+# 
+# # convert outlet coordinates to PCRaster map
+# col2map(clone = "mask_20m.map", col_in = "outlet.txt", map_out = "outlet.map",
+#         sub_dir = "spatial_data/")
+# 
+# # make a local drain direction for the whole regional dem on 20m
+# pcrcalc(options = "ldd_base.map=lddcreate(dem_region_20m.map,1e31,1e31,1e31,1e31)",
+#         work_dir = "spatial_data/")
+# 
+# # delineate the catchement based on the outlet
+# pcrcalc(options = "catchment.map=cover(catchment(ldd_base.map, nominal(outlet.map)),0)",
+#         work_dir = "spatial_data/")
+
+#WARNING - the catchment map was produced early in the modelling project 
+# - and newer (so the version produced with the code above) versions slightly differ at the edges 
+#!!!!!!!!!!!!!!!!!!!!
+
+# load the base_catchment_20m
+base_catch_20m <- rast("spatial_data/base_catchment_20m.map")
+
+# we use 3 resolutions for the dataset
+cell_size <- unique(points$cell_size)
+
+# create maps for base database if they do not exist
+
+for(i in seq_along(cell_size)) {
+  # make folder structure
+  res_dir <- paste0("LISEM_data/Geul_", cell_size[i], "m/")
+  map_dir <- paste0(res_dir, "maps/")
+  if(!dir.exists(res_dir)) {
+    dir.create(res_dir)
+    dir.create(map_dir)
+  }
+  
+  #write maps
+  #mask
+  mask <- rast(paste0("spatial_data/mask_", cell_size[i],"m.map"))
+  out <- paste0(res_dir, "maps/mask.map")
+  writeRaster(mask, out, filetype = "PCRaster", NAflag = -9999,
+                           overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+  #dem
+  out <- paste0(res_dir, "maps/dem.map")
+  dem <- terra::resample(base_dem_5m, mask, method = "average")
+  writeRaster(dem, out, filetype = "PCRaster", NAflag = -9999,
+              overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+  
+  #catchment
+  out <- paste0(res_dir, "maps/catchment.map")
+  catch <- terra::resample(base_catch_20m, mask, method = "near")
+  writeRaster(catch, out, filetype = "PCRaster", NAflag = -9999,
+              overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+  
+  # generate ldd
+  pcr_script("base_ldd.mod", script_dir = "sources/pcr_scripts/",
+             work_dir = map_dir)
+
+}
+# 1.2 make map with subcatchments based on csv file with outpoint coordinates
 
 # load the outpoints csv file
 # if more subcatchment or outpoints are required, these can manually be added
 # to this file
-points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
-cell_size <- unique(points$cell_size)
+
 
 # loop over resolutions
-for (j in seq_along(cell_size)) {
-  subdir <- paste0("LISEM_data/Geul_", cell_size[j], "m/maps/")
-  res <- cell_size[j]
+cell_size <- unique(points$cell_size)
+
+for(i in seq_along(cell_size)) {
+  subdir <- paste0("LISEM_data/Geul_", cell_size[i], "m/maps/")
+  res <- cell_size[i]
   # filter the correct resolution
   points_res <- points %>%
     filter(cell_size == res) %>%

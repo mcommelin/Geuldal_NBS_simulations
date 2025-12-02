@@ -44,3 +44,15 @@ inithead_20m - date specific
 Idea:
 1. sharepoint version control directory for maps
 2. R code to go from vector to raster specific for each resolution.
+
+
+# naast de textuur hebben we n, alpha, stenigheid en OM, dat willen we ruimtelijk varieren dus dat Zou in een tabel kunnen
+# of willen ksat direct veranderen? als mogelijkheid erbij doen. ?
+# n maken via RR map en per map (want per is gebaseerd op NDVI)
+# chanwidth in buffer niet veranderen
+# chandepth op 0.1m zetten in een buffer
+# chanside op 1 zetten (45 graden) en de rest op 0 (rechthoekig)
+# er komt een laag met buffer dieptes per buffer -> VJ
+# kaart met dem correcties -> MC
+# script pcraster met arguments -> VJ
+# NDVI kaarten -> VJ
