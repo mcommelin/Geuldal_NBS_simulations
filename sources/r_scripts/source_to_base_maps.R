@@ -95,7 +95,7 @@ for(i in seq_along(cell_size)) {
 ## make map with subcatchments and lcc
 #based on csv file with outpoint coordinates
 
-ldd_subcatch <- function(points = points) {
+ldd_subcatch <- function(points = points, force_ldd = FALSE) {
 # load the outpoints csv file
 # if more subcatchment or outpoints are required, these can manually be added
 # to this file
@@ -107,6 +107,7 @@ cell_size <- unique(points$cell_size)
 for(i in seq_along(cell_size)) {
   subdir <- paste0("LISEM_data/Geul_", cell_size[i], "m/maps/")
   res <- cell_size[i]
+  
   # filter the correct resolution
   points_res <- points %>%
     filter(cell_size == res) %>%
@@ -117,16 +118,17 @@ for(i in seq_along(cell_size)) {
   # run col2map
   col2map(col_in = "outpoints.txt", map_out = "outpoints.map",
           sub_dir = subdir, options = "-N")
+  
+  # generate ldd
+  if(!file.exists(paste0(subdir,"ldd.map")) | force_ldd == T){
+  pcr_script("base_ldd.mod", script_dir = "sources/pcr_scripts/",
+             work_dir = subdir)
+  }
   # make the subcatchment map
   pcrcalc(
     work_dir = subdir,
     options = paste0("subcatch.map=subcatchment(ldd.map, outpoints.map)")
   )
-  
-  # generate ldd
-  pcr_script("base_ldd.mod", script_dir = "sources/pcr_scripts/",
-             work_dir = map_dir)
-  
   
   # clean up
   # remove outpoints.txt
