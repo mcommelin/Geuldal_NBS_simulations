@@ -12,6 +12,7 @@ source("sources/r_scripts/configuration.R")
 
 # !! All datetime data in the project is in GMT+1 !!
 
+source("sources/r_scripts/source_to_base_maps.R")
 ## 1.1 make base maps ----------------------------------------------------------
 # based on manual work, and preparation code in 'create_base_maps_lisem.R' 
 # base raster and vector layer are made
@@ -26,11 +27,9 @@ source("sources/r_scripts/configuration.R")
 
 # catchment delineation based on DEM and the local drain direction on 20
 # meter resolution. 
-# run section 1.1 from 'create_base_maps_lisem.R'
+catch_maps_res()
 
-# Result: based on this dem.map and catchment.map and ldd.map are made for 5, 10 and 20 m.
-#TODO: adjust outpoints csv to make correct subcatchments for all resolution
-#TODO: burn channels in DEM when making subcatchments!
+# Result: based on this dem.map and catchment.map are made for 5, 10 and 20 m.
 
 ## 1.3 preparation of precipitation and discharge data -------------------------
 # with the script 'prepare_rainfall_discharge_lisem.R' the radar precipitation
@@ -47,11 +46,16 @@ source("sources/r_scripts/configuration.R")
 # the function below makes PCRaster maps for all resolutions from the data
 # in ./spatial_data/
 spatial_data_to_pcr()
-# TODO: place function in correct script and source!
+
+# in the function below the local drain direction maps are made and based
+# on the csv file describing all outpoints, subcatchments are made.
+
+#TODO: adjust outpoints csv to make correct subcatchments for all resolution
+#TODO: burn channels in DEM when making subcatchments!
+ldd_subcatch()
 
 # load the list of base maps.
 base_maps <- readLines("sources/base_maps.txt")
-
 
 
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
@@ -126,6 +130,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        swatre_out = paste0("sources/setup/calibration/", swatre_file)
                        )
 
+#TODO: solve the baseflow for calibration events!
 # Additional preparation of baseflow
 
 #WARNING for the calibration of 20230622 we use observed baseflow for 10, 4, 14, 12 and 18.
