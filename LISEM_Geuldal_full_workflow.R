@@ -43,15 +43,15 @@ catch_maps_res()
 
 ## 1.4 prepare base dataset  ------------------------------------------------
 
+#TODO: NDVI based maps are not yet included
+
+
 # the function below makes PCRaster maps for all resolutions from the data
 # in ./spatial_data/
 spatial_data_to_pcr()
 
 # in the function below the local drain direction maps are made and based
 # on the csv file describing all outpoints, subcatchments are made.
-
-#TODO: adjust outpoints csv to make correct subcatchments for all resolution
-#TODO: burn channels in DEM when making subcatchments!
 ldd_subcatch()
 
 # load the list of base maps.
@@ -178,7 +178,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # update : add resample inithead to create_lisem_run - or separate function!
 # goal is to only prepare when needed for specific date.
 
-points_id <- c(4,14, 18) # use if you want to update multiple subcatchments on the go
+points_id <- c(4, 18) # use if you want to update multiple subcatchments on the go
 reso <- c(10)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")

@@ -95,12 +95,12 @@ for(i in seq_along(cell_size)) {
 ## make map with subcatchments and lcc
 #based on csv file with outpoint coordinates
 
-ldd_subcatch <- function(points = points, force_ldd = FALSE) {
+ldd_subcatch <- function(force_ldd = FALSE) {
 # load the outpoints csv file
 # if more subcatchment or outpoints are required, these can manually be added
 # to this file
 
-
+  points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
 # loop over resolutions
 cell_size <- unique(points$cell_size)
 

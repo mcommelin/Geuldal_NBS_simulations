@@ -155,7 +155,7 @@ base_maps_subcatchment <- function(
     filter(use == "cal")
   events <- str_extract(cal_events$event_start, "\\d*")
   ih_ev <- str_remove(events, "^\\d\\d")
-  ih_dir <- paste0("LISEM_data/Geul_20m/inith_", events, "_20m/")
+  ih_dir <- paste0("spatial_data/inithead/inith_", events, "_20m/")
   ih_maps <- dir(ih_dir[1], pattern = "\\d$")
   ih_end <- str_extract(ih_maps, "\\d*$")
  

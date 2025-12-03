@@ -28,7 +28,7 @@ writeRaster(a$ID_zone, paste0("data/processed_data/ID_zones_KNMI_radar.asc"),
 
 ## 1.2 ID maps for 5 and 20 m ------------------------------------------------------
 
-resolution = c(5, 20) # 5 or 20
+resolution = c(5, 10, 20) # 5 or 20
 
 for (i in seq_along(resolution)) {
   # get the resolution
