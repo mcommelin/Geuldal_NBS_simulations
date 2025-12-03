@@ -229,7 +229,7 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T, para
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
 
-points_id <- c(4,14,18) # use if you want to update multiple subcatchments on the go
+points_id <- c(4,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
 reso = c(10) # 5 or 20
@@ -263,7 +263,7 @@ for (i in seq_along(points_id)) {
       swatre_file = swatre_file,
       cal_alpha = cal_alpha,
       cal_n = cal_n,
-      do_runfile = FALSE
+      do_runfile = TRUE
     )
   }
 }
