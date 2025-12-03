@@ -60,6 +60,7 @@ base_dem_5m <- rast("spatial_data/dem_region_5m.map")
 # - and newer (so the version produced with the code above) versions slightly differ at the edges 
 #!!!!!!!!!!!!!!!!!!!!
 
+## 1.1 catchment based dem etc --------------------------------
 # load the base_catchment_20m
 base_catch_20m <- rast("spatial_data/base_catchment_20m.map")
 
@@ -100,7 +101,8 @@ for(i in seq_along(cell_size)) {
              work_dir = map_dir)
 
 }
-# 1.2 make map with subcatchments based on csv file with outpoint coordinates
+## 1.2 make map with subcatchments ---------------------------------------------
+#based on csv file with outpoint coordinates
 
 # load the outpoints csv file
 # if more subcatchment or outpoints are required, these can manually be added
@@ -138,6 +140,57 @@ for(i in seq_along(cell_size)) {
     file.remove(aux_files)
   }
 }
+
+## 1.3 spatial_data to Geul_xm -------------------------------------------------
+
+spatial_data_to_pcr <- function() {
+  res <- c(5, 10, 20)
+  maps_list <- read_csv("sources/transformations_maps.csv")
+  dir_sd <- "spatial_data/"
+  # load outline of catchment to reduce data load
+  catch_poly <- st_read(paste0(dir_sd,"catchment.gpkg"), layer = "catch_buffered_250")
+  #prepare resolution specific base data
+  res_dir <- paste0("LISEM_data/Geul_", res, "m/maps/")
+  mask <- vector("list", length = length(res))
+  for (r in seq_along(res)) {
+    mask[[r]] <- rast(paste0(dir_sd, "mask_", res[r], "m.map"))
+  }
+  
+  
+  for (i in seq_along(maps_list$name)) { #loop over base maps
+    # two options: input map is vector or raster
+    if(maps_list$type[i] == "vector") {
+      map <- st_read(paste0(dir_sd, maps_list$file[i], ".gpkg"), 
+                     layer = maps_list$name_in[i], quiet = T)
+      #clip map to catchment
+      map <- st_intersection(map, catch_poly)
+      # make spatvector
+      map <- vect(map)
+      #rasterize for each resolution
+      for (r in seq_along(res)) {
+        # load specific field if needed
+        f <- ifelse(!is.na(maps_list$field[i]), maps_list$field[i], "")
+        # the roads fraction as only map needs the option 'cover = TRUE'
+        c <- ifelse(maps_list$name[i] == "roads_fraction", T, F)
+        # resample 
+        map_res <- terra::rasterize(map, mask[[r]], field = f, cover = c, fun = maps_list$fun[i])
+        map_out <- paste0(res_dir[[r]], maps_list$name[i], ".map")
+        writeRaster(map_res, map_out , filetype = "PCRaster", NAflag = -9999,
+                    overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+      }
+    } else if(maps_list$type[i] == "raster") {
+      map <- rast(paste0(dir_sd, maps_list$name_in[i]))
+      for (r in seq_along(res)) {
+        map_res <- terra::resample(map, mask[[r]], method = maps_list$method[i])
+        map_out <- paste0(res_dir[[r]], maps_list$name[i], ".map")
+        writeRaster(map_res, map_out , filetype = "PCRaster", NAflag = -9999,
+                    overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+      }
+    } else (return(message("ERROR: wrong type!")))
+    
+  } #end maps list loop
+  
+} #end function spatial_data_to_pcr
 
 
 # 2. roads map clean up data ---------------------------------------------------

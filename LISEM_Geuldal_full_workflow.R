@@ -29,6 +29,7 @@ source("sources/r_scripts/configuration.R")
 # run section 1.1 from 'create_base_maps_lisem.R'
 
 # Result: based on this dem.map and catchment.map and ldd.map are made for 5, 10 and 20 m.
+#TODO: adjust outpoints csv to make correct subcatchments for all resolution
 #TODO: burn channels in DEM when making subcatchments!
 
 ## 1.3 preparation of precipitation and discharge data -------------------------
@@ -39,50 +40,22 @@ source("sources/r_scripts/configuration.R")
 
 #TODO: add additional event gulp/kelmis  
 
-#TODO add prepared rain + discharge in /ext_data/
+#TODO: add prepared rain + discharge in /ext_data/
 
 ## 1.4 prepare base dataset  ------------------------------------------------
-#'FEATURE3: form base spatial data to input Geul_xxm for (5, 10 and 20 meter!)
-#'a-order all rasters and geopackage data on sharepoint
-#'b-write function to resample/rasterize all base spatial data to the correct rasters
-#'
-# convert base maps to PCraster LISEM input on 5 and 20 meter resolution.
-# the function below can be used if base tif maps are adjusted, normally not required!
+
+# the function below makes PCRaster maps for all resolutions from the data
+# in ./spatial_data/
+spatial_data_to_pcr()
+# TODO: place function in correct script and source!
 
 # load the list of base maps.
 base_maps <- readLines("sources/base_maps.txt")
 
-# # convert the required base maps
-# source("sources/r_scripts/source_to_base_maps.R") #function to transform tif to .map
-# 
-# chanmaps <- c("channels_bool.tif", "channels_depth.tif", "channels_width.tif",
-#               "channels_type.tif", "build_up_area_5m.tif", "channels_baseflow.tif",
-#               "culverts_bool.tif","soilcodeUBC_5m.tif", "buffers_bool.tif",
-#               "buffer_outlet_diam.tif")
-# outmaps <- c("chanmask", "chandepth", "chanwidth", "chantype", "bua", "baseflow",
-#              "culvertmask","profile", "buffermask", "buffer_outlet")
-# 
-# for (i in seq_along(chanmaps)) {
-#     source_to_base_maps(
-#     map_in = paste0("data/processed_data/GIS_data/base_rasters/", chanmaps[i]),
-#     map_out = outmaps[i],
-#     resample_method = "max"
-#   )
-# }
 
-# WARNING - 2025-11-20 
-# code below not working, just copy the /maps folder from Base_Geul_xm to Geul_xm
-# after this everything should work.
-
-# # copy the 5 m dataset and resample the 20 m dataset - 
-# # other resolutions > 5m are theoretically also possible
-# # but create a mask.map manually first!
-# source("sources/r_scripts/source_to_base_maps.R")
-# resample_base_maps(5) # copy for 5 meter
-# resample_base_maps(20) # resample for 20 meter
 
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
-#FEATURE4: define all calibration parameters in this main code
+#TODO: define all calibration parameters in this main code
 #' put them in a csv file which is called from config?
 # load fieldwork results
 
