@@ -16,3 +16,4 @@ pondmask,vector,,,ponds,channel_buffer,,max
 tilestorage,vector,,,tilestorage,urban,berging,max
 hard_surface,vector,,,hard_surface,urban,,max
 dhydro,vector,,,dhydro_domein,catchment,,max
+demburns,vector,,,dem_burns,catchment,,max

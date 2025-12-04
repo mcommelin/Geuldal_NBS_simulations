@@ -243,9 +243,10 @@ cal_n = 0.9     # the shapes of the curves are more "sandy" but depends on Ksat
 # of willen ksat direct veranderen? als mogelijkheid erbij doen.
 
 # er komt een laag met buffer dieptes per buffer -> VJ
-# kaart met dem correcties -> MC
 # script pcraster met arguments -> VJ
 # NDVI kaarten -> VJ
+
+#TODO: channels slope, if inside buffer (20m) of roads then < 0.05, then smooth.
 
 # TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
