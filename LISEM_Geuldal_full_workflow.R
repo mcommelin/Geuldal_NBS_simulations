@@ -37,9 +37,11 @@ catch_maps_res()
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
-#TODO: add additional event gulp/kelmis  
+#NOTE1: this data is already available from ./spatial_data/ext_data/
+#NOTE2: the input rainfall files can be found at ./prepared/rain
+  # place this folder in ./LISEM_data/ 
 
-#TODO: add prepared rain + discharge in /ext_data/
+#TODO: add additional event gulp/kelmis  
 
 ## 1.4 prepare base dataset  ------------------------------------------------
 
@@ -53,7 +55,7 @@ spatial_data_to_pcr()
 # in the function below the local drain direction maps are made and based
 # on the csv file describing all outpoints, subcatchments are made.
 # NOTE: ldd calculations for the whole Geul catchement take a lot of time
-# these maps are also provided in /spatial_data/pcr_maps/
+# these maps are also provided in /spatial_data/prepared/
 # manually adding these to the correct folders will speed up time.
 # set force_ldd = TRUE to recalculate the ldd
 ldd_subcatch(force_ldd = FALSE)
