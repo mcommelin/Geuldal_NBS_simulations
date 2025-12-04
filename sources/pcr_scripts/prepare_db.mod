@@ -157,8 +157,6 @@ bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
 chanculvert = scalar(if(cover(culvert, 0) eq 1, 5)); 
 report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
 report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
-
-#report chanculvert = if (bua eq 1 and cover(culvert, 0) gt 0,5,chanculvert) * chanclean;
 report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
 
 
