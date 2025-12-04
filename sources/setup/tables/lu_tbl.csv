@@ -1,4 +1,4 @@
-lu_nr,description,rr,n,per,om,smax_eq,notes
+lu_nr,description,rr,n_res,n_veg,om,smax_eq,notes
 1,akker,-9,-9,-9,-9,1,
 2,loofbos,-9,-9,-9,-9,6,
 3,(productie) grasland,-9,-9,-9,-9,8,

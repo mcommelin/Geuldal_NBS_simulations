@@ -65,9 +65,8 @@ base_maps <- readLines("sources/base_maps.txt")
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
 #TODO: define all calibration parameters in this main code
 #' put them in a csv file which is called from config?
-# load fieldwork results
 
-# field OM was not possible, too hig. OM divided by 4 and 0.5 added, based on nothing!
+# field OM was not possible, too high. OM divided by 4 and 0.5 added, based on nothing!
 cal1 = 0.25
 cal2 = 0.5
 pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
@@ -76,9 +75,9 @@ pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_ty
   filter(is.na(nbs_type)) %>%
   group_by(lu_nr) %>%
   summarise(rr = round(mean(rr), digits = 2),
-         n = round(mean(n), digits = 2),
-         om = round(mean(om)*cal1+cal2, digits = 2),
-         per = round(mean(per), digits = 2))
+         n_res = round(mean(n_res), digits = 2),
+         n_veg = round(mean(n_veg), digits = 2),
+         om = round(mean(om)*cal1+cal2, digits = 2))
 
 # load lu table
 lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv", show_col_types = FALSE)
@@ -114,7 +113,7 @@ names(lu_pars) <- nms
 write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
-#note: here only cols 1,2 and 5 are used 1=RR; 2=n; 5=SMAX
+#note: here only cols 1,2, 3 and 5 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX
 # the other columns are used in SWATRE creation, swatre_input.R
 
 ## 1.6 make SWATRE soil tables -------------------------------------------------
@@ -178,12 +177,8 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-
-# update : add resample inithead to create_lisem_run - or separate function!
-# goal is to only prepare when needed for specific date.
-
 points_id <- c(4, 18) # use if you want to update multiple subcatchments on the go
-reso <- c(10)
+reso <- c(10, 20)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
@@ -194,14 +189,12 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       calc_ldd = T, # only recalculate ldd if first time or dem is changed, takes some time!!
-      parallel = FALSE  # the map resampling can be done parallel, on windows this causes errors, then set to false.
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T, parallel = FALSE)
+#base_maps_subcatchment(cell_size = 10, sub_catch_number = 90, calc_ldd = T)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -224,11 +217,11 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T, para
 #' 3. the channel mannings n properties: see sources/setup/tables/
 #' 
 #' PCRaster scripts used in the function:
-#' 1.  baseflow_cal.mod  = calculates baseflow for subcatchments on 20230622 
+#' 1. prepare_db.mod     = main script making most of the maps, channels and culverts
+#' 2. storm_drans.mod    = script making storm drains in urban area 
+#' 3. prepare_buffer_features.mod = script making buffers and ponds + update dem.
+#' 4. baseflow_calibration.mod  = calculates baseflow for subcatchments on 20230622 
 #'                - if more events/subcatch needed adjust code and csv file
-#' 2. prepare_db.mod     = main script making most of the maps, channels and culverts
-#' 3. storm_drans.mod    = script making storm drains in urban area 
-#'                          - contains hard coded drain size!
 
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
@@ -236,11 +229,9 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T, para
 points_id <- c(4,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
-reso = c(10) # 5 or 20
-
+reso = c(10) # 5, 10 or 20
 cal_alpha = 6.0 # higher alpha + lower n gives more rapid decrease of K(h) and theta(h)
-                # the shapes of the curves are more "sandy" but depends on Ksat
-cal_n = 0.9
+cal_n = 0.9     # the shapes of the curves are more "sandy" but depends on Ksat
 
 #TODO: 
 # naast de textuur hebben we n, alpha, stenigheid en OM, dat willen we ruimtelijk varieren dus dat Zou in een tabel kunnen
@@ -253,8 +244,6 @@ cal_n = 0.9
 # kaart met dem correcties -> MC
 # script pcraster met arguments -> VJ
 # NDVI kaarten -> VJ
-
-
 
 # TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")

@@ -29,6 +29,7 @@ buffers = buffermask.map;      # map with boolean location of retention buffers
 lai = lai.map;		     # map with lai based on NDVI (202306)
 profile = profile.map;	# map with ubc soil codes for swatre
 buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
+per = per.map;
 
 ### INPUT TABLES ### 
 
@@ -112,7 +113,12 @@ out1 = scalar(outlet) * 100; # used to force channel outlet to correct location
 calbrRR = scalar(10.0); ## the field data were not very conclusive, at least multiply by 10 or more!
 report rr = calbrRR*lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
 
-report mann = lookupscalar(lutbl, 2, lu); # Manning's n
+# mannings N based on philips 1989: n = RR/100 + n_residue + n_vegetation * per
+# with the very low RR from fieldwork 'RR/50' makes more sense
+n_res = lookupscalar(lutbl, 2, lu);
+n_veg = lookupscalar(lutbl, 3, lu);
+report mann = rr/50 + n_res + n_veg * per;
+# report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
 
 # calculate interception
 smax_eq = lookupscalar(lutbl, 5, lu);
@@ -122,7 +128,6 @@ smax = if(smax_eq eq 6, 0.286*lai, smax);
 smax = if(smax_eq eq 7, 0.171*lai, smax);
 report smax = if(smax_eq eq 8, 0.59*lai**0.88, smax);
 
-# report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
 roadwidth = roads * celllength();
 report roadwidth = if(boolean(catchment), roadwidth);
 

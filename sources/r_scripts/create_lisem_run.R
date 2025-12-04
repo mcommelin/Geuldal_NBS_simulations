@@ -202,7 +202,7 @@ create_lisem_run <- function(
       select(-date)
     nms <- as.character(seq(0, ncol(baseqtbl) - 1))
     names(baseqtbl) <- nms
-    #write space delimited lutbl with colnumbers instead of names
+    #write space delimited tbl with colnumbers instead of names
     write.table(baseqtbl, file = paste0(subdir, "baseq.tbl"),
                 sep = " ", row.names = FALSE,
                 quote = FALSE)
@@ -229,7 +229,7 @@ create_lisem_run <- function(
       resolution = resolution
     )
     }
-  }
+  } # end date specific loop
     
   #delete intermediate files
   file.remove(paste0(subdir, "chan.tbl"))

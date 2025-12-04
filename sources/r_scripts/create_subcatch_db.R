@@ -5,8 +5,7 @@
 base_maps_subcatchment <- function(
     cell_size = NULL,
     sub_catch_number = NULL, # adjust the number to select the subcatchment you want
-    calc_ldd = FALSE,
-    parallel = TRUE
+    calc_ldd = FALSE
     )
 {
   
@@ -145,9 +144,7 @@ base_maps_subcatchment <- function(
     work_dir = sub_catch_dir
   )
   
- 
- 
-   # initial head per subcatch
+    # initial head per subcatch
   # initial head maps
   # if resolution = 20, copy from base to Geul
   # if different, copy and resample
