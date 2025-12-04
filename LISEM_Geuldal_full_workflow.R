@@ -52,7 +52,11 @@ spatial_data_to_pcr()
 
 # in the function below the local drain direction maps are made and based
 # on the csv file describing all outpoints, subcatchments are made.
-ldd_subcatch()
+# NOTE: ldd calculations for the whole Geul catchement take a lot of time
+# these maps are also provided in /spatial_data/pcr_maps/
+# manually adding these to the correct folders will speed up time.
+# set force_ldd = TRUE to recalculate the ldd
+ldd_subcatch(force_ldd = FALSE)
 
 # load the list of base maps.
 base_maps <- readLines("sources/base_maps.txt")

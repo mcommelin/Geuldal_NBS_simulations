@@ -287,23 +287,12 @@ chandim <- left_join(chanshape, shreve_lookup,
 
 st_write(chandim, "spatial_data/channel_buffer.gpkg", layer = "channels", delete_layer = TRUE)
 
-#TODO update code below to produce correct rasters - or remove and write code elsewhere
+# # for baseflow make a new layer that only contains channel sections with baseflow
+# chan_bf <- chandim %>%
+#   filter(baseflow == 1)
+# st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channels_baseflow", delete_layer = TRUE)
+# 
 
-# for baseflow make a new layer that only contains channel sections with baseflow
-chan_bf <- chandim %>%
-  filter(baseflow == 1)
-st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channels_baseflow", delete_layer = TRUE)
-
-# export the channels_baseflow layer with:
-# rasterize (GDAL), 5 m georeferenced units with as extent the mask 5m.
-# channels_baseflow.tif : select field = baseflow
-
-# export the following raster .tif from the channels layer with:
-# rasterize (GDAL), 5 m georeferenced units with as extent the mask 5m.
-# channels_bool.tif : 1 if channel, set fixed burn-in value = 1 
-# channels_depth.tif : select field = depth
-# channels_width.tif : select field = width
-# culverts_bool.tif : select field = culvert
 
 ## 3.1 buffer features --------------------------------------------------------
 
@@ -410,7 +399,8 @@ ponds <- osm_water %>%
 st_write(ponds, "spatial_data/channel_buffer.gpkg", layer = "ponds",
          delete_layer = T)
 
-#TODO check with Victor how pondmask was made
+# in the PCRaster code the ponds that are within the DHydro domain are removed.
+# mainly because around the Geul river some ponds don't function as buffer.
 
 
 # 4. stormdrains ---------------------------------------------------------------

@@ -1,24 +1,27 @@
 #! --matrixtable --lddin --clone mask.map
 
-# PCRASTER script to build a LISEM input database 
-# made by Meindert Commelin 03/06/2025            
+# PCRASTER script prepare some base input maps
+# made by Meindert Commelin 2025-12-04         
 ###################################################
 
 binding 
 
 ### INPUT MAPS ### 
 
-chantype = chantype.map;    # either stream (1) or ditch (2)
-bua = bua.map; 		     # map with build up area.
+ponds = pondmask.map;
+dhydro = dhydro.map;
 
-### INPUT TABLES ### 
-
-
+pmv = p_mv.map;
+profile = profile.map;
+fill = fill.map;
 
 initial 
 
 
-# calculate mannings for channel
-bua = cover(bua, 0);
-chanclass = if(bua eq 1,chantype, chantype + 2);
-chantype = lookupscalar(chanclass, 1, chantbl);
+# remove all ponds that fall within the dhydro domain
+report ponds = if(cover(dhydro, 0) eq 0, ponds);
+
+# fill nodata values profile.map
+profile = nominal(pmv);
+fill = windowmajority(nominal(profile), 120);
+report profile = cover(nominal(profile), fill);

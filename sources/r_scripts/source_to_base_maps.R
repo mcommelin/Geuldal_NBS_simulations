@@ -16,12 +16,13 @@ spatial_data_to_pcr <- function() {
   
   
   for (i in seq_along(maps_list$name)) { #loop over base maps
+  #for (i in 1:17) {
     # two options: input map is vector or raster
     if(maps_list$type[i] == "vector") {
       map <- st_read(paste0(dir_sd, maps_list$file[i], ".gpkg"), 
                      layer = maps_list$name_in[i], quiet = T)
       #clip map to catchment
-      map <- st_intersection(map, catch_poly)
+      #map <- st_intersection(map, catch_poly)
       # make spatvector
       map <- vect(map)
       #rasterize for each resolution
@@ -48,6 +49,15 @@ spatial_data_to_pcr <- function() {
     
   } #end maps list loop
   
+  # run a PCRaster script to do some additional step for all resolutions
+  # 1: remove ponds from dhydro domain
+  # 2: fill nodata values in soil UBC profile.map
+  for (r in seq_along(res)) {
+    pcr_script("maps_prepare.mod", script_dir = "sources/pcr_scripts",
+               work_dir = res_dir[r])
+    #clean up
+    file.remove(paste0(res_dir[[r]], "p_mv.map"))
+  }
 } #end function spatial_data_to_pcr
 
 ##  catchment based dem etc 
