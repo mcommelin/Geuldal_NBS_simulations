@@ -11,8 +11,8 @@ soil_landuse_to_swatre <- function(file = "",
   #load the UBC codes including texture, gravel
   ubc_in <- read_csv(file, show_col_types = FALSE)
   # load landuse classes with OM and O depth
-  lu_in <- read.table("LISEM_data/tables/lu.tbl")[-1, ] %>%
-    select(1, 4, 7) %>%
+  lu_in <- read.table("sources/setup/calibration/lu.tbl")[-1, ] %>%
+    select(1, 5, 7) %>%
     rename_with(~ c("lu", "om", "od")) %>%
     mutate(lu = lu * 100)
   
