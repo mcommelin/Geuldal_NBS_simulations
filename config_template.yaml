@@ -25,10 +25,10 @@ conda_env: "lisem"
 # Subcatchments for calibration are: Watervalderbeek = 10, Eyserbeek = 14, Gulp = 4,
 # Lemiers = 12, Kelmis = 18 and a 1km2 test catchment - Sippenaeken = 90.
 # You can specify one or more numbers, e.g. [10, 12, 18]
-subcatchments: [10, 12]
+subcatchments: [4, 10, 14, 18]
 
 # 6. resolution to work on, available are 5 and 20, both is also possible
-resolution: [5, 20]
+resolution: [10, 20]
 
 # 7. Name of the table containing swatre data to make in your LISEM dataset.
 # Example: "soil_layers_infiltration.csv"
