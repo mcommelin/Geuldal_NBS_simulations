@@ -11,7 +11,7 @@ binding
 dem = dem.map;              # digital elevation model, area must be <= clone
 lu = landuse.map;           # field id's for landuse 
 catchment = catchment.map;  #
-#soil = soils.map;           # field id's for texture/soil map
+roads_bool = road_tile_mask.map;
 roads = roads_fraction.map; # fraction road coverage (optional)
 chanmask = chanmask.map;    # location of channels value = 1 (optional)
 culvert = culvertmask.map;  # location of culverts
@@ -143,6 +143,10 @@ chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean-out1,1e20,1e20,1e20,1e20); 
 report chanmask=chanclean;
 changrad=max(0.005,sin(atan(slope(chanclean*dem)))); 
+# reduce the slope of channels when they are close to a road
+# often roads cause errors in the change grad due to DEM elevation
+rbuf = windowmaximum(cover(roads_bool, 0), 60);
+changrad = if(rbuf eq 1, 0.02, changrad)*chanclean;
 report changrad=windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
 
 # calculate mannings for channel

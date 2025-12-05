@@ -220,7 +220,7 @@ for (i in seq_along(points_id)) {
 #' 
 #' PCRaster scripts used in the function:
 #' 1. prepare_db.mod     = main script making most of the maps, channels and culverts
-#' 2. storm_drans.mod    = script making storm drains in urban area 
+#' 2. storm_drains.mod    = script making storm drains in urban area 
 #' 3. prepare_buffer_features.mod = script making buffers and ponds + update dem.
 #' 4. baseflow_calibration.mod  = calculates baseflow for subcatchments on 20230622 
 #'                - if more events/subcatch needed adjust code and csv file

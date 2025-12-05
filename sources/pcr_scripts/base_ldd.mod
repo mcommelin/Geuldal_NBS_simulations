@@ -19,7 +19,7 @@ streams = streams.map;
 
 initial
 
-report adj = cover(chanmask, 0) * 10;
+adj = cover(chanmask, 0) * 10;
 
 report dem = if(boolean(catch), dem);
 
