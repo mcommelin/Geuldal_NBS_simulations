@@ -98,12 +98,6 @@ s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 # 5 = verhard, 6 = water, 7 = naaldbos
 O_depth <- c(10, 20, 10, 10, 5, 1, 20)
 
-# NOT USED AT THE MOMENT!
-#option to calibrate input parameters
-# multiply OM observed:
-cal_factors <- tibble(cf = c(0.7, 1, 0.5, 0.8, 1, 0, 0))
-# NOT USED AT THE MOMENTR!
-
 lu_pars <- bind_rows(pars_lu, lu_add) %>%
   left_join(s_eq, by = "lu_nr")%>%
   arrange(lu_nr) %>%
@@ -242,13 +236,11 @@ cal_n = 0.9     # the shapes of the curves are more "sandy" but depends on Ksat
 # naast de textuur hebben we n, alpha, stenigheid en OM, dat willen we ruimtelijk varieren dus dat Zou in een tabel kunnen
 # of willen ksat direct veranderen? als mogelijkheid erbij doen.
 
-# er komt een laag met buffer dieptes per buffer -> VJ
-# script pcraster met arguments -> VJ
-# NDVI kaarten -> VJ
+#TODO: er komt een laag met buffer dieptes per buffer -> VJ
+#TODO: script pcraster met arguments -> VJ
+#TODO: NDVI kaarten -> VJ
+#TODO redefine begin and end times for subcatch events based on P and Q observed
 
-#TODO: channels slope, if inside buffer (20m) of roads then < 0.05, then smooth.
-
-# TODO redefine begin and end times for subcatch events based on P and Q observed
 source("sources/r_scripts/create_lisem_run.R")
 
 for (i in seq_along(points_id)) {
@@ -265,7 +257,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 10, catch_num = 90, swatre_file = swatre_file, cal_alpha, cal_n, T)
+create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, cal_alpha, cal_n, T)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
 # select a subcatchment and event from the LISEM_runs folder structure

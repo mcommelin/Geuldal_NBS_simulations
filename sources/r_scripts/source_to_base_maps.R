@@ -64,10 +64,12 @@ spatial_data_to_pcr <- function() {
 ##  catchment based dem etc 
 # function to delineate the catchment and resample maps to correct resolutions
 
-catch_maps_res <- function(points = points) {
+catch_maps_res <- function() {
+  
+  points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
 # load the base_catchment_20m
 base_catch_20m <- rast("spatial_data/base_catchment_20m.map")
-
+base_dem_5m <- rast("spatial_data/dem_region_5m.map")
 # we use 3 resolutions for the dataset
 cell_size <- unique(points$cell_size)
 
