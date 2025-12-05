@@ -106,7 +106,7 @@ lu_pars <- bind_rows(pars_lu, lu_add) %>%
 nms <- as.character(seq(0, ncol(lu_pars) - 1))
 names(lu_pars) <- nms
 # tables folder must be created
-write.table(lu_pars, file = "LISEM_data/tables/lu.tbl",
+write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
 #note: here only cols 1,2, 3 and 5 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX
@@ -232,10 +232,8 @@ reso = c(10) # 5, 10 or 20
 cal_alpha = 6.0 # higher alpha + lower n gives more rapid decrease of K(h) and theta(h)
 cal_n = 0.9     # the shapes of the curves are more "sandy" but depends on Ksat
 
-#TODO: 
-# naast de textuur hebben we n, alpha, stenigheid en OM, dat willen we ruimtelijk varieren dus dat Zou in een tabel kunnen
-# of willen ksat direct veranderen? als mogelijkheid erbij doen.
-
+#TODO: update swatre tables function to include calibration
+#TODO: update rr and n maps to include calibration
 #TODO: er komt een laag met buffer dieptes per buffer -> VJ
 #TODO: script pcraster met arguments -> VJ
 #TODO: NDVI kaarten -> VJ
