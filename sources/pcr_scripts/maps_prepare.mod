@@ -15,6 +15,9 @@ pmv = p_mv.map;
 profile = profile.map;
 fill = fill.map;
 
+dem = dem.map;
+burn = demburns.map;
+
 initial 
 
 
@@ -25,3 +28,8 @@ report ponds = if(cover(dhydro, 0) eq 0, ponds);
 profile = nominal(pmv);
 fill = windowmajority(nominal(profile), 120);
 report profile = cover(nominal(profile), fill);
+
+#burn corrections around (rail)roads into dem
+b1 = clump(nominal(burn));
+b2 = areaminimum(dem, b1);
+report dem = cover(b2, dem);
