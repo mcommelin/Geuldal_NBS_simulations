@@ -237,9 +237,7 @@ create_lisem_run <- function(
   #file.remove(paste0(subdir, "soil.tbl"))
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
-                     swatre_dir = paste0(run_dir, "swatre/"),
-                     cal_alpha,
-                     cal_n)
+                     swatre_dir = paste0(run_dir, "swatre/"))
   
 } # end create_lisem_run
 

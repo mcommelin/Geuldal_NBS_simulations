@@ -95,9 +95,7 @@ soil_landuse_to_swatre <- function(file = "",
   # here we can add code to include observed porosity and ksat before making the swatre tables
   
   make_swatre_tables <- function(cal_file = "",
-                                 swatre_dir = NULL,
-                                 cal_alpha = 1.0,
-                                 cal_n = 1.0) 
+                                 swatre_dir = NULL) 
   {
     # 2. SWATRE tables LISEM-----------------------------------
     if (DEBUGm) message("make_swatre_tables")    

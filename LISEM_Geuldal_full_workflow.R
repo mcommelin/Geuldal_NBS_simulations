@@ -247,15 +247,13 @@ for (i in seq_along(points_id)) {
       resolution = reso[j], 
       catch_num = points_id[i],
       swatre_file = swatre_file,
-      cal_alpha = cal_alpha,
-      cal_n = cal_n,
       do_runfile = TRUE
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, cal_alpha, cal_n, T)
+create_lisem_run(resolution = 10, catch_num = 90, swatre_file = swatre_file, cal_alpha, cal_n, T)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
 # select a subcatchment and event from the LISEM_runs folder structure
