@@ -91,12 +91,9 @@ pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_ty
 
 # load lu table
 lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv", show_col_types = FALSE)
-
 lu_add <- lu_tbl %>%
   filter(rr != -9) %>%
   select(-description, -smax_eq, - notes) 
-
-
 s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 
 # the O horizon has the high OM values measured in the fieldcampaign
@@ -105,7 +102,6 @@ s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 # lu types: 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras,
 # 5 = verhard, 6 = water, 7 = naaldbos
 O_depth <- c(10, 20, 10, 10, 5, 1, 20)
-
 lu_pars <- bind_rows(pars_lu, lu_add) %>%
   left_join(s_eq, by = "lu_nr")%>%
   arrange(lu_nr) %>%
@@ -113,11 +109,17 @@ lu_pars <- bind_rows(pars_lu, lu_add) %>%
 
 nms <- as.character(seq(0, ncol(lu_pars) - 1))
 names(lu_pars) <- nms
+
+# add average summer plant cover to create per.map and all derivatives
+per <- c(0.7,0.9,0.7,0.8,0.05,0,0.9)
+lu_pars$"7" <- per
+
 # tables folder must be created
 write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
 #note: here only cols 1,2, 3 and 5 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX
+#VJ note: added average summer cover as last col to csv
 # the other columns are used in SWATRE creation, swatre_input.R
 
 ## 1.6 make SWATRE soil tables -------------------------------------------------
@@ -181,9 +183,6 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
-
-
 #points_id <- c(4,10,14,18) # calibration catchments
 points_id <- c(18) # use if you want to update multiple subcatchments on the go
 reso <- c(10)
@@ -237,7 +236,7 @@ for (i in seq_along(points_id)) {
 #TODO: adjust n maps based on date when NDVI maps change!
 #TODO: update buffer features to final version maps including buffers
 
-points_id <- c(4,18) # use if you want to update multiple subcatchments on the go
+points_id <- c(18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
 reso = c(10) # 5, 10 or 20

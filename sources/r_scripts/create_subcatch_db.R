@@ -148,7 +148,7 @@ base_maps_subcatchment <- function(
     work_dir = sub_catch_dir
   )
   
-    # initial head per subcatch
+  # initial head per subcatch
   # initial head maps
   # if resolution = 20, copy from base to Geul
   # if different, copy and resample
@@ -221,17 +221,9 @@ base_maps_subcatchment <- function(
         of = "PCRaster",
         mo = "PCRASTER_VALUESCALE=VS_SCALAR"
       )
-      file.copy(from = "sources/setup/calibration/lu.tbl", to = sub_catch_dir, overwrite = T)
-      pcr_script(
-        script = paste0("prepare_ndvi.mod ",ih_ev[j]),
-        script_dir = "sources/pcr_scripts",
-        work_dir = sub_catch_dir
-      )
+
   } # end event loop
-  
-  
-  
-  
+
   # clean up
   file.remove(
     list.files(

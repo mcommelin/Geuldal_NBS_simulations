@@ -26,7 +26,6 @@ id = ID.map;                # rainfall id grid
 bua = bua.map; 		     # map with build up area.
 buffers = buffermask.map;      # map with boolean location of retention buffers
 #per = per.map; 		     # input map with cover based on NDVI
-lai = lai.map;		     # map with lai based on NDVI (202306)
 profile = profile.map;	# map with ubc soil codes for swatre
 buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 per = per.map;
@@ -63,6 +62,7 @@ stone = stonefrc.map; # stone fraction
 # crust= crustfrc.map; # crusted fraction of surface (optional)
 # comp = compfrc.map; # compacted fraction of surface (optional)
 # hard = hardsurf.map; # impermeable surface (optional)
+lai = lai.map;		     # map with lai based on NDVI (202306)
 
 ### infiltration maps ###
 # swatre theta maps?
@@ -113,8 +113,13 @@ out1 = scalar(outlet) * 100; # used to force channel outlet to correct location
 calbrRR = scalar(10.0); ## the field data were not very conclusive, at least multiply by 10 or more!
 report rr = calbrRR*lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
 
+# addede per as last col
+per = lookupscalar(lutbl, 7, lu);
+report per = max(0,min(0.99,per));
+report lai = -ln(1-min(0.95,per))/0.4;
+
 # mannings N based on philips 1989: n = RR/100 + n_residue + n_vegetation * per
-# with the very low RR from fieldwork 'RR/50' makes more sense
+# with the very low RR from fieldwork 'RR/50' makes more sense => no? because rr is ultiplied by 10 and gives reasoable values?
 n_res = lookupscalar(lutbl, 2, lu);
 n_veg = lookupscalar(lutbl, 3, lu);
 report mann = rr/50 + n_res + n_veg * per;

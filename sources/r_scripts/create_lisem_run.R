@@ -107,6 +107,7 @@ create_lisem_run <- function(
   cal_n = 1.0,
   do_runfile = TRUE) 
 {
+
   points <- read_csv("sources/setup/outpoints_description.csv")
   
   catch_info <- points %>%
@@ -154,15 +155,29 @@ create_lisem_run <- function(
               overwrite = TRUE)
   }
   
-  
   #copy landuse and channel table to subdir
-  file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
- 
+  #file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
+  file.copy(from = "sources/setup/calibration/lu.tbl", to = subdir, overwrite = T)
   #copy chan.tbl
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   # run pcraster script to finalize run database.
   pcr_script(
     script = "prepare_db.mod",
+    script_dir = "sources/pcr_scripts",
+    work_dir = subdir
+  )
+  
+  # prepare maps related to NDVI
+  # copy all ndvi maps 
+  ndvi_maps<- dir(paste0(base_dir, "maps/"), pattern = "ndvi")
+  for (map in ndvi_maps) {
+    file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
+              overwrite = TRUE)
+  }
+  
+  message(events)
+  pcr_script(
+    script = "prepare_ndvi.mod",
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
