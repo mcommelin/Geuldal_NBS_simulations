@@ -94,7 +94,6 @@ profile = if(profile eq 100, 100,profile+100*lu)*area;
 report profile = if(profile le 1000,100,profile)*area;
 report profn.map = nominal(profile);
 
-
 ###########################
 ### MAPS WITH RAINFALL  ### 
 ########################### 
@@ -107,6 +106,7 @@ report grad = max(sin(atan(slope(dem))),0.001);
 #report Ldd = lddcreate(dem, 1e20,1e20,1e20,1e20); # correct topo for local depressions # already made earlier
 report outlet = pit(Ldd);
 out1 = scalar(outlet) * 100; # used to force channel outlet to correct location
+
 ####################
 ### SURFACE MAPS ### 
 ####################

@@ -68,7 +68,8 @@ for (i in seq_along(resolution)) {
   
   # reproject ID raster with gdal warp
   gdalwarp(
-    srcfile = paste0("data/processed_data/ID_zones_KNMI_radar.asc"),
+#    srcfile = paste0("data/processed_data/ID_zones_KNMI_radar.asc"),
+    srcfile = paste0("spatial_data/ext_data/ID_zones_KNMI_radar.asc"),
     dstfile = paste0(main_dir, "maps/ID.asc"),
     s_srs = srs,
     t_srs = srs,

@@ -2,9 +2,11 @@
 
 ## spatial_data to Geul_xm 
 spatial_data_to_pcr <- function() {
+  
   res <- c(5, 10, 20)
   maps_list <- read_csv("sources/transformations_maps.csv")
   dir_sd <- "spatial_data/"
+  
   # load outline of catchment to reduce data load
   catch_poly <- st_read(paste0(dir_sd,"catchment.gpkg"), layer = "catch_buffered_250")
   #prepare resolution specific base data
@@ -13,7 +15,6 @@ spatial_data_to_pcr <- function() {
   for (r in seq_along(res)) {
     mask[[r]] <- rast(paste0(dir_sd, "mask_", res[r], "m.map"))
   }
-  
   
   for (i in seq_along(maps_list$name)) { #loop over base maps
   #for (i in 1:17) {
@@ -57,7 +58,8 @@ spatial_data_to_pcr <- function() {
     pcr_script("maps_prepare.mod", script_dir = "sources/pcr_scripts",
                work_dir = res_dir[r])
     #clean up
-    file.remove(paste0(res_dir[[r]], "p_mv.map"))
+    file.remove(paste0(res_dir[[r]], "p_mv.map")) # soil profile with MVs
+    # VJ also clean up xml files?
   }
 } #end function spatial_data_to_pcr
 
@@ -105,7 +107,7 @@ for(i in seq_along(cell_size)) {
 }
 } #end function catch_maps_res
 
-## make map with subcatchments and lcc
+## make map with subcatchments and ldd
 #based on csv file with outpoint coordinates
 
 ldd_subcatch <- function(force_ldd = FALSE) {
@@ -125,6 +127,9 @@ for(i in seq_along(cell_size)) {
   points_res <- points %>%
     filter(cell_size == res) %>%
     select(x, y, point)
+  
+  #message("outpoints: ",points_res) #VJ
+  
   # write csv table
   write_csv(points_res, file = paste0(subdir, "outpoints.txt"),
             col_names = FALSE)

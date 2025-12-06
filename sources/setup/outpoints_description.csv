@@ -27,34 +27,6 @@ x,y,point,cell_size,name,description,subcatch_name,code
 192442.23,311358.341,53,5,Landeus,LandEX exploration catchment,Landeus,
 198037.167,315538.776,54,5,Bocholtz,LandEX exploration catchment,Bocholtz,
 193705.77,307547.49,90,5,Sippenaeken,Test catchment,Sippenaeken,
-178376.67,323010.425,1,20,juliana kanaal,outlet Geul bij Julianakanaal,Geul,10.Q.36
-189258.8,318193.66,2,20,scheumerbeek,Ransdalerveld,Ransdalerveld,
-189912.65,316792.76,3,20,lange gracht,Vrakelbergerweg,Vrakelbergerweg,
-190797.423,314431.295,4,20,Gulp,Instroom Gulp in de Geul,Gulp,
-191296,314670.96,5,20,Eyserbeek,Instroom Eyserbeek in de Geul,x,
-192016.15,313430.11,6,20,Selzerbeek,Instroom Selzerbeek in de Geul,x,
-192577.93,311792.21,7,20,Mechelsebeek,Instroom Mechelsebeek in de Geul,x,
-198478.23,302152.52,8,20,Hohnbach,Instroom Hohnback in de Geul,x,
-198516.44,302191.02,9,20,Geul bovenloop,Geul boven instroom Hohnbach,x,
-180679.94,321572.04,10,20,Watervalderbeek,"Watervalderbeek, voor ondergrondse aansluiting Geul",Watervalderbeek,
-184957.91,310950.1,11,20,Strabeek,Strabeek 200m voordat deze in Geul stroomt,x,
-197996.63,310970.42,12,20,Selzerbeek,"Selzerbeek, bij Lemiers",Lemiers,12.H.228
-190538.56,313912.57,13,20,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp,13.Q.34
-193214.33,315190.35,14,20,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
-192665.616,313550.405,15,20,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij,12.Q.31
-192116.32,313152.83,16,20,Hommerich,Geul meetpunt code = 10.Q.30,Hommerich,10.Q.30
-193598.35,307731.26,17,20,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen,10.Q.29
-198476.64,302171.28,18,20,Kelmis,meetpunt Geul bij Kelmis,Kelmis,KELMIS_Q_001
-180938.12,322051.19,19,20,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
-193960.5,315248.49,20,20,Eys,Meetpunt in dorp Eys,Eyserbeek,11.H.225
-197518.61,316292.25,21,20,Simpelveld,Simpelveld,Simpelveld,11.H.227
-188511.616,309012.18,22,20,Slenaken,Slenaken,Gulp,13.H.25
-189620.437,307386.242,23,20,Teuven,Teuven,Gulp,13.H.159
-197378.98,303268.59,51,20,LeverBach,LandEX exploration catchment,LeverBach,
-189080.13,312415.68,52,20,Pesakergrub,LandEX exploration catchment,Pesakergrub,
-192437.42,311351.15,53,20,Landeus,LandEX exploration catchment,Landeus,
-198041,315533.04,54,20,Bocholtz,LandEX exploration catchment,Bocholtz,
-193699.06,307546.35,90,20,Sippenaeken,Test catchment,Sippenaeken,
 178376.67,323010.425,1,10,juliana kanaal,outlet Geul bij Julianakanaal,Geul,10.Q.36
 189258.8,318193.66,2,10,scheumerbeek,Ransdalerveld,Ransdalerveld,
 189912.65,316792.76,3,10,lange gracht,Vrakelbergerweg,Vrakelbergerweg,
@@ -83,3 +55,31 @@ x,y,point,cell_size,name,description,subcatch_name,code
 192437.42,311351.15,53,10,Landeus,LandEX exploration catchment,Landeus,
 198038.506,315539.585,54,10,Bocholtz,LandEX exploration catchment,Bocholtz,
 193719.549,307559.559,90,10,Sippenaeken,Test catchment,Sippenaeken,
+178376.67,323010.425,1,20,juliana kanaal,outlet Geul bij Julianakanaal,Geul,10.Q.36
+189258.8,318193.66,2,20,scheumerbeek,Ransdalerveld,Ransdalerveld,
+189912.65,316792.76,3,20,lange gracht,Vrakelbergerweg,Vrakelbergerweg,
+190797.423,314431.295,4,20,Gulp,Instroom Gulp in de Geul,Gulp,
+191296,314670.96,5,20,Eyserbeek,Instroom Eyserbeek in de Geul,x,
+192016.15,313430.11,6,20,Selzerbeek,Instroom Selzerbeek in de Geul,x,
+192577.93,311792.21,7,20,Mechelsebeek,Instroom Mechelsebeek in de Geul,x,
+198478.23,302152.52,8,20,Hohnbach,Instroom Hohnback in de Geul,x,
+198516.44,302191.02,9,20,Geul bovenloop,Geul boven instroom Hohnbach,x,
+180679.94,321572.04,10,20,Watervalderbeek,"Watervalderbeek, voor ondergrondse aansluiting Geul",Watervalderbeek,
+184957.91,310950.1,11,20,Strabeek,Strabeek 200m voordat deze in Geul stroomt,x,
+197996.63,310970.42,12,20,Selzerbeek,"Selzerbeek, bij Lemiers",Lemiers,12.H.228
+190538.56,313912.57,13,20,Azijnfabriek,Gulp meetpunt code = 13.Q.34,Gulp,13.Q.34
+193214.33,315190.35,14,20,Eyserbeek,Eyserbeek meetgoot code = 11.Q.32,Eyserbeek,11.Q.32
+192665.616,313550.405,15,20,Selzerbeek,Selzerbeek meetpunt code = 12.Q.31,Partij,12.Q.31
+192116.32,313152.83,16,20,Hommerich,Geul meetpunt code = 10.Q.30,Hommerich,10.Q.30
+193598.35,307731.26,17,20,Cottessen,Geul meetpunt code = 10.Q.29,Cottessen,10.Q.29
+198476.64,302171.28,18,20,Kelmis,meetpunt Geul bij Kelmis,Kelmis,KELMIS_Q_001
+180938.12,322051.19,19,20,Pletsmolen,Instroom Watervalderbeek boven Meersen,Watervalderbeek,WATE_WATHTE_005
+193960.5,315248.49,20,20,Eys,Meetpunt in dorp Eys,Eyserbeek,11.H.225
+197518.61,316292.25,21,20,Simpelveld,Simpelveld,Simpelveld,11.H.227
+188511.616,309012.18,22,20,Slenaken,Slenaken,Gulp,13.H.25
+189620.437,307386.242,23,20,Teuven,Teuven,Gulp,13.H.159
+197378.98,303268.59,51,20,LeverBach,LandEX exploration catchment,LeverBach,
+189080.13,312415.68,52,20,Pesakergrub,LandEX exploration catchment,Pesakergrub,
+192437.42,311351.15,53,20,Landeus,LandEX exploration catchment,Landeus,
+198041,315533.04,54,20,Bocholtz,LandEX exploration catchment,Bocholtz,
+193699.06,307546.35,90,20,Sippenaeken,Test catchment,Sippenaeken,

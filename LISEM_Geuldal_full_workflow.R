@@ -26,8 +26,10 @@ source("sources/r_scripts/source_to_base_maps.R")
 #First download all maps from Sharepoint - Geuldal spatial data to ./spatial_data
 
 # catchment delineation based on DEM and the local drain direction on 20
-# meter resolution. 
+# meter resolution
+
 catch_maps_res()
+
 
 # Result: based on this dem.map and catchment.map are made for 5, 10 and 20 m.
 
@@ -50,7 +52,9 @@ catch_maps_res()
 
 # the function below makes PCRaster maps for all resolutions from the data
 # in ./spatial_data/
+
 spatial_data_to_pcr()
+
 
 # in the function below the local drain direction maps are made and based
 # on the csv file describing all outpoints, subcatchments are made.
@@ -58,10 +62,14 @@ spatial_data_to_pcr()
 # these maps are also provided in /spatial_data/prepared/
 # manually adding these to the correct folders will speed up time.
 # set force_ldd = TRUE to recalculate the ldd
+
 ldd_subcatch(force_ldd = FALSE)
+
 
 # load the list of base maps.
 base_maps <- readLines("sources/base_maps.txt")
+# drop commented entries (LAI and per)
+base_maps <- base_maps[!grepl("^\\s*#", base_maps) & nzchar(trimws(base_maps))]
 
 
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
@@ -173,8 +181,12 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-points_id <- c(4, 18) # use if you want to update multiple subcatchments on the go
-reso <- c(10, 20)
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
+
+
+#points_id <- c(4,10,14,18) # calibration catchments
+points_id <- c(18) # use if you want to update multiple subcatchments on the go
+reso <- c(10)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
@@ -184,13 +196,13 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      calc_ldd = T, # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = TRUE # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-#base_maps_subcatchment(cell_size = 10, sub_catch_number = 90, calc_ldd = T)
+#base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
