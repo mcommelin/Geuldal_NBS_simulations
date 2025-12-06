@@ -201,7 +201,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-#base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -246,11 +246,13 @@ cal_n = 0.9     # the shapes of the curves are more "sandy" but depends on Ksat
 #TODO: update swatre tables function to include calibration
 #TODO: update rr and n maps to include calibration
 #TODO: er komt een laag met buffer dieptes per buffer -> VJ
-#TODO: script pcraster met arguments -> VJ
-#TODO: NDVI kaarten -> VJ
+#TODO: script pcraster met arguments -> VJ -> done
+#TODO: NDVI kaarten, per, lai, smax en n -> VJ -> done
 #TODO redefine begin and end times for subcatch events based on P and Q observed
 
 source("sources/r_scripts/create_lisem_run.R")
+# you can also run for one specific subcatchment e.g.
+#create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, cal_alpha, cal_n, T, T)
 
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
@@ -260,13 +262,12 @@ for (i in seq_along(points_id)) {
       swatre_file = swatre_file,
       cal_alpha = cal_alpha,
       cal_n = cal_n,
+      do_ndvi = TRUE,
       do_runfile = TRUE
     )
   }
 }
 
-# you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, cal_alpha, cal_n, T)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
 # select a subcatchment and event from the LISEM_runs folder structure

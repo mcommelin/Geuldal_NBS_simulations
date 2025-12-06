@@ -13,6 +13,8 @@ lu = landuse.map;           # field id's for landuse
 #soil = soils.map;           # field id's for texture/soil map
 outpoint = outpoints.map;  # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
+roads = roads_fraction.map;
+hard = hard_surface.map;
 id = ID.map;
 Ldd = ldd.map;
 
@@ -22,8 +24,10 @@ initial
 report dem = if(boolean(catchment), dem);
 #report soil = if(boolean(catchment), soil);
 report lu = if(boolean(catchment), lu); 
-report buildings = if(boolean(catchment), buildings);
-report outpoint = if(boolean(catchment), outpoint);
+report buildings = if(boolean(catchment), cover(buildings,0));
+report roads = if(boolean(catchment), cover(roads,0));
+report hard = if(boolean(catchment), cover(hard,0));
+report outpoint = if(boolean(catchment), cover(outpoint,0));
 report id = if(boolean(catchment), id);
 
 

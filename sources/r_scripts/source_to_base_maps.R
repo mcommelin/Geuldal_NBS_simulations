@@ -31,7 +31,13 @@ spatial_data_to_pcr <- function() {
         # load specific field if needed
         f <- ifelse(!is.na(maps_list$field[i]), maps_list$field[i], "")
         # the roads fraction as only map needs the option 'cover = TRUE'
-        c <- ifelse(maps_list$name[i] == "roads_fraction", T, F)
+        c <- F
+        if (maps_list$name[i] == "roads_fraction")
+          c = T
+        if (maps_list$name[i] == "buildings")
+          c = T
+        if (maps_list$name[i] == "hard_surface")
+          c = T
         # resample 
         map_res <- terra::rasterize(map, mask[[r]], field = f, cover = c, fun = maps_list$fun[i])
         map_out <- paste0(res_dir[[r]], maps_list$name[i], ".map")

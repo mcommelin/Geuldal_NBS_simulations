@@ -106,11 +106,13 @@ base_maps_subcatchment <- function(
   for (i in seq_along(base_maps)) {
     map_in = paste0(sub_catch_dir,"base_", base_maps[i])
     if (base_maps[i] == "sub_point.map") {
-    map_in = paste0(sub_catch_dir, base_maps[i])}
+      map_in = paste0(sub_catch_dir, base_maps[i])
+    }
     map_out_name = paste0(sub_catch_dir, base_maps[i])
     tmp_tif = paste0(sub_catch_dir, "tmp.tif")
     if (DEBUGm) message("in ",map_in)
     
+    #  cut all the maps to catchment size base on sub_point.map
     # gdalwarp makes a temp tif
     gdalwarp(
       srcfile = map_in,
@@ -133,6 +135,7 @@ base_maps_subcatchment <- function(
     if (DEBUGm) message("out ",map_out_name)
     
   }
+  
   # # run pcraster script to create base maps for subcatch
   if (calc_ldd == TRUE) {
     pcr_script(

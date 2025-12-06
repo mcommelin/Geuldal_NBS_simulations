@@ -1,8 +1,8 @@
 name,type,method,resolution,name_in,file,field,fun
 landuse,raster,near,0,Landuse_Stroming_5m.tif,,,max
 p_mv,vector,,,soilcode,soilcodeUBC,UBC,max
-buildings,vector,,,buildings_region,urban,,max
-roads_fraction,vector,,,roads_poly,urban,,max
+buildings,vector,,,buildings_region,urban,,mean
+roads_fraction,vector,,,roads_poly,urban,,mean
 road_tile_mask,vector,,,roads_region,urban,,max
 chanmask,vector,,,channels,channel_buffer,,max
 chanwidth,vector,,,channels,channel_buffer,width,max
@@ -14,6 +14,6 @@ buffermask,vector,,,buffers,channel_buffer,,max
 buffer_outlet,vector,,,buffer_outlet,channel_buffer,d_new,max
 pondmask,vector,,,ponds,channel_buffer,,max
 tilestorage,vector,,,tilestorage,urban,berging,max
-hard_surface,vector,,,hard_surface,urban,,max
+hard_surface,vector,,,hard_surface,urban,,mean
 dhydro,vector,,,dhydro_domein,catchment,,max
 demburns,vector,,,dem_burns,catchment,,max

@@ -10,9 +10,11 @@ make_runfile_lisem <- function(work_dir = NULL,
                                infil_dir = NULL,
                                inp_file = NULL,
                                evdate = NULL,
-                               resolution = 5,
                                start_time = NULL,
-                               end_time = NULL) 
+                               end_time = NULL,
+                               resolution = 5,
+                               do_ndvi_run = TRUE
+                               ) 
 {
     # Adjust runfile lisem 
     run_template <- readLines("sources/setup/runfile_template.run")
@@ -53,7 +55,6 @@ make_runfile_lisem <- function(work_dir = NULL,
       run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
     }
     
-    
     # set timestep
   #dt <- ceiling(resolution * 0.75)
   dt = 5 # makkelijker voor grafieken en berekeningen
@@ -75,6 +76,17 @@ make_runfile_lisem <- function(work_dir = NULL,
     
     writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
   
+    # set ndvi related maps
+    if (do_ndvi_run == TRUE) {
+      run_temp <- str_replace_all(run_temp, "cover=per.map",
+                              paste0("cover=per", runname, ".map"))
+      run_temp <- str_replace_all(run_temp, "lai=lai.map",
+                                  paste0("lai=lai", runname, ".map"))
+      run_temp <- str_replace_all(run_temp, "smax=smax.map",
+                                  paste0("smax=smax", runname, ".map"))
+      run_temp <- str_replace_all(run_temp, "manning=n.map",
+                                  paste0("manning=n", runname, ".map"))
+    }
   
 } # end function make_runfile_lisem()
 
@@ -105,6 +117,7 @@ create_lisem_run <- function(
   swatre_file = "base_swatre_params.csv",
   cal_alpha = 1.0,
   cal_n = 1.0,
+  do_ndvi = TRUE,
   do_runfile = TRUE) 
 {
 
@@ -167,20 +180,26 @@ create_lisem_run <- function(
     work_dir = subdir
   )
   
-  # prepare maps related to NDVI
-  # copy all ndvi maps 
-  ndvi_maps<- dir(paste0(base_dir, "maps/"), pattern = "ndvi")
-  for (map in ndvi_maps) {
-    file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
-              overwrite = TRUE)
+  if (do_ndvi == TRUE) {
+    # prepare maps related to NDVI
+    # copy all ndvi maps 
+    ndvi_maps<- dir(paste0(base_dir, "maps/"), pattern = "ndvi")
+    for (map in ndvi_maps) {
+      file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
+                overwrite = TRUE)
+    }
+    cal_events <- read_csv("sources/selected_events.csv") %>%
+      filter(use == "cal")
+    events <- str_extract(cal_events$event_start, "\\d*")
+    ndvi_ev <- str_remove(events, "^\\d\\d")
+    for (j in seq_along(events)) {
+        pcr_script(
+        script = paste0("prepare_ndvi.mod ",ndvi_ev[j]),
+        script_dir = "sources/pcr_scripts",
+        work_dir = subdir
+      )
+    }
   }
-  
-  message(events)
-  pcr_script(
-    script = "prepare_ndvi.mod",
-    script_dir = "sources/pcr_scripts",
-    work_dir = subdir
-  )
   
   # run pcraster script to make storm drains.
   pcr_script(
@@ -235,22 +254,25 @@ create_lisem_run <- function(
     
     # make runfile  
     if (do_runfile == TRUE) {
-    make_runfile_lisem(
-      work_dir = run_dir,
-      rain_dir = "LISEM_data/rain/",
-      infil_dir = paste0(run_dir, "swatre/tables/"),
-      inp_file = paste0(run_dir, "swatre/profile.inp"),
-      evdate = date(events$ts_start[i]),
-      start_time = events$str_start[i],
-      end_time = events$str_end[i],
-      resolution = resolution
-    )
+      message("Making run file")
+      make_runfile_lisem(
+        work_dir = run_dir,
+        rain_dir = "LISEM_runs/rain/",   #<= more logical, just one level higher then the runs as common dataset
+        infil_dir = paste0(run_dir, "swatre/tables/"),  
+        inp_file = paste0(run_dir, "swatre/profile.inp"),
+        evdate = date(events$ts_start[i]),
+        start_time = events$str_start[i],
+        end_time = events$str_end[i],
+        resolution = resolution,
+        do_ndvi_run = do_ndvi
+      )
     }
   } # end date specific loop
     
   #delete intermediate files
-  file.remove(paste0(subdir, "chan.tbl"))
-  file.remove(paste0(subdir, "lu.tbl"))
+  # leave the tables for later reference
+  #file.remove(paste0(subdir, "chan.tbl"))
+  #file.remove(paste0(subdir, "lu.tbl"))
   #file.remove(paste0(subdir, "soil.tbl"))
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
