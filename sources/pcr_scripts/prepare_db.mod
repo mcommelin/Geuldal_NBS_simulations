@@ -1,7 +1,8 @@
 #! --matrixtable --lddin --clone mask.map
 
 # PCRASTER script to build a LISEM input database 
-# made by Meindert Commelin 03/06/2025            
+# made by Meindert Commelin 03/06/2025    
+# edits by Victor Jetten 07/12/2025
 ###################################################
 
 binding 
@@ -19,16 +20,14 @@ chanwidth = chanwidth.map;  # width of channels
 chandepth = chandepth.map;  # depth of channels
 chanside=chanside.map;
 chantype = chantype.map;    # either stream (1) or ditch (2)
-outpoint = outpoints.map;  # location of outlets and checkpoints
+outpoint = outpoints.map;   # location of outlets and checkpoints
 buildings = buildings.map;  # fraction of buildings in cell. (optional)
 #grass = grasswid.map;      # only if buffers are included
 id = ID.map;                # rainfall id grid
-bua = bua.map; 		     # map with build up area.
-buffers = buffermask.map;      # map with boolean location of retention buffers
-#per = per.map; 		     # input map with cover based on NDVI
-profile = profile.map;	# map with ubc soil codes for swatre
+bua = bua.map; 		          # map with build up area.
+buffers = buffermask.map;   # map with boolean location of retention buffers
+profile = profile.map;	    # map with ubc soil codes for swatre
 buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
-per = per.map;
 
 ### INPUT TABLES ### 
 
@@ -51,6 +50,7 @@ zero = zero.map; #with scalar value 0
 grad = grad.map; # slope gradient
 Ldd = ldd.map; # Local Drain Direction  
 outlet = outlet.map; # location outlets and checkpoints 
+
 ### landuse maps ###
 roadwidth = roadwidth.map;
 smax = smax.map; 
@@ -58,11 +58,12 @@ smax = smax.map;
 ### surface maps ###
 rr = rr.map; # random roughness
 mann = n.map; # Manning's n
-stone = stonefrc.map; # stone fraction 
+stone = stonefrc.map;  # stone fraction 
 # crust= crustfrc.map; # crusted fraction of surface (optional)
-# comp = compfrc.map; # compacted fraction of surface (optional)
+# comp = compfrc.map;  # compacted fraction of surface (optional)
 # hard = hardsurf.map; # impermeable surface (optional)
-lai = lai.map;		     # map with lai based on NDVI (202306)
+lai = lai.map;		     # map with lai 
+per = per.map; 		     # input map with cover based on lu.tbl
 
 ### infiltration maps ###
 # swatre theta maps?
@@ -147,12 +148,21 @@ chanclean = if(chanclean > celllength(), 1);
 chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean-out1,1e20,1e20,1e20,1e20); 
 report chanmask=chanclean;
-changrad=max(0.005,sin(atan(slope(chanclean*dem)))); 
+
+# channel gradient
 # reduce the slope of channels when they are close to a road
 # often roads cause errors in the change grad due to DEM elevation
+changrad=max(0.005,sin(atan(slope(chanclean*dem)))); 
 rbuf = windowmaximum(cover(roads_bool, 0), 60);
 changrad = if(rbuf eq 1, 0.02, changrad)*chanclean;
 report changrad=windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
+
+# avoid abrupt changes in channel width and depth
+# gives better stability and lower MB error 
+cw = windowmaximum(chanwidth,30); # make the first pixel of a side branch the size of the main branch
+report chanwidth = min(0.95*celllength(), windowaverage(cw,30)) * chanclean; # then average the result which smoothes the connections
+cd = windowmaximum(chandepth,30);
+report chandepth = windowaverage(cd,30) * chanclean;
 
 # calculate mannings for channel
 bua = cover(bua, 0);

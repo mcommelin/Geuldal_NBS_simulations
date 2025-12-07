@@ -95,9 +95,7 @@ soil_landuse_to_swatre <- function(file = "",
   # here we can add code to include observed porosity and ksat before making the swatre tables
   
   make_swatre_tables <- function(cal_file = "",
-                                 swatre_dir = NULL,
-                                 cal_alpha = 1.0,
-                                 cal_n = 1.0) 
+                                 swatre_dir = NULL) 
   {
     # 2. SWATRE tables LISEM-----------------------------------
     if (DEBUGm) message("make_swatre_tables")    
@@ -123,9 +121,10 @@ soil_landuse_to_swatre <- function(file = "",
     theta_s <- soil_params$theta_s_mean[i]
     n <- soil_params$npar_mean[i]
     silt <- soil_params$silt[i]
-    if (silt > 0.450) {
-      alpha = alpha*cal_alpha
-      n = max(1.1,n*cal_n)
+    clay <- soil_params$clay[i]
+    if (silt > 0.450 && clay < 0.15) {
+      alpha = 0.027
+      n = 1.297
     }
     #message(silt, " ",alpha,"| ", n)
     m <- 1 - (1/n)

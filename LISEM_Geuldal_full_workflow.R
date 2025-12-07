@@ -29,8 +29,6 @@ source("sources/r_scripts/source_to_base_maps.R")
 # meter resolution
 
 catch_maps_res()
-
-
 # Result: based on this dem.map and catchment.map are made for 5, 10 and 20 m.
 
 ## 1.3 preparation of precipitation and discharge data -------------------------
@@ -47,14 +45,9 @@ catch_maps_res()
 
 ## 1.4 prepare base dataset  ------------------------------------------------
 
-#TODO: NDVI based maps are not yet included
-
-
 # the function below makes PCRaster maps for all resolutions from the data
 # in ./spatial_data/
-
 spatial_data_to_pcr()
-
 
 # in the function below the local drain direction maps are made and based
 # on the csv file describing all outpoints, subcatchments are made.
@@ -62,23 +55,21 @@ spatial_data_to_pcr()
 # these maps are also provided in /spatial_data/prepared/
 # manually adding these to the correct folders will speed up time.
 # set force_ldd = TRUE to recalculate the ldd
-
 ldd_subcatch(force_ldd = FALSE)
-
 
 # load the list of base maps.
 base_maps <- readLines("sources/base_maps.txt")
 # drop commented entries (LAI and per)
 base_maps <- base_maps[!grepl("^\\s*#", base_maps) & nzchar(trimws(base_maps))]
 
-
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
 #TODO: define all calibration parameters in this main code
 #' put them in a csv file which is called from config?
 
-# field OM was not possible, too high. OM divided by 4 and 0.5 added, based on nothing!
+# field OM was not possible, too high. OM divided by 4 and 0.25 added!
+# looked at soilgrids.org for baseline values
 cal1 = 0.25
-cal2 = 0.5
+cal2 = 0.25
 pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
@@ -111,6 +102,7 @@ nms <- as.character(seq(0, ncol(lu_pars) - 1))
 names(lu_pars) <- nms
 
 # add average summer plant cover to create per.map and all derivatives
+# change cover values for other seasons: maps per, lai, manning and smax 
 per <- c(0.7,0.9,0.7,0.8,0.05,0,0.9)
 lu_pars$"7" <- per
 
@@ -118,9 +110,9 @@ lu_pars$"7" <- per
 write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
-#note: here only cols 1,2, 3 and 5 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX
-#VJ note: added average summer cover as last col to csv
-# the other columns are used in SWATRE creation, swatre_input.R
+#note: here only cols 1,2, 3 and 5 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
+#the other columns are used in SWATRE creation, swatre_input.R
+
 
 ## 1.6 make SWATRE soil tables -------------------------------------------------
 
@@ -183,8 +175,8 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-#points_id <- c(4,10,14,18) # calibration catchments
-points_id <- c(18) # use if you want to update multiple subcatchments on the go
+points_id <- c(4,10,14,18) # calibration catchments
+#points_id <- c(18) # use if you want to update multiple subcatchments on the go
 reso <- c(10)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
@@ -195,13 +187,14 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
+      do_NDVI = TRUE,  # copy NDVI related maps for dates
       calc_ldd = TRUE # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
+#base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -213,7 +206,7 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
 
 # options to adjust/calibrate LISEM input:
 #' 1. the landuse table including OM values.
-#'      in section 1.5 this table is made 'cal_factors' can be adjusten or the
+#'      in section 1.5 this table is made 'cal_factors' can be adjuste or the
 #'      resulting LISEM_data/tables/lu.tbl can be adjusted before running the 
 #'      swatre code in 1.6
 #' 2. the resulting swatre input parameters from section 1.6 can be adjusted 
@@ -236,33 +229,28 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
 #TODO: adjust n maps based on date when NDVI maps change!
 #TODO: update buffer features to final version maps including buffers
 
-points_id <- c(18) # use if you want to update multiple subcatchments on the go
+points_id <- c(4,10,14,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
 reso = c(10) # 5, 10 or 20
-cal_alpha = 6.0 # higher alpha + lower n gives more rapid decrease of K(h) and theta(h)
-cal_n = 0.9     # the shapes of the curves are more "sandy" but depends on Ksat
 
 #TODO: update swatre tables function to include calibration
 #TODO: update rr and n maps to include calibration
 #TODO: er komt een laag met buffer dieptes per buffer -> VJ
-#TODO: script pcraster met arguments -> VJ -> done
-#TODO: NDVI kaarten, per, lai, smax en n -> VJ -> done
+#V - TODO: script pcraster met arguments -> VJ 
+#V - TODO: NDVI kaarten, per, lai, smax en n -> VJ 
 #TODO redefine begin and end times for subcatch events based on P and Q observed
 
 source("sources/r_scripts/create_lisem_run.R")
 # you can also run for one specific subcatchment e.g.
 #create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, cal_alpha, cal_n, T, T)
-
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(
       resolution = reso[j], 
       catch_num = points_id[i],
       swatre_file = swatre_file,
-      cal_alpha = cal_alpha,
-      cal_n = cal_n,
-      do_ndvi = TRUE,
+      do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
       do_runfile = TRUE
     )
   }

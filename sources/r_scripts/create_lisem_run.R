@@ -16,78 +16,92 @@ make_runfile_lisem <- function(work_dir = NULL,
                                do_ndvi_run = TRUE
                                ) 
 {
-    # Adjust runfile lisem 
-    run_template <- readLines("sources/setup/runfile_template.run")
+  # Adjust runfile lisem 
+  run_template <- readLines("sources/setup/runfile_template.run")
   
-    #load template
-    run_temp <- run_template
-    proj_wd <- getwd()
-    
-    # adjust paths based on system
-    # home directory
-    run_temp <- str_replace_all(run_temp, "^Map Directory=<<map_dir>>", 
-                                paste0("Map Directory=", proj_wd, "/", work_dir, "maps"))
-    # result directory
-    run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
-                                paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
-    # rain files
-   rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
-   run_temp <- str_replace_all(run_temp, "<<rain_dir>>",
-                               paste0(proj_wd, "/", rain_dir))
-   run_temp <- str_replace_all(run_temp, "<<rain_file>>",
-                               rain_file)
-    
-    # infiltration files
-    run_temp <- str_replace(run_temp, "<<swatre_inp>>",
-                            paste0(proj_wd, "/", inp_file))
-    
-    run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
-                                paste0(proj_wd, "/", infil_dir))
-    
-   # set correct inithead for event
-    runname <- str_remove_all(as.character(evdate), "-")
-    ih_ev <- str_remove(runname, "^\\d\\d")
-    
-     run_temp <- str_replace_all(run_temp, "<<ih>>", 
-                                paste0("ih", ih_ev))
-    # flow solution
-    if (resolution > 10) {
-      run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
-    }
-    
-    # set timestep
+  #load template
+  run_temp <- run_template
+  proj_wd <- getwd()
+  
+  # adjust paths based on system
+  # home directory
+  run_temp <- str_replace_all(run_temp, "^Map Directory=<<map_dir>>", 
+                              paste0("Map Directory=", proj_wd, "/", work_dir, "maps"))
+  # result directory
+  run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
+                              paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
+  # rain files
+  rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
+  run_temp <- str_replace_all(run_temp, "<<rain_dir>>",
+                              paste0(proj_wd, "/", rain_dir))
+  run_temp <- str_replace_all(run_temp, "<<rain_file>>",
+                              rain_file)
+  
+  # infiltration files
+  run_temp <- str_replace(run_temp, "<<swatre_inp>>",
+                          paste0(proj_wd, "/", inp_file))
+  
+  run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
+                              paste0(proj_wd, "/", infil_dir))
+  
+  # set correct inithead for event
+  runname <- str_remove_all(as.character(evdate), "-")
+  ih_ev <- str_remove(runname, "^\\d\\d")
+  
+  run_temp <- str_replace_all(run_temp, "<<ih>>", 
+                              paste0("ih", ih_ev))
+  # flow solution
+  if (resolution > 10) {
+    run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
+  }
+  
+  # set timestep
   #dt <- ceiling(resolution * 0.75)
-  dt = 5 # makkelijker voor grafieken en berekeningen
+  if (resolution < 20)
+    dt = 5 # makkelijker voor grafieken en berekeningen\
+  else    
+    dt = 10 # makkelijker voor grafieken en berekeningen\
+  
   ts <- str_pad(as.character(dt), width = 3,
-          side = "left", pad = "0")
+                side = "left", pad = "0")
   run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model
-    
-    # set start time
-    run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0(start_time)) # 
-    
-    # set end time
-    run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
-    
-    
-    
-    # set baseflowmap
-    run_temp <- str_replace(run_temp, "<<baseflow_map>>",
-                            paste0("baseflow_", runname, ".map"))
-    
-    writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
   
-    # set ndvi related maps
-    if (do_ndvi_run == TRUE) {
-      run_temp <- str_replace_all(run_temp, "cover=per.map",
-                              paste0("cover=per", runname, ".map"))
-      run_temp <- str_replace_all(run_temp, "lai=lai.map",
-                                  paste0("lai=lai", runname, ".map"))
-      run_temp <- str_replace_all(run_temp, "smax=smax.map",
-                                  paste0("smax=smax", runname, ".map"))
-      run_temp <- str_replace_all(run_temp, "manning=n.map",
-                                  paste0("manning=n", runname, ".map"))
-    }
+  # set start time
+  run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0(start_time)) # 
   
+  # set end time
+  run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
+  
+  # set baseflowmap
+  run_temp <- str_replace(run_temp, "<<baseflow_map>>",
+                          paste0("baseflow_", runname, ".map"))
+
+  datestr <- substr(runname, 3, 8)
+  # set ndvi related maps
+  if (do_ndvi_run == TRUE) {
+    run_temp <- str_replace_all(run_temp, "cover=per.map",
+                                paste0("cover=per", datestr, ".map"))
+    run_temp <- str_replace_all(run_temp, "lai=lai.map",
+                                paste0("lai=lai", datestr, ".map"))
+    run_temp <- str_replace_all(run_temp, "smax=smax.map",
+                                paste0("smax=smax", datestr, ".map"))
+    run_temp <- str_replace_all(run_temp, "manning=n.map",
+                                paste0("manning=n", datestr, ".map"))
+  }
+  
+  writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
+  
+  # replace channel buffer maps
+  run_temp <- str_replace_all(run_temp, "chanwidth=chanwidth.map",
+                              "chanwidth=chanwidthbuf.map")
+  run_temp <- str_replace_all(run_temp, "chandepth=chandepth.map",
+                              "chandepth=chandepthbuf.map")
+  run_temp <- str_replace_all(run_temp, "chanside=zero.map",
+                              "chanside=chansidebuf.map")
+  
+  writeLines(run_temp, paste0(work_dir, "runfiles/", runname, "buf.run"))
+  
+
 } # end function make_runfile_lisem()
 
 # # temp code
@@ -115,8 +129,6 @@ create_lisem_run <- function(
   resolution = NULL,
   catch_num = NULL,
   swatre_file = "base_swatre_params.csv",
-  cal_alpha = 1.0,
-  cal_n = 1.0,
   do_ndvi = TRUE,
   do_runfile = TRUE) 
 {
@@ -276,9 +288,7 @@ create_lisem_run <- function(
   #file.remove(paste0(subdir, "soil.tbl"))
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
-                     swatre_dir = paste0(run_dir, "swatre/"),
-                     cal_alpha,
-                     cal_n)
+                     swatre_dir = paste0(run_dir, "swatre/"))
   
 } # end create_lisem_run
 

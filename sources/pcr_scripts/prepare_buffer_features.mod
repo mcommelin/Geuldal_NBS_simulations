@@ -46,7 +46,7 @@ report buffers1 = if (cover(ponds,0) eq 1, -1, buffers1);
 # save the original dem first, then update
 report dem_orig = dem;
 
-a = clump(nominal(if (s eq 0,1)));
+##a = clump(nominal(if (s eq 0,1)));
 ##report a.map=a;
 ##buffwall = areamaximum(dem,  a);  # does not work, wall become easily 10m high
 ##buffwall = 0;

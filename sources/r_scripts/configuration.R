@@ -9,9 +9,13 @@ ins <- config$install_packages
 # if (!require("pacman")) install.packages("pacman")
 # pacman::p_load(yaml, hydroGOF, gdalUtilities, terra, raster, cowplot, sf, 
 #                conflicted, tidyverse, sensobol, foreach, doParallel)
+
 if (!require("hydroGOF")) install.packages("hydroGOF")
 if (!require("gdalUtilities")) install.packages("gdalUtilities")
 if (!require("terra")) install.packages("terra")
+#install.packages('terra', repos='https://rspatial.r-universe.dev')
+#if (!require("remotes")) install.packages("remotes")
+#remotes::install_github("rspatial/terra")
 if (!require("raster")) install.packages("raster")
 if (!require("cowplot")) install.packages("cowplot")
 if (!require("sf")) install.packages("sf")
