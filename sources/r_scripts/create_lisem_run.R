@@ -91,7 +91,15 @@ make_runfile_lisem <- function(work_dir = NULL,
   
   writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
   
+  # runfile with buffers
+  run_temp <- str_replace_all(run_temp, "Include Mitigation/Conservation=0",
+                              "Include Mitigation/Conservation=1")
+  run_temp <- str_replace_all(run_temp, "Include buffers=0",
+                              "Include buffers=1")
+  
   # replace channel buffer maps
+  run_temp <- str_replace_all(run_temp, "chanwidth=chanwidth.map",
+                              "chanwidth=chanwidthbuf.map")
   run_temp <- str_replace_all(run_temp, "chanwidth=chanwidth.map",
                               "chanwidth=chanwidthbuf.map")
   run_temp <- str_replace_all(run_temp, "chandepth=chandepth.map",
