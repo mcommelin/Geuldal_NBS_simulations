@@ -2,7 +2,7 @@
 
 [Input]
 Map Directory=<<map_dir>>
-Result datetime=0
+Result datetime=1
 Include Satellite Image=0
 satImage Directory=
 satImage File=
@@ -228,7 +228,7 @@ OutSedSS=0
 OutSedBL=0
 
 [Advanced]
-Nr user Cores=6
+Nr user Cores=16
 Flooding SWOF Reconstruction=3
 Flooding SWOF flux limiter=1
 Correct MB with WH=0
