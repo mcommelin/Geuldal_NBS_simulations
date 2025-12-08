@@ -69,7 +69,7 @@ base_maps <- base_maps[!grepl("^\\s*#", base_maps) & nzchar(trimws(base_maps))]
 # field OM was not possible, too high. OM divided by 4 and 0.25 added!
 # looked at soilgrids.org for baseline values
 cal1 = 0.25
-cal2 = 0.25
+cal2 = 0.35 #soilgrids
 pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
