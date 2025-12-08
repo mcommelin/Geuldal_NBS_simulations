@@ -61,9 +61,6 @@ ldd_subcatch(force_ldd = FALSE)
 # load the list of base maps.
 base_maps <- readLines("sources/base_maps.txt")
 
-# drop commented entries (LAI and per)
-base_maps <- base_maps[!grepl("^\\s*#", base_maps) & nzchar(trimws(base_maps))]
-
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
 #TODO: define all calibration parameters in this main code
 #' put them in a csv file which is called from config?
