@@ -11,16 +11,12 @@
 
 # Initialization ---------------------------------------------------------------
 library(gifski)
-library(hms)
-library(gdalUtilities)
-library(raster)
-library(sf)
 library(RColorBrewer)
-library(tidyverse)
 
-# load pcraster functions
-source("sources/r_scripts/pcrasteR.R")
-set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
+
+# # load pcraster functions
+# source("sources/r_scripts/pcrasteR.R")
+# set_pcraster(env = "qgis", miniconda = "~/ProgramFiles/miniconda3")
 
 #functions
 
@@ -75,9 +71,9 @@ q_all <- q_all %>%
 # 1. the events with high discharges at the outlet of the Geul in Meersen
 b <- q_all %>%
   filter(str_detect(name_long, "Maastrichterlaan")) %>%
-  filter(timestamp > "2010-01-01 12:00:00" &
+  filter(timestamp > "2019-01-01 12:00:00" &
            timestamp < "2024-12-30 12:00:00") %>%
-  filter(wh > 44.2)
+  filter(wh > 44)
 # 6 events with high discharge
 ggplot(b) +
   geom_point(aes(x = timestamp, y = wh))
@@ -93,8 +89,20 @@ b <- q_all %>%
 ggplot(b) +
   geom_point(aes(x = timestamp, y = wh))
 
-# the events + duration are added to 'sources/selected_events.csv'
+# 3. additional calibration event Gulp
+# 
+b <- q_all %>%
+  filter(str_detect(name_long, "Gulp_Gulpen_Azijnfabriek")) %>%
+  filter(timestamp > "2023-01-01 12:00:00" &
+           timestamp < "2024-12-30 12:00:00") %>%
+  filter(wh > 91)
 
+ggplot(b) +
+  geom_point(aes(x = timestamp, y = wh))
+
+
+# the events + duration are added to 'sources/selected_events.csv'
+events <- read_csv("sources/selected_events.csv")
 
 wh_ev23 <- q_all %>%
   filter(timestamp > events$ts_start[1] &

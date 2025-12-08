@@ -97,6 +97,8 @@ p <- mapView(pixels, color="red")
 c <- mapView(ca_map)
 p + c
 
+pixels <- st_read("data/processed_data/GIS_data/KNMI_radar_points.gpkg", layer = "pixels")
+
 # read HDF5 files list
 files <- dir("data/radar/h5", pattern = "\\.h5$", full.names = T)
 P <- matrix(nrow = length(files), ncol=nrow(pixels))
