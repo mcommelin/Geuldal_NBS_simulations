@@ -58,9 +58,9 @@ make_runfile_lisem <- function(work_dir = NULL,
   # set timestep
   #dt <- ceiling(resolution * 0.75)
   if (resolution < 20)
-    dt = 5 # makkelijker voor grafieken en berekeningen\
+    dt = 5 # makkelijker voor grafieken en berekeningen
   else    
-    dt = 10 # makkelijker voor grafieken en berekeningen\
+    dt = 10 # makkelijker voor grafieken en berekeningen
   
   ts <- str_pad(as.character(dt), width = 3,
                 side = "left", pad = "0")
@@ -173,8 +173,6 @@ create_lisem_run <- function(
   }
 
   base_maps <- readLines("sources/base_maps.txt")
-  # drop commented entries
-  base_maps <- base_maps[!grepl("^\\s*#", base_maps) & nzchar(trimws(base_maps))]
   # copy the maps to the run_dir
   subdir <- paste0(run_dir, "maps/")
   for (map in base_maps) {
