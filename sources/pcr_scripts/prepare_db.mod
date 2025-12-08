@@ -120,10 +120,9 @@ report per = max(0,min(0.99,per));
 report lai = -ln(1-min(0.95,per))/0.4;
 
 # mannings N based on philips 1989: n = RR/100 + n_residue + n_vegetation * per
-# with the very low RR from fieldwork 'RR/50' makes more sense => no? because rr is ultiplied by 10 and gives reasoable values?
 n_res = lookupscalar(lutbl, 2, lu);
 n_veg = lookupscalar(lutbl, 3, lu);
-report mann = rr/50 + n_res + n_veg * per;
+report mann = rr/100 + n_res + n_veg * per;
 # report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
 
 # calculate interception

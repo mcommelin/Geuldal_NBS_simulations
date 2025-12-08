@@ -32,12 +32,14 @@ spatial_data_to_pcr <- function() {
         f <- ifelse(!is.na(maps_list$field[i]), maps_list$field[i], "")
         # the roads fraction as only map needs the option 'cover = TRUE'
         c <- F
-        if (maps_list$name[i] == "roads_fraction")
+        cover_maps <- c("roads_fraction", "buildings", "hard_surface")
+        if (maps_list$name[i] %in% cover_maps)
           c = T
-        if (maps_list$name[i] == "buildings")
-          c = T
-        if (maps_list$name[i] == "hard_surface")
-          c = T
+        # if (maps_list$name[i] == "buildings")
+        #   c = T
+        # if (maps_list$name[i] == "hard_surface")
+        #   c = T
+        
         # resample 
         map_res <- terra::rasterize(map, mask[[r]], field = f, cover = c, fun = maps_list$fun[i])
         map_out <- paste0(res_dir[[r]], maps_list$name[i], ".map")
@@ -65,7 +67,11 @@ spatial_data_to_pcr <- function() {
                work_dir = res_dir[r])
     #clean up
     file.remove(paste0(res_dir[[r]], "p_mv.map")) # soil profile with MVs
-    # VJ also clean up xml files?
+    # remove all aux.xml files
+    aux_files <- list.files(res_dir[[r]], pattern = "aux.xml", full.names = TRUE)
+    if (length(aux_files) > 0) {
+      file.remove(aux_files)
+    }
   }
 } #end function spatial_data_to_pcr
 

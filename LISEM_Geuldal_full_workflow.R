@@ -57,8 +57,10 @@ spatial_data_to_pcr()
 # set force_ldd = TRUE to recalculate the ldd
 ldd_subcatch(force_ldd = FALSE)
 
+# we don't need base_maps at this point
 # load the list of base maps.
 base_maps <- readLines("sources/base_maps.txt")
+
 # drop commented entries (LAI and per)
 base_maps <- base_maps[!grepl("^\\s*#", base_maps) & nzchar(trimws(base_maps))]
 
@@ -66,7 +68,7 @@ base_maps <- base_maps[!grepl("^\\s*#", base_maps) & nzchar(trimws(base_maps))]
 #TODO: define all calibration parameters in this main code
 #' put them in a csv file which is called from config?
 
-# field OM was not possible, too high. OM divided by 4 and 0.25 added!
+# field OM was not possible, too high. OM multiplied by 0.35 and 0.25 added!
 # looked at soilgrids.org for baseline values
 cal1 = 0.25
 cal2 = 0.35 #soilgrids
@@ -93,24 +95,26 @@ s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 # lu types: 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras,
 # 5 = verhard, 6 = water, 7 = naaldbos
 O_depth <- c(10, 20, 10, 10, 5, 1, 20)
-lu_pars <- bind_rows(pars_lu, lu_add) %>%
-  left_join(s_eq, by = "lu_nr")%>%
-  arrange(lu_nr) %>%
-  mutate(od = O_depth)
-
-nms <- as.character(seq(0, ncol(lu_pars) - 1))
-names(lu_pars) <- nms
 
 # add average summer plant cover to create per.map and all derivatives
 # change cover values for other seasons: maps per, lai, manning and smax 
+# Alternatively we also have data from the fieldwork for per.
 per <- c(0.7,0.9,0.7,0.8,0.05,0,0.9)
-lu_pars$"7" <- per
+
+lu_pars <- bind_rows(pars_lu, lu_add) %>%
+  left_join(s_eq, by = "lu_nr")%>%
+  arrange(lu_nr) %>%
+  mutate(od = O_depth, 
+         cover = per)
+
+nms <- as.character(seq(0, ncol(lu_pars) - 1))
+names(lu_pars) <- nms
 
 # tables folder must be created
 write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
-#note: here only cols 1,2, 3 and 5 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
+#note: here only cols 1,2, 3, 5 and 7 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
 #the other columns are used in SWATRE creation, swatre_input.R
 
 
@@ -234,7 +238,6 @@ points_id <- c(4,10,14,18) # use if you want to update multiple subcatchments on
 
 reso = c(10) # 5, 10 or 20
 
-#TODO: update swatre tables function to include calibration
 #TODO: update rr and n maps to include calibration
 #TODO: er komt een laag met buffer dieptes per buffer -> VJ
 #V - TODO: script pcraster met arguments -> VJ 

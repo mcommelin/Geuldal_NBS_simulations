@@ -34,7 +34,6 @@ base_maps_subcatchment <- function(
   
   # copy base maps from main_dir to new subcatch dir
   base_maps <- readLines("sources/base_maps.txt")
-  base_maps <- base_maps[!grepl("^\\s*#", base_maps) & nzchar(trimws(base_maps))]
 
   # add "base" suffix to the base maps names in the subcatch dir
   for (i in seq_along(base_maps)) {
