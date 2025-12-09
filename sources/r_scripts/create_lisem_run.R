@@ -191,6 +191,16 @@ create_lisem_run <- function(
   file.copy(from = "sources/setup/calibration/lu.tbl", to = subdir, overwrite = T)
   #copy chan.tbl
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
+  
+  # create landuse calibration table: used in prepare_db.map AND prepare_ndvi.mod
+  cal_lu <- read_csv("sources/setup/calibration/calibration_landuse.csv")
+  nms <- as.character(seq(0, ncol(cal_lu) - 1))
+  names(cal_lu) <- nms
+  write.table(cal_lu, file = "sources/setup/calibration/cal_lu.tbl",
+              sep = " ", row.names = FALSE,
+              quote = FALSE)
+  file.copy(from = "sources/setup/calibration/cal_lu.tbl", to = subdir, overwrite = T)
+  
   # run pcraster script to finalize run database.
   pcr_script(
     script = "prepare_db.mod",
@@ -235,7 +245,7 @@ create_lisem_run <- function(
   
   # add runfiles for selected events
   events <- read_csv("sources/selected_events.csv", show_col_types = FALSE) %>%
-    filter(use != "none") %>%
+    filter(use == "cal") %>%
     mutate(ts_start = ymd_hms(event_start),
            ts_end = ymd_hms(event_end),
            str_start = paste0(str_pad(as.character(yday(ts_start)), width = 3,

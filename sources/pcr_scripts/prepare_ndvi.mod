@@ -6,6 +6,7 @@
 binding
 # input
  lutbl = lu.tbl;
+ cal_lu = cal_lu.tbl;
  NDVI = ndvi${1}.map;
  lu = landuse.map;
  rr = rr.map;
@@ -20,7 +21,8 @@ initial
 per = 0.01*(4.257*NDVI*NDVI + 100.719*NDVI + -5.439);
 report per = max(0,min(0.99,per));
 report lai = -ln(1.0-min(0.95,per))/0.4;
-report mann = 0.005 + 0.1*rr+0.104*per**1.2; 
+mann_cal = lookupscalar(cal_lu, 2, lu);
+report mann = 0.005 + 0.1*rr+0.104*per**1.2 * mann_cal; 
 # the relation between basal cover of stems and canopy cover is approx. bc = factor*c**1.2, 
 # where the factor depends on the nr of stems poer m2. factor is ~0.06 for maize and  about 0.2 for grass or wheat
 # so the regression of lisem data of 0.104 is actually quite good!

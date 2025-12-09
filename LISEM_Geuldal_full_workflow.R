@@ -188,7 +188,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      do_NDVI = F,  # copy NDVI related maps for dates
+      do_NDVI = TRUE,  # copy NDVI related maps for dates
       calc_ldd = TRUE # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
@@ -250,7 +250,7 @@ for (i in seq_along(points_id)) {
       resolution = reso[j], 
       catch_num = points_id[i],
       swatre_file = swatre_file,
-      do_ndvi = F,  # make NDVI related maps and change run file to NDVI maps
+      do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
       do_runfile = TRUE
     )
   }
