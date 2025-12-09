@@ -123,7 +123,8 @@ ggplot(wh_ev23) +
 #load selected events
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
-         ts_end = ymd_hms(event_end))
+         ts_end = ymd_hms(event_end)) %>%
+  filter(use == "test")
 
 event_summary <- tibble(pmax = c(), ptot = c(), maxQ = c())
 
@@ -296,4 +297,186 @@ for (k in seq_along(events$event_start)) {
     theme_classic()
 }
 
+# 4. compare temporal resolution ------------------------------------------------
 
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end)) %>%
+  filter(use == "test")
+
+# Prepare all combinations of points, events, and temporal resolutions
+Tres <- c("hour", "min")
+combos <- expand.grid(
+  point = points_id,
+  event = events$ts_start,
+  tres = Tres,
+  stringsAsFactors = FALSE
+)
+
+rain_list <- vector("list", nrow(combos))
+
+for (x in seq_len(nrow(combos))) {
+  point_id <- combos$point[x]
+  event_idx <- combos$event[x]
+  tres_val <- combos$tres[x]
+  
+  # select subcatchment
+  subcatch <- points %>%
+    filter(point == point_id) %>%
+    filter(cell_size == 10)
+  subcatch_name <- subcatch$subcatch_name
+  wdir <- paste0("LISEM_runs/", subcatch_name, "_10m/maps/")
+  evdate <- date(combos$event[x])
+  
+  rain_list[[x]] <- subcatch_rain_compare(
+    wdir = wdir,
+    ev_date = evdate,
+    tres = tres_val
+  )
+}
+
+# combine the plots
+# Extract total values from rain_list (assuming total is in the 2nd position)
+combos$total <- sapply(rain_list, function(x) x[[2]])
+
+for (i in 1:3) {
+  
+  plot_grid(rain_list[[i]][[1]], rain_list[[i+3]][[1]],
+            nrow = 2, align = "hv")
+  ggsave(paste0("images/rain_compare_", date(combos$event[i]), "_", combos$point[i], ".png"))
+  
+}
+
+# 5. explore possible events - Q and hourly P
+
+point = 4 # Gulp
+evdate = "20230401" # or select from 'selected_events.csv'
+
+# load Q obs
+ # qall from section 3
+
+# find rain from hourly maps
+
+# plot
+
+
+#load selected events
+events <- read_csv("sources/selected_events.csv") %>%
+  mutate(ts_start = ymd_hms(event_start),
+         ts_end = ymd_hms(event_end)) %>%
+  filter(use == "test")
+
+event_summary <- tibble(pmax = c(), ptot = c(), maxQ = c())
+
+# load discharge data - load hourly data from WL
+qall <- read_csv("data/raw_data/debiet_uur_data/debietgegevensgeul_VERKORT.csv",
+                 skip = 8) %>%
+  pivot_longer(cols = '12.Q.31':'10.Q.36',
+               values_to = "Q",
+               names_to = "code") %>%
+  mutate(timestamp = mdy_hm(timestamp))
+
+# load point locations of the discharge
+q_points <- st_read("data/rainfall_discharge.gpkg", layer = "discharge_locations")
+
+#filter discharge on location and event times
+qall <- qall %>%
+  filter(code %in% q_points$code)
+
+# filter per event and make figure
+qevent <- vector("list", length = nrow(events))
+
+# add catchment outline
+gpx_line <- st_read("data/line_catchment.gpx", layer = "tracks") 
+# Reproject the GPX line to match the raster CRS (EPSG:28992)
+gpx_line <- st_transform(gpx_line, crs = 28992)
+
+for (k in seq_along(events$event_start)) {
+  event_start <- events$ts_start[k]
+  event_end <- events$ts_end[k]
+  hours <- seq(event_start, event_end, by = "hours")
+  
+  map_names <- str_remove(hours, ":.*") %>%
+    str_replace_all("-", "") %>%
+    str_replace_all(" ", "_") %>%
+    sapply(., add_suffix)
+  
+  rain_gifs <- map_names %>%
+    paste0("rain_", ., ".png")
+  
+  map_names <- map_names %>%
+    paste0("NSL_", ., ".ASC")
+  
+  # calculate the mean total precipitation per event for the summary stats
+  rain_knmi <- stack(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names))
+  sum_raster <- calc(rain_knmi, sum, na.rm = TRUE)
+  ptot <- cellStats(sum_raster, stat = "mean", na.rm = TRUE)
+  
+  ev_name <- as.character(event_start) %>%
+    str_remove_all("-") %>%
+    str_extract("^([0-9]{8})") %>%
+    paste0("rain_", .)
+  
+  
+  ## GIF of precipitation events -------------------------------------------------
+  if (!dir.exists(paste0("images/neerslag/", ev_name))) {
+    dir.create(paste0("images/neerslag/", ev_name))
+  }
+  
+  colors <- brewer.pal(9, "Blues")
+  breakpoints <- c(0, 1, 3, 5, 10, 18, 26, 40, 60)
+  
+  # sum raster for total precipitation map
+  maxp <- 0
+  for (i in seq_along(map_names)) {
+    rain_map <- raster(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]))
+    png(filename = paste0("images/neerslag/", ev_name, "/", rain_gifs[i]))
+    # Plot the raster
+    plot(rain_map, col = colors, breaks = breakpoints, main = paste0(hours[i]))
+    
+    # Overlay the GPX line
+    plot(st_geometry(gpx_line), add = TRUE, col = "black", lwd = 2) # Adjust color and line width as needed
+    
+    dev.off()
+    mp <- max(as.data.frame(rain_map))
+    maxp <- if (mp > maxp)
+      mp
+    else
+      maxp
+  }
+  
+  # make a gif
+  files <- paste0("images/neerslag/", ev_name, "/", rain_gifs)
+  gifski(
+    files,
+    gif_file = paste0("images/neerslag/", ev_name, ".gif"),
+    delay = 0.3
+  )
+  
+  ## Discharge figure events ----------------------------------------------------
+  qevent[[k]] <- qall %>%
+    filter(timestamp > events$ts_start[k] &
+             timestamp < events$ts_end[k]) %>%
+    left_join(q_points, by = "code")
+  
+  ggplot(qevent[[k]]) +
+    geom_line(aes(x = timestamp, y = Q, color = naam)) +
+    theme_classic()
+  
+  ggsave(paste0("images/discharge", events$event_start[k], ".png"))
+  
+  # get max discharge at Meersen
+  qmeersen <- qevent[[k]] %>%
+    filter(naam == "Meersen")
+  maxq <- max(qmeersen$Q, na.rm = TRUE)
+  
+  # make a summary table of the events
+  sum_ev <- tibble(pmax = maxp, ptot = ptot, maxQ = maxq)
+  event_summary <- bind_rows(event_summary, sum_ev)
+  
+}
+
+# save the event summary data to a csv file
+event_summary <- bind_cols(events, event_summary)
+write_csv(event_summary,
+          "data/processed_data/stats_selected_events.csv")

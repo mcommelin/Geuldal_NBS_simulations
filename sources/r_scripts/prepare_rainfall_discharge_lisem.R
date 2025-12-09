@@ -125,14 +125,14 @@ for (k in seq_along(events$ts_start)) {
   ev_name <- as.character(event_start) %>%
     str_remove_all("-") %>%
     str_extract("^([0-9]{8})") %>%
-    paste0("rain_hourly_", .)
+    paste0("rain_", .)
   
   # find the number of idzones in the radar map
   id_raster <- raster(paste0("data/processed_data/ID_zones_KNMI_radar.asc"))
   n_cols_rain <- max(as.matrix(id_raster)) + 1 # add 1 colum for the timestamp
   
   # loop over rainfall maps and make rain input table
-  rain_file <- paste0("LISEM_data/rain/", ev_name, ".txt")
+  rain_file <- paste0("LISEM_runs/rain/", ev_name, ".txt")
   ev_date <- date(event_start)
   # write the header
    writeLines(paste0("# KNMI radar for ", ev_date, "\n", n_cols_rain, "\ntime"),
@@ -181,7 +181,7 @@ for (k in seq_along(events$ts_start)) {
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
          ts_end = ymd_hms(event_end)) %>%
-  filter(use == "cal")
+  filter(use == "test")
 
 rain_5min <- read_csv("data/processed_data/neerslag/KNMI_rain_5min.csv")
 
@@ -204,7 +204,7 @@ for (k in seq_along(events$ts_start)) {
   n_cols_rain <- max(as.matrix(id_raster)) + 1 # add 1 colum for the timestamp
   
   # loop over rainfall maps and make rain input table
-  rain_file <- paste0("LISEM_data/rain/", ev_name, ".txt")
+  rain_file <- paste0("LISEM_runs/rain/", ev_name, ".txt")
   ev_date <- date(event_start)
   # write the header
   writeLines(paste0("# 5min KNMI radar for ", ev_date, "\n", n_cols_rain, "\ntime"),

@@ -1,8 +1,8 @@
 # function to compare temporal resolutions of precipitation
 
 # id.map to catchment size - is now included in standard db script
-#wdir <- "LISEM_runs/Watervalderbeek_5m/maps/"
-#ev_date <- "2023-06-22"
+wdir <- "LISEM_runs/Gulp_10m/maps/"
+ev_date <- "2024-08-17"
 
 
 subcatch_rain_compare <- function(wdir = NULL,
@@ -24,9 +24,9 @@ subcatch_rain_compare <- function(wdir = NULL,
   # load rain data
   date_str <- str_remove_all(ev_date, "-")
   if (tres == "min") {
-    pfile <- paste0("LISEM_data/rain/rain_5min_", date_str, ".txt")
+    pfile <- paste0("LISEM_runs/rain/rain_5min_", date_str, ".txt")
   } else {
-    pfile <- paste0("LISEM_data/rain/rain_", date_str, ".txt")
+    pfile <- paste0("LISEM_runs/rain/rain_", date_str, ".txt")
   }
   skipval <- as.numeric(readLines(pfile)[2]) + 2
   rain_txt <- readLines(pfile)[-(1:skipval)]
@@ -96,7 +96,7 @@ graph_subcatch_qp <- function(points_id = NULL,
       filter(point == point_id) %>%
       filter(cell_size == 5)
     subcatch_name <- subcatch$subcatch_name
-    wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
+    wdir <- paste0("LISEM_runs/", subcatch_name, "_10m/maps/")
     
     # map2asc
     map2asc(map_in = "ID.map",
