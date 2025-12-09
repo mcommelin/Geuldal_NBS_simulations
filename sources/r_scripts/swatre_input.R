@@ -111,7 +111,7 @@ soil_landuse_to_swatre <- function(file = "",
           values_to = "value"
         ) %>%
         separate(parameter, into = c("param", "horizon"), sep = "_") %>%
-        filter(param %in% c("ksat", "n", "alpha", "gravel")) %>%
+        mutate(horizon = ifelse(horizon == "BC", "C", horizon)) %>%
         mutate(soil = paste0(soil, "_", horizon),
                param = paste0(param, "_cal")) %>%
         select(soil, param, value) %>%
@@ -125,11 +125,11 @@ soil_landuse_to_swatre <- function(file = "",
       mutate(CODE = str_replace(CODE, "-", "_"),
              horizon = str_extract(CODE, ".$"),
              horizon = ifelse(horizon == "E", "C", horizon),
-             horizon = ifelse(horizon == "t", "B", horizon),
-             horizon = ifelse(horizon == "O", "A", horizon),
+             horizon = ifelse(horizon == "t", "C", horizon),
+             horizon = ifelse(horizon == "B", "C", horizon),
              soil = floor((UBC %% 100000)/ 1000),
              soil = paste0(soil, "_", horizon),
-             soil = ifelse(soil == "0_0", "0_A", soil)) %>%
+             soil = ifelse(soil == "0_0", "0_O", soil)) %>%
       left_join(soil_cal, by = "soil") %>%
       mutate(alpha_mean = alpha_mean * alpha_cal,
              npar_mean = npar_mean * n_cal,
