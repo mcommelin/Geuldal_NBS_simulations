@@ -176,7 +176,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-points_id <- c(4,10,14,18) # calibration catchments
+points_id <- c(4,18) # calibration catchments
 #points_id <- c(18) # use if you want to update multiple subcatchments on the go
 reso <- c(10)
 # load the function for subcatchment preparation
@@ -243,7 +243,7 @@ reso = c(10) # 5, 10 or 20
 
 source("sources/r_scripts/create_lisem_run.R")
 # you can also run for one specific subcatchment e.g.
-#create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, cal_alpha, cal_n, T, T)
+create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, T, T)
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(

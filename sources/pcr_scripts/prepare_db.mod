@@ -33,6 +33,7 @@ buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from 
 
 lutbl = lu.tbl;
 chantbl = chan.tbl;	# table with param values for different channel types
+cal_lu = cal_lu.tbl;
 
 ###################
 ### PROCES MAPS ###
@@ -112,9 +113,10 @@ out1 = scalar(outlet) * 100; # used to force channel outlet to correct location
 ### SURFACE MAPS ### 
 ####################
 calbrRR = scalar(10.0); ## the field data were not very conclusive, at least multiply by 10 or more!
-report rr = calbrRR*lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
+rr_cal = lookupscalar(cal_lu, 1, lu);
+report rr = calbrRR*lookupscalar(lutbl, 1, lu) * rr_cal; # random roughness (=std dev in cm) 
 
-# addede per as last col
+# added per as last col
 per = lookupscalar(lutbl, 7, lu);
 report per = max(0,min(0.99,per));
 report lai = -ln(1-min(0.95,per))/0.4;
@@ -122,7 +124,8 @@ report lai = -ln(1-min(0.95,per))/0.4;
 # mannings N based on philips 1989: n = RR/100 + n_residue + n_vegetation * per
 n_res = lookupscalar(lutbl, 2, lu);
 n_veg = lookupscalar(lutbl, 3, lu);
-report mann = rr/100 + n_res + n_veg * per;
+mann_cal = lookupscalar(cal_lu, 2, lu);
+report mann = rr/100 + n_res + n_veg * per * mann_cal;
 # report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
 
 # calculate interception

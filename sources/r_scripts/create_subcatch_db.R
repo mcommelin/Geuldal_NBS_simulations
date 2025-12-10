@@ -60,57 +60,6 @@ base_maps_subcatchment <- function(
     work_dir = sub_catch_dir
   )
 
-# terra code but warp does not nexecute because terra package is outdated?  
-# subdir <- sub_catch_dir
-# clone_map      <- paste0(subdir, "sub.map")
-# clone_map_tif  <- paste0(subdir, "sub.tif")
-# clone_cut_tif  <- paste0(subdir, "subc.tif")
-# 
-# # convert clone to GTiff only once if needed
-# gdal_translate(
-#   src_dataset = clone_map,
-#   dst_dataset = clone_map_tif,
-#   of = "GTiff"
-# )
-# 
-# r0   <- rast(clone_map_tif)
-# r1   <- trim(r0)
-# writeRaster(r1, clone_cut_tif, overwrite = TRUE)
-# 
-# ref  <- rast(clone_cut_tif)
-# 
-# base_maps <- gsub("^ldd\\.map$", "", base_maps)
-# base_maps <- gsub("^catchment\\.map$", "", base_maps)
-# base_maps <- base_maps[base_maps != ""]
-# base_maps[[length(base_maps) + 1]] <- "sub_point.map"
-# 
-# for (i in seq_along(base_maps)) {
-#   name <- base_maps[i]
-#   
-#   if (name == "sub_point.map") {
-#     map_in <- paste0(subdir, name)
-#   } else {
-#     map_in <- paste0(subdir, "base_", name)
-#   }
-#   map_out <- paste0(subdir, name)
-#   src <- rast(map_in)
-#   out <- warp(
-#     src,
-#     ref,
-#     method = resample_method
-#   )
-#   writeRaster(
-#     out,
-#     map_out,
-#     filetype = "PCRaster",
-#     gdal = c("PCRASTER_VALUESCALE=VS_SCALAR"),
-#     datatype = "FLT4S",
-#     overwrite = TRUE
-#   )
-# }
-  
-  
-  
    map_clone = paste0(sub_catch_dir, "sub.map")
    map_clone_tif = paste0(sub_catch_dir, "sub.tif")
    map_clone_cut_tif = paste0(sub_catch_dir, "subc.tif")
@@ -247,10 +196,10 @@ base_maps_subcatchment <- function(
   
   if (do_NDVI == TRUE) {
   # 10m NDVI maps, called NDVI.tif in a dir with an event date
-  ndvi_dir <- paste0("spatial_data/ndvi/ndvi_", events, "_10m/")
+  ndvi_dir <- paste0("spatial_data/NDVI/ndvi_", events, "_10m/")
     # per event
     for (j in seq_along(events)) {
-      map_in = paste0(ndvi_dir[j], "ndvi.tif")
+      map_in = paste0(ndvi_dir[j], "NDVI.tif")
       map_out_name = paste0(sub_catch_dir, "ndvi", ih_ev[j], ".map")
       tmp_tif = paste0(sub_catch_dir, "tmp.tif")
       if (DEBUGm) message("NDVI in ",map_in)
@@ -292,5 +241,52 @@ base_maps_subcatchment <- function(
   
 
 
-
+# terra code but warp does not nexecute because terra package is outdated?  
+# subdir <- sub_catch_dir
+# clone_map      <- paste0(subdir, "sub.map")
+# clone_map_tif  <- paste0(subdir, "sub.tif")
+# clone_cut_tif  <- paste0(subdir, "subc.tif")
+# 
+# # convert clone to GTiff only once if needed
+# gdal_translate(
+#   src_dataset = clone_map,
+#   dst_dataset = clone_map_tif,
+#   of = "GTiff"
+# )
+# 
+# r0   <- rast(clone_map_tif)
+# r1   <- trim(r0)
+# writeRaster(r1, clone_cut_tif, overwrite = TRUE)
+# 
+# ref  <- rast(clone_cut_tif)
+# 
+# base_maps <- gsub("^ldd\\.map$", "", base_maps)
+# base_maps <- gsub("^catchment\\.map$", "", base_maps)
+# base_maps <- base_maps[base_maps != ""]
+# base_maps[[length(base_maps) + 1]] <- "sub_point.map"
+# 
+# for (i in seq_along(base_maps)) {
+#   name <- base_maps[i]
+#   
+#   if (name == "sub_point.map") {
+#     map_in <- paste0(subdir, name)
+#   } else {
+#     map_in <- paste0(subdir, "base_", name)
+#   }
+#   map_out <- paste0(subdir, name)
+#   src <- rast(map_in)
+#   out <- warp(
+#     src,
+#     ref,
+#     method = resample_method
+#   )
+#   writeRaster(
+#     out,
+#     map_out,
+#     filetype = "PCRaster",
+#     gdal = c("PCRASTER_VALUESCALE=VS_SCALAR"),
+#     datatype = "FLT4S",
+#     overwrite = TRUE
+#   )
+# }
 

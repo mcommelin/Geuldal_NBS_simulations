@@ -1,20 +1,21 @@
-soil,ksat_A,ksat_B,ksat_C,ksat_cal,n_A,n_B,n_C,alpha_A,alpha_B,alpha_C,gravel_A,gravel_B,gravel_C,description
-00,1,1,1,1,1,1,1,1,1,1,1,1,1,bebouwing
-10,1,1,1,1,1,1,1,1,1,1,1,1,1,Sand; Sableux/Sable limoneux
-12,1,1,1,1,1,1,1,1,1,1,1,1,1,Lemigher sand
-20,1,1,1,1,1,1,1,1,1,1,1,1,1,"Kleefaarde, verweerde kalksteen; Limoneux; Leem; sandiger Lehm"
-24,1,1,1,1,1,1,1,1,1,1,1,1,1,Schluffiger Lehm
-25,1,1,1,1,1,1,1,1,1,1,1,1,1,Toniger lehm
-30,1,1,1,1,1,1,1,1,1,1,1,1,1,"Mix (tourbeux), omgeven met G; Complex, vaak op steile hellingen, omgeven met G"
-31,1,1,1,1,1,1,1,1,1,1,1,1,1,Limoneux sableux
-32,1,1,1,1,1,1,1,1,1,1,1,1,1,Limoneux
-33,1,1,1,1,1,1,1,1,1,1,1,1,1,"Limoneux, calliouteux; Stenige leem"
-35,1,1,1,1,1,1,1,1,1,1,1,1,1,Limoneux calcaire
-40,1,1,1,1,1,1,1,1,1,1,1,1,1,"Loess; Lemigher Schluff"
-41,1,1,1,1,1,1,1,1,1,1,1,1,1,"Brikgrond met diepere Bt, 60 cm"
-42,1,1,1,1,1,1,1,1,1,1,1,1,1,"Brikgronden, met ondiepe Bt 30 cm"
-43,1,1,1,1,1,1,1,1,1,1,1,1,1,"Loess op glauconiet,kalksteen, vuursteen,"
-44,1,1,1,1,1,1,1,1,1,1,1,1,1,"Colluvium, ooivaaggrond, A-C profiel"
-45,1,1,1,1,1,1,1,1,1,1,1,1,1,"Zavel in ondergrond; idem 150000-C"
-50,1,1,1,1,1,1,1,1,1,1,1,1,1,"Lichte Zavel homogene ondergrond; Argilleux; kleiig; Ton""
-51,1,1,1,1,1,1,1,1,1,1,1,1,1,"Zavel en lichte klei, homogene ondergrond"
+soil,ksat_O,ksat_A,ksat_BC,n_O,n_A,n_BC,alpha_O,alpha_A,alpha_BC,description
+0,1,1,1,1,1,1,1,1,1,bebouwing
+10,1,1,1,1,1,1,1,1,1,Sand
+12,1,1,1,1,1,1,1,1,1,Lemigher sand
+20,1,1,1,1,1,1,1,1,1,"Kleefaarde, verweerde kalksteen; Limoneux; Leem; sandiger Lehm"
+24,1,1,1,1,1,1,1,1,1,Schluffiger Lehm
+25,1,1,1,1,1,1,1,1,1,Toniger lehm
+30,1,1,1,1,1,1,1,1,1,"Mix (tourbeux), omgeven met G; Complex, vaak op steile hellingen, omgeven met G"
+31,1,1,1,1,1,1,1,1,1,Limoneux sableux
+32,1,1,1,1,1,1,1,1,1,Limoneux
+33,1,1,1,1,1,1,1,1,1,"Limoneux, calliouteux; Stenige leem"
+35,1,1,1,1,1,1,1,1,1,Limoneux calcaire
+40,1,1,1,1,1,1,1,1,1,Loess
+41,1,1,1,1,1,1,1,1,1,"Brikgrond met diepere Bt, 60 cm"
+42,1,1,1,1,1,1,1,1,1,"Brikgronden, met ondiepe Bt 30 cm"
+43,1,1,1,1,1,1,1,1,1,"Loess op glauconiet,kalksteen, vuursteen,"
+44,1,1,1,1,1,1,1,1,1,"Colluvium, ooivaaggrond, A-C profiel"
+45,1,1,1,1,1,1,1,1,1,Zavel in ondergrond
+50,1,1,1,1,1,1,1,1,1,"Lichte Zavel homogene ondergrond; Argilleux; kleiig; Ton""
+""Zavel en lichte klei, homogene ondergrond"
+51,1,1,1,1,1,1,1,1,1,
