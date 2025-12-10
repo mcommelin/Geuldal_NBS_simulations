@@ -1,21 +1,30 @@
 soil,ksat_O,ksat_A,ksat_BC,n_O,n_A,n_BC,alpha_O,alpha_A,alpha_BC,description
-0,1,1,1,1,1,1,1,1,1,bebouwing
-10,1,1,1,1,1,1,1,1,1,Sand
-12,1,1,1,1,1,1,1,1,1,Lemigher sand
-20,1,1,1,1,1,1,1,1,1,"Kleefaarde, verweerde kalksteen; Limoneux; Leem; sandiger Lehm"
-24,1,1,1,1,1,1,1,1,1,Schluffiger Lehm
-25,1,1,1,1,1,1,1,1,1,Toniger lehm
-30,1,1,1,1,1,1,1,1,1,"Mix (tourbeux), omgeven met G; Complex, vaak op steile hellingen, omgeven met G"
-31,1,1,1,1,1,1,1,1,1,Limoneux sableux
-32,1,1,1,1,1,1,1,1,1,Limoneux
-33,1,1,1,1,1,1,1,1,1,"Limoneux, calliouteux; Stenige leem"
-35,1,1,1,1,1,1,1,1,1,Limoneux calcaire
-40,1,1,1,1,1,1,1,1,1,Loess
-41,1,1,1,1,1,1,1,1,1,"Brikgrond met diepere Bt, 60 cm"
-42,1,1,1,1,1,1,1,1,1,"Brikgronden, met ondiepe Bt 30 cm"
-43,1,1,1,1,1,1,1,1,1,"Loess op glauconiet,kalksteen, vuursteen,"
-44,1,1,1,1,1,1,1,1,1,"Colluvium, ooivaaggrond, A-C profiel"
-45,1,1,1,1,1,1,1,1,1,Zavel in ondergrond
-50,1,1,1,1,1,1,1,1,1,"Lichte Zavel homogene ondergrond; Argilleux; kleiig; Ton""
-""Zavel en lichte klei, homogene ondergrond"
-51,1,1,1,1,1,1,1,1,1,
+0,1,1,1,1,1,1,1,1,1,bebouwd
+120,1,1,1,1,1,1,1,1,1,"Kleefaarde, verweerde kalksteen"
+140,1,1,1,1,1,1,1,1,1,Loess
+141,1,1,1,1,1,1,1,1,1,"Brikgrond met diepere Bt, 60 cm"
+142,1,1,1,1,1,1,1,1,1,"Brikgronden, met ondiepe Bt 30 cm"
+143,1,1,1,1,1,1,1,1,1,"Loess op glauconiet,kalksteen, vuursteen,"
+144,1,1,1,1,1,1,1,1,1,"Colluvium, ooivaaggrond, A-C profiel"
+145,1,1,1,1,1,1,1,1,1,Zavel in ondergrond
+150,1,1,1,1,1,1,1,1,1,Lichte Zavel homogene ondergrond
+151,1,1,1,1,1,1,1,1,1,"Zavel en lichte klei, homogene ondergrond"
+210,1,1,1,1,1,1,1,1,1,Sableux/Sable limoneux
+220,1,1,1,1,1,1,1,1,1,Limoneux
+230,1,1,1,1,1,1,1,1,1,"Mix (tourbeux), omgeven met G"
+231,1,1,1,1,1,1,1,1,1,Limoneux sableux
+232,1,1,1,1,1,1,1,1,1,Limoneux
+233,1,1,1,1,1,1,1,1,1,"Limoneux, calliouteux"
+235,1,1,1,1,1,1,1,1,1,Limoneux calcaire
+250,1,1,1,1,1,1,1,1,1,Argilleux
+320,1,1,1,1,1,1,1,1,1,Leem
+330,1,1,1,1,1,1,1,1,1,"Complex, vaak op steile hellingen, omgeven met G"
+333,1,1,1,1,1,1,1,1,1,Stenige leem
+350,1,1,1,1,1,1,1,1,1,kleiig
+410,1,1,1,1,1,1,1,1,1,Sand
+412,1,1,1,1,1,1,1,1,1,Lemigher sand
+420,1,1,1,1,1,1,1,1,1,sandiger Lehm
+424,1,1,1,1,1,1,1,1,1,Schluffiger Lehm
+425,1,1,1,1,1,1,1,1,1,Toniger lehm
+440,1,1,1,1,1,1,1,1,1,Lemigher Schluff
+450,1,1,1,1,1,1,1,1,1,Ton

@@ -114,7 +114,7 @@ soil_landuse_to_swatre <- function(file = "",
         mutate(horizon = ifelse(horizon == "BC", "C", horizon)) %>%
         mutate(soil = paste0(soil, "_", horizon),
                param = paste0(param, "_cal")) %>%
-        select(soil, param, value) %>%
+        select(-horizon) %>%
         pivot_wider(
           names_from = param,
           values_from = value
@@ -127,7 +127,7 @@ soil_landuse_to_swatre <- function(file = "",
              horizon = ifelse(horizon == "E", "C", horizon),
              horizon = ifelse(horizon == "t", "C", horizon),
              horizon = ifelse(horizon == "B", "C", horizon),
-             soil = floor((UBC %% 100000)/ 1000),
+             soil = floor(UBC/ 1000),
              soil = paste0(soil, "_", horizon),
              soil = ifelse(soil == "0_0", "0_O", soil)) %>%
       left_join(soil_cal, by = "soil") %>%
