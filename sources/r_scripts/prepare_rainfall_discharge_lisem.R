@@ -109,7 +109,7 @@ options(digits = 10)
 # times in the rainfiles are in julian days and than minutes in the day
 for (k in seq_along(events$ts_start)) {
   event_start <- events$ts_start[k]
-  event_pre <- event_start - days(14)
+  event_pre <- event_start - days(1)
   event_end <- events$ts_end[k]
   hours <- seq(event_pre, event_end, by = "hours")
   
@@ -147,7 +147,7 @@ for (k in seq_along(events$ts_start)) {
    # loop over the rainfall maps and add them row per row to a table
   for (i in seq_along(hours)) {
     # read the rainfall raster and convert to array
-        x <- raster(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]))
+    x <- raster(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]))
     x <- as.matrix(x)
     x <- round(as.vector(x), digits = 2)
     d <- t(data.frame(x))
