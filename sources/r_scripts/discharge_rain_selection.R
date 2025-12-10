@@ -93,7 +93,7 @@ ggplot(b) +
 # 
 b <- q_all %>%
   filter(str_detect(name_long, "Gulp_Gulpen_Azijnfabriek")) %>%
-  filter(timestamp > "2023-01-01 12:00:00" &
+  filter(timestamp > "2019-01-01 12:00:00" &
            timestamp < "2024-12-30 12:00:00") %>%
   filter(wh > 91)
 
