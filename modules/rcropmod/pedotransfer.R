@@ -92,8 +92,9 @@ theta_sdf <- function(sand, clay, soc, DF) {
 # this funciton calculates the adjusted BD because of gravel, 
 # and uses that for a new porosity
 # NOTE: this assumes that vgravel is larger stones, not everything above 2mm
-theta_BD <- function(thetas, gravel = 0) {
+theta_BD <- function(sand, clay, soc, gravel = 0) {
   # bulk dens with gravel
+  thetas <- theta_s(sand, clay, soc)
   bd <- bdens(thetas, DF = 1, gravel)
   thetasdf <- 1 - (bd / 2.65)    
   return(thetasdf)

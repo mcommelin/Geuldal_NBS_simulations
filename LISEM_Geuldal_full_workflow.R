@@ -176,7 +176,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-points_id <- c(4,18) # calibration catchments
+points_id <- c(18) # calibration catchments
 #points_id <- c(18) # use if you want to update multiple subcatchments on the go
 reso <- c(10, 20)
 # load the function for subcatchment preparation
@@ -233,7 +233,7 @@ for (i in seq_along(points_id)) {
 points_id <- c(18) #c(4,10,14,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
-reso = c(10) # 5, 10 or 20
+reso = c(10,20) # 5, 10 or 20
 
 #TODO: update rr and n maps to include calibration
 #TODO: er komt een laag met buffer dieptes per buffer -> VJ
