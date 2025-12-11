@@ -57,7 +57,7 @@ soil_landuse_to_swatre <- function(file = "",
   sr_params <- ubc_all %>%
     mutate(wp = wilt_point(sand, clay, om),
            fc = field_cap(sand, clay, om),
-           thetas = theta_s(sand, clay, om),
+           thetas = theta_BD(sand, clay, om), # new function calculating the effect of gravel on porosity
            bd = bdens(thetas, DF = 1, gravel = gravel/100),
            tex_sum = sand + clay + silt)
   

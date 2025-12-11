@@ -125,6 +125,7 @@ write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
 # for SWATRE by first applying Saxton&Rawls 2006 equations and than the Rosetta
 # (v3) model.
 # larger alpha and smaller n give more rapid decrease of k(h)
+# Warning: equations are not tested above OM = 8%
 
 source("sources/r_scripts/swatre_input.R")
 soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
@@ -177,7 +178,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 
 points_id <- c(4,18) # calibration catchments
 #points_id <- c(18) # use if you want to update multiple subcatchments on the go
-reso <- c(10)
+reso <- c(10, 20)
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
@@ -229,7 +230,7 @@ for (i in seq_along(points_id)) {
 #TODO: adjust n maps based on date when NDVI maps change!
 #TODO: update buffer features to final version maps including buffers
 
-points_id <- c(4,10,14,18) # use if you want to update multiple subcatchments on the go
+points_id <- c(18) #c(4,10,14,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
 reso = c(10) # 5, 10 or 20
@@ -242,7 +243,7 @@ reso = c(10) # 5, 10 or 20
 
 source("sources/r_scripts/create_lisem_run.R")
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, T, T)
+#create_lisem_run(resolution = 20, catch_num = 18, swatre_file = swatre_file, T, T)
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(
@@ -250,7 +251,7 @@ for (i in seq_along(points_id)) {
       catch_num = points_id[i],
       swatre_file = swatre_file,
       do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
-      do_runfile = TRUE
+      do_runfile = F
     )
   }
 }

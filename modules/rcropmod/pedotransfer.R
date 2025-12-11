@@ -87,6 +87,18 @@ theta_sdf <- function(sand, clay, soc, DF) {
   return(thetasdf)
 }
 
+# VJ: new function that estimates the influence of stoniness on porosity
+# porosity = 1 - bd/2.65, but bd changes with gravel. 
+# this funciton calculates the adjusted BD because of gravel, 
+# and uses that for a new porosity
+# NOTE: this assumes that vgravel is larger stones, not everything above 2mm
+theta_BD <- function(thetas, gravel = 0) {
+  # bulk dens with gravel
+  bd <- bdens(thetas, DF = 1, gravel)
+  thetasdf <- 1 - (bd / 2.65)    
+  return(thetasdf)
+}
+
 #' Calculated field capacity accounting for compaction
 #' @param sand Fraction of sand
 #' @param clay Fraction of clay
@@ -95,7 +107,7 @@ theta_sdf <- function(sand, clay, soc, DF) {
 #' @keywords internal
 #' @export
 field_cap_df <- function(sand, clay, soc, DF) {
-  thetas <- theta_sdf(sand, clay, soc, DF = 1)  # Normal theta_s
+  thetas <- theta_s(sand, clay, soc)  # Normal theta_s
   thetasdf <- theta_sdf(sand, clay, soc, DF)  # theta_s with compaction
   fcdf <- field_cap(sand, clay, soc) - 0.2 * (thetas - thetasdf)
   return(fcdf)
