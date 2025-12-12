@@ -193,7 +193,8 @@ create_lisem_run <- function(
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   
   # create landuse calibration table: used in prepare_db.map AND prepare_ndvi.mod
-  cal_lu <- read_csv("sources/setup/calibration/calibration_landuse.csv")
+  cal_lu <- read_csv("sources/setup/calibration/calibration_landuse.csv") %>%
+    select(-cal_comment)
   nms <- as.character(seq(0, ncol(cal_lu) - 1))
   names(cal_lu) <- nms
   write.table(cal_lu, file = "sources/setup/calibration/cal_lu.tbl",

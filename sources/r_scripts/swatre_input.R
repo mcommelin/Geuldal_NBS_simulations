@@ -105,7 +105,7 @@ soil_landuse_to_swatre <- function(file = "",
   
       soil_cal <- read_csv("sources/setup/calibration/calibration_soil.csv", 
                          show_col_types = F) %>%
-      select(-description) %>% 
+      select(-description, -cal_comment) %>% 
         pivot_longer(
           cols = -soil,
           names_to = "parameter",
@@ -121,6 +121,11 @@ soil_landuse_to_swatre <- function(file = "",
           values_from = value
         )
       
+    #load landuse related ksat calibration
+      lu_cal <- read_csv("sources/setup/calibration/calibration_landuse.csv") %>%
+        select(landuse, ksat_cal) %>%
+        rename("ksat_lu" = "ksat_cal")
+      
     soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file), show_col_types = FALSE) %>%
       filter(!is.na(clay)) %>%
       mutate(CODE = str_replace(CODE, "-", "_"),
@@ -130,9 +135,12 @@ soil_landuse_to_swatre <- function(file = "",
              horizon = ifelse(horizon == "B", "C", horizon),
              soil = floor(UBC/ 1000),
              soil = paste0(soil, "_", horizon),
-             soil = ifelse(soil == "0_0", "0_O", soil)) %>%
+             soil = ifelse(soil == "0_0", "0_O", soil),
+             landuse = (UBC %% 1000) / 100) %>%
       left_join(soil_cal, by = "soil") %>%
-      mutate(alpha_mean = alpha_mean * alpha_cal,
+      left_join(lu_cal, by = "landuse") %>%
+      mutate(ksat_cal = ksat_cal + ksat_lu,
+        alpha_mean = alpha_mean * alpha_cal,
              npar_mean = npar_mean * n_cal,
              Ksat_mean = Ksat_mean * ksat_cal)
     
