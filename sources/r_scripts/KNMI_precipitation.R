@@ -24,13 +24,14 @@ events <- read_csv("sources/selected_events.csv") %>%
          ts_end = ymd_hms(event_end)) %>%
   filter(use != "none")
 
-days_list <- vector("list", length = length(events$event_start))
-for (j in seq_along(events$event_start)) {
+days_list <- vector("list", length = length(events$ts_start))
+for (j in seq_along(events$ts_start)) {
   days_list[[j]] <- seq(date(events$ts_start[j]), date(events$ts_end[j]), by = 'days') %>%
     as.character() %>%
     str_remove_all("-")
 }
 dates <- unlist(days_list)
+
 # download raster data for all selected events
 for (i in seq_along(dates)) {
   date2 <- str_remove_all(as.character(ymd(dates[i]) + 1), "-")
@@ -96,6 +97,8 @@ st_write(pixels, "data/processed_data/GIS_data/KNMI_radar_points.gpkg", "pixels"
 p <- mapView(pixels, color="red")
 c <- mapView(ca_map)
 p + c
+
+pixels <- st_read("data/processed_data/GIS_data/KNMI_radar_points.gpkg", layer = "pixels")
 
 # read HDF5 files list
 files <- dir("data/radar/h5", pattern = "\\.h5$", full.names = T)

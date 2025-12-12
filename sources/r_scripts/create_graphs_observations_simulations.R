@@ -1,8 +1,8 @@
 # function to compare temporal resolutions of precipitation
 
 # id.map to catchment size - is now included in standard db script
-#wdir <- "LISEM_runs/Watervalderbeek_5m/maps/"
-#ev_date <- "2023-06-22"
+#wdir <- "LISEM_runs/Gulp_10m/maps/"
+#ev_date <- "2024-08-17"
 
 
 subcatch_rain_compare <- function(wdir = NULL,
@@ -24,9 +24,9 @@ subcatch_rain_compare <- function(wdir = NULL,
   # load rain data
   date_str <- str_remove_all(ev_date, "-")
   if (tres == "min") {
-    pfile <- paste0("LISEM_data/rain/rain_5min_", date_str, ".txt")
+    pfile <- paste0("LISEM_runs/rain/rain_5min_", date_str, ".txt")
   } else {
-    pfile <- paste0("LISEM_data/rain/rain_", date_str, ".txt")
+    pfile <- paste0("LISEM_runs/rain/rain_", date_str, ".txt")
   }
   skipval <- as.numeric(readLines(pfile)[2]) + 2
   rain_txt <- readLines(pfile)[-(1:skipval)]
@@ -37,17 +37,23 @@ subcatch_rain_compare <- function(wdir = NULL,
   b <- as_tibble(do.call(rbind, a)) %>%
     rename_with( ~ nms) %>%
     mutate(across(-time, as.numeric)) %>%
-    mutate(time_min = str_remove(time, "001:"),
-           time_min = as.numeric(time_min)) %>%
-    select(time_min, all_of(freq$id_nm))
+    mutate(doy = str_remove(time, ":\\d\\d\\d\\d"),
+           mod = str_remove(time, "\\d\\d\\d:"),
+           hours = str_pad(floor(as.numeric(mod)/60), width = 2, side = "left", pad = "0"),
+           mins = str_pad(floor(as.numeric(mod) %% 60), width = 2, side = "left", pad = "0"),
+           date = as.Date(as.numeric(doy), origin = paste0(year(events$date[i]), "-01-01")),
+           datestring = paste0(date, " ", hours, ":", mins),
+           timestamp = ymd_hm(datestring) - days(1)) %>%
+    select(timestamp, all_of(freq$id_nm)) %>%
+    filter(date(timestamp) >= ymd(ev_date))
   
   c <- b %>%
-    pivot_longer(cols = -time_min,
+    pivot_longer(cols = -timestamp,
                  values_to = "P",
                  names_to = "id_nm") %>%
     left_join(freq, by = "id_nm") %>%
     mutate(Ptmp = P * n) %>%
-    group_by(time_min) %>%
+    group_by(timestamp) %>%
     summarize(P = round(sum(Ptmp) / sum(n), digits = 2))
   
   # make figure
@@ -57,7 +63,7 @@ subcatch_rain_compare <- function(wdir = NULL,
     total = round(sum(c$P), digits = 2)
   }
   plot <- ggplot(c) +
-    geom_bar(aes(x = time_min, y = P), stat = "identity") +
+    geom_bar(aes(x = timestamp, y = P), stat = "identity") +
     theme_classic() +
     labs(x = "Minutes", y = "P mm/h", 
          title = paste0("Event total = ", total, " in ", subcatch_name, " on ", ev_date))
@@ -96,7 +102,7 @@ graph_subcatch_qp <- function(points_id = NULL,
       filter(point == point_id) %>%
       filter(cell_size == 5)
     subcatch_name <- subcatch$subcatch_name
-    wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
+    wdir <- paste0("LISEM_runs/", subcatch_name, "_10m/maps/")
     
     # map2asc
     map2asc(map_in = "ID.map",
