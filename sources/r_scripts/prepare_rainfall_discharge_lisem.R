@@ -217,6 +217,7 @@ for (k in seq_along(events$ts_start)) {
   # make the rain table 
   precip <- rain_5min %>%
     filter(timestamp >= event_start & timestamp <= event_end) %>%
+    arrange(timestamp) %>%
     mutate(mins = hour(timestamp) * 60 + minute(timestamp),
            yd = yday(timestamp),
            d_str = str_pad(as.character(yd), width = 3,
@@ -226,6 +227,8 @@ for (k in seq_along(events$ts_start)) {
            t_str = paste0(d_str, ":", t_str)) %>%
     select(t_str, everything()) %>%
     select(-mins, - timestamp, -d_str, -yd)
+  
+  
   # append the table to the header
   write.table(precip, file = rain_file, append = T, col.names = F,
               row.names = F, sep = " ", quote = F)

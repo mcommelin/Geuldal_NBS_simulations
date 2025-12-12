@@ -443,10 +443,10 @@ for (x in seq_len(nrow(combos))) {
 # combine the plots
 # Extract total values from rain_list (assuming total is in the 2nd position)
 combos$total <- sapply(rain_list, function(x) x[[2]])
-
-for (i in 1:3) {
+x = 9
+for (i in 1:x) {
   
-  plot_grid(rain_list[[i]][[1]], rain_list[[i+3]][[1]],
+  plot_grid(rain_list[[i]][[1]], rain_list[[i+x]][[1]],
             nrow = 2, align = "hv")
   ggsave(paste0("images/rain_compare_", date(combos$event[i]), "_", combos$point[i], ".png"))
   

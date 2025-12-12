@@ -1,8 +1,8 @@
 # function to compare temporal resolutions of precipitation
 
 # id.map to catchment size - is now included in standard db script
-wdir <- "LISEM_runs/Gulp_10m/maps/"
-ev_date <- "2024-08-17"
+#wdir <- "LISEM_runs/Gulp_10m/maps/"
+#ev_date <- "2024-08-17"
 
 
 subcatch_rain_compare <- function(wdir = NULL,
@@ -37,17 +37,23 @@ subcatch_rain_compare <- function(wdir = NULL,
   b <- as_tibble(do.call(rbind, a)) %>%
     rename_with( ~ nms) %>%
     mutate(across(-time, as.numeric)) %>%
-    mutate(time_min = str_remove(time, "001:"),
-           time_min = as.numeric(time_min)) %>%
-    select(time_min, all_of(freq$id_nm))
+    mutate(doy = str_remove(time, ":\\d\\d\\d\\d"),
+           mod = str_remove(time, "\\d\\d\\d:"),
+           hours = str_pad(floor(as.numeric(mod)/60), width = 2, side = "left", pad = "0"),
+           mins = str_pad(floor(as.numeric(mod) %% 60), width = 2, side = "left", pad = "0"),
+           date = as.Date(as.numeric(doy), origin = paste0(year(events$date[i]), "-01-01")),
+           datestring = paste0(date, " ", hours, ":", mins),
+           timestamp = ymd_hm(datestring) - days(1)) %>%
+    select(timestamp, all_of(freq$id_nm)) %>%
+    filter(date(timestamp) >= ymd(ev_date))
   
   c <- b %>%
-    pivot_longer(cols = -time_min,
+    pivot_longer(cols = -timestamp,
                  values_to = "P",
                  names_to = "id_nm") %>%
     left_join(freq, by = "id_nm") %>%
     mutate(Ptmp = P * n) %>%
-    group_by(time_min) %>%
+    group_by(timestamp) %>%
     summarize(P = round(sum(Ptmp) / sum(n), digits = 2))
   
   # make figure
@@ -57,7 +63,7 @@ subcatch_rain_compare <- function(wdir = NULL,
     total = round(sum(c$P), digits = 2)
   }
   plot <- ggplot(c) +
-    geom_bar(aes(x = time_min, y = P), stat = "identity") +
+    geom_bar(aes(x = timestamp, y = P), stat = "identity") +
     theme_classic() +
     labs(x = "Minutes", y = "P mm/h", 
          title = paste0("Event total = ", total, " in ", subcatch_name, " on ", ev_date))
