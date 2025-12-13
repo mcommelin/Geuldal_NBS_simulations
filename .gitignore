@@ -21,3 +21,4 @@ fieldwork/*
 *.tbl
 *.inp
 config.yaml
+sources/setup/calibration/cal_OM_swatre.csv
