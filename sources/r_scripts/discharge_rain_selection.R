@@ -290,7 +290,7 @@ qall <- bind_rows(q_list) %>%
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
          ts_end = ymd_hms(event_end)) %>%
-  filter(use != "none")
+  filter(use == "cal")
 
 qevent <- vector("list", length = nrow(events))
 
@@ -452,136 +452,69 @@ for (i in 1:x) {
   
 }
 
-# 5. explore possible events - Q and hourly P
+# nice figure for new event
+#Q
+qdat <- qgulp %>%
+  filter(timestamp >= events$ts_start[4] & 
+           timestamp <= events$ts_end[4])
+ggplot(qdat) + geom_point(aes(x = timestamp, y = Q))
 
-point = 4 # Gulp
-evdate = "20230401" # or select from 'selected_events.csv'
+# add rainfall
 
-# load Q obs
- # qall from section 3
+p_min <- p_min %>%
+  filter(timestamp >= events$ts_start[4] & 
+           timestamp <= events$ts_end[4])
 
-# find rain from hourly maps
+p_hour <- p_hour %>%
+  filter(timestamp >= events$ts_start[4] & 
+           timestamp <= events$ts_end[4])
 
 # plot
+ggplot() +
+  geom_line(data = qdat, aes(x = timestamp, y = Q), color = "blue") +
+  geom_bar(data = p_min, aes(x = timestamp, y = P), stat = "identity") +
+  geom_bar(data = p_hour, aes(x = timestamp, y = P), stat = "identity") +
+             theme_classic() 
+
+# plot
+# axis constants
+q_max_round <- ceiling(max(c(qdat$Q), na.rm = TRUE) / 10) * 3
+p_max       <- max(p_min$P, na.rm = TRUE)
+k           <- q_max_round / (p_max * 2)
+y_top       <- q_max_round
+
+# plot regualr and inverted y-axis
+ggplot() +
+  geom_linerange(data = p_min, aes(x = timestamp, ymin = y_top,
+                               ymax = y_top - P * k)) +
+  #geom_ribbon(aes(ymin = qmin, ymax = qmax), fill = "grey60", alpha = 0.3) +
+  geom_line(data = qdat, aes(x = timestamp, y = Q, color = code), linewidth = 0.5) +
+  # geom_line(aes(y = sel_run),           colour = "red", linetype = "dashed", linewidth = 0.8) +
+  # axis
+  scale_y_continuous(
+    name     = "Discharge (m³ s⁻¹)",
+    limits   = c(0, y_top),
+    sec.axis = sec_axis(
+      ~ (y_top - .) / k,
+      name = "Precipitation (mm)"
+    ),
+    expand = c(0,0)) +
+  scale_x_datetime(date_breaks = "3 hours", date_labels = "%H %M",
+                   name = "Time of day", expand = c(0,0)) +
+  labs(color = "Meetpunt") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1.1),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank())
+ggsave(paste0("images/subcatch_observations/q_and_p_", points_id[i], ".png"))
+
+# mkae runoff file for this event
+
+qhigh <- read_csv("data/processed_data/obs_discharge/observed_discharge_high_res.csv")
+
+qev <- qhigh %>%
+  filter(point == 4) %>%
+  filter(timestamp >= events$ts_start[4] & 
+           timestamp <= events$ts_end[4])
 
 
-#load selected events
-events <- read_csv("sources/selected_events.csv") %>%
-  mutate(ts_start = ymd_hms(event_start),
-         ts_end = ymd_hms(event_end)) %>%
-  filter(use == "test")
-
-event_summary <- tibble(pmax = c(), ptot = c(), maxQ = c())
-
-# load discharge data - load hourly data from WL
-qall <- read_csv("data/raw_data/debiet_uur_data/debietgegevensgeul_VERKORT.csv",
-                 skip = 8) %>%
-  pivot_longer(cols = '12.Q.31':'10.Q.36',
-               values_to = "Q",
-               names_to = "code") %>%
-  mutate(timestamp = mdy_hm(timestamp))
-
-# load point locations of the discharge
-q_points <- st_read("data/rainfall_discharge.gpkg", layer = "discharge_locations")
-
-#filter discharge on location and event times
-qall <- qall %>%
-  filter(code %in% q_points$code)
-
-# filter per event and make figure
-qevent <- vector("list", length = nrow(events))
-
-# add catchment outline
-gpx_line <- st_read("data/line_catchment.gpx", layer = "tracks") 
-# Reproject the GPX line to match the raster CRS (EPSG:28992)
-gpx_line <- st_transform(gpx_line, crs = 28992)
-
-for (k in seq_along(events$event_start)) {
-  event_start <- events$ts_start[k]
-  event_end <- events$ts_end[k]
-  hours <- seq(event_start, event_end, by = "hours")
-  
-  map_names <- str_remove(hours, ":.*") %>%
-    str_replace_all("-", "") %>%
-    str_replace_all(" ", "_") %>%
-    sapply(., add_suffix)
-  
-  rain_gifs <- map_names %>%
-    paste0("rain_", ., ".png")
-  
-  map_names <- map_names %>%
-    paste0("NSL_", ., ".ASC")
-  
-  # calculate the mean total precipitation per event for the summary stats
-  rain_knmi <- stack(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names))
-  sum_raster <- calc(rain_knmi, sum, na.rm = TRUE)
-  ptot <- cellStats(sum_raster, stat = "mean", na.rm = TRUE)
-  
-  ev_name <- as.character(event_start) %>%
-    str_remove_all("-") %>%
-    str_extract("^([0-9]{8})") %>%
-    paste0("rain_", .)
-  
-  
-  ## GIF of precipitation events -------------------------------------------------
-  if (!dir.exists(paste0("images/neerslag/", ev_name))) {
-    dir.create(paste0("images/neerslag/", ev_name))
-  }
-  
-  colors <- brewer.pal(9, "Blues")
-  breakpoints <- c(0, 1, 3, 5, 10, 18, 26, 40, 60)
-  
-  # sum raster for total precipitation map
-  maxp <- 0
-  for (i in seq_along(map_names)) {
-    rain_map <- raster(paste0("data/raw_data/neerslag/KNMI_radar_1uur/", map_names[i]))
-    png(filename = paste0("images/neerslag/", ev_name, "/", rain_gifs[i]))
-    # Plot the raster
-    plot(rain_map, col = colors, breaks = breakpoints, main = paste0(hours[i]))
-    
-    # Overlay the GPX line
-    plot(st_geometry(gpx_line), add = TRUE, col = "black", lwd = 2) # Adjust color and line width as needed
-    
-    dev.off()
-    mp <- max(as.data.frame(rain_map))
-    maxp <- if (mp > maxp)
-      mp
-    else
-      maxp
-  }
-  
-  # make a gif
-  files <- paste0("images/neerslag/", ev_name, "/", rain_gifs)
-  gifski(
-    files,
-    gif_file = paste0("images/neerslag/", ev_name, ".gif"),
-    delay = 0.3
-  )
-  
-  ## Discharge figure events ----------------------------------------------------
-  qevent[[k]] <- qall %>%
-    filter(timestamp > events$ts_start[k] &
-             timestamp < events$ts_end[k]) %>%
-    left_join(q_points, by = "code")
-  
-  ggplot(qevent[[k]]) +
-    geom_line(aes(x = timestamp, y = Q, color = naam)) +
-    theme_classic()
-  
-  ggsave(paste0("images/discharge", events$event_start[k], ".png"))
-  
-  # get max discharge at Meersen
-  qmeersen <- qevent[[k]] %>%
-    filter(naam == "Meersen")
-  maxq <- max(qmeersen$Q, na.rm = TRUE)
-  
-  # make a summary table of the events
-  sum_ev <- tibble(pmax = maxp, ptot = ptot, maxQ = maxq)
-  event_summary <- bind_rows(event_summary, sum_ev)
-  
-}
-
-# save the event summary data to a csv file
-event_summary <- bind_cols(events, event_summary)
-write_csv(event_summary,
-          "data/processed_data/stats_selected_events.csv")

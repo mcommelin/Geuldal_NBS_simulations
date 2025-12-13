@@ -109,7 +109,7 @@ options(digits = 10)
 # times in the rainfiles are in julian days and than minutes in the day
 for (k in seq_along(events$ts_start)) {
   event_start <- events$ts_start[k]
-  event_pre <- event_start - days(1)
+  event_pre <- event_start - days(14)
   event_end <- events$ts_end[k]
   hours <- seq(event_pre, event_end, by = "hours")
   
@@ -181,7 +181,7 @@ for (k in seq_along(events$ts_start)) {
 events <- read_csv("sources/selected_events.csv") %>%
   mutate(ts_start = ymd_hms(event_start),
          ts_end = ymd_hms(event_end)) %>%
-  filter(use == "test")
+  filter(use == "cal")
 
 rain_5min <- read_csv("data/processed_data/neerslag/KNMI_rain_5min.csv")
 

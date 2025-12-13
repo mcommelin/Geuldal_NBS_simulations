@@ -41,7 +41,7 @@ subcatch_rain_compare <- function(wdir = NULL,
            mod = str_remove(time, "\\d\\d\\d:"),
            hours = str_pad(floor(as.numeric(mod)/60), width = 2, side = "left", pad = "0"),
            mins = str_pad(floor(as.numeric(mod) %% 60), width = 2, side = "left", pad = "0"),
-           date = as.Date(as.numeric(doy), origin = paste0(year(events$date[i]), "-01-01")),
+           date = as.Date(as.numeric(doy), origin = paste0(year(evdate), "-01-01")),
            datestring = paste0(date, " ", hours, ":", mins),
            timestamp = ymd_hm(datestring) - days(1)) %>%
     select(timestamp, all_of(freq$id_nm)) %>%
