@@ -65,9 +65,7 @@ base_maps <- readLines("sources/base_maps.txt")
 #TODO: define all calibration parameters in this main code
 #' put them in a csv file which is called from config?
 
-# field OM was not possible, too high. OM multiplied by 0.35 and 0.25 added!
-# looked at soilgrids.org for baseline values
-
+# note field OM for forests is too high, max OM defined in pedotransfer is ~8% 
 pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
@@ -176,7 +174,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-points_id <- c(18) # calibration catchments
+points_id <- c(4) # calibration catchments
 #points_id <- c(18) # use if you want to update multiple subcatchments on the go
 reso <- c(10, 20)
 # load the function for subcatchment preparation
@@ -230,7 +228,7 @@ for (i in seq_along(points_id)) {
 #TODO: adjust n maps based on date when NDVI maps change!
 #TODO: update buffer features to final version maps including buffers
 
-points_id <- c(18) #c(4,10,14,18) # use if you want to update multiple subcatchments on the go
+points_id <- c(4) #c(4,10,14,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
 reso = c(10,20) # 5, 10 or 20
@@ -251,7 +249,7 @@ for (i in seq_along(points_id)) {
       catch_num = points_id[i],
       swatre_file = swatre_file,
       do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
-      do_runfile = F
+      do_runfile = T
     )
   }
 }

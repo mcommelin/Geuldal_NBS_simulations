@@ -1,8 +1,10 @@
 #! --matrixtable --lddin --clone mask.map
 
 # PCRASTER script to build a LISEM input database 
+# called to make the fginal dbase in LISEM_run
+#
 # made by Meindert Commelin 03/06/2025    
-# edits by Victor Jetten 07/12/2025
+# edits by Victor Jetten 14/12/2025
 ###################################################
 
 binding 
@@ -31,9 +33,12 @@ buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from 
 
 ### INPUT TABLES ### 
 
-lutbl = lu.tbl;
+lutbl = lu.tbl;     #
 chantbl = chan.tbl;	# table with param values for different channel types
 cal_lu = cal_lu.tbl;
+
+# for info lu types: 
+# 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras, 5 = verhard, 6 = water, 7 = naaldbos
 
 ###################
 ### PROCES MAPS ###
@@ -57,8 +62,8 @@ roadwidth = roadwidth.map;
 smax = smax.map; 
 
 ### surface maps ###
-rr = rr.map; # random roughness
-mann = n.map; # Manning's n
+rr = rr.map;           # random roughness
+mann = n.map;          # Manning's n
 stone = stonefrc.map;  # stone fraction 
 # crust= crustfrc.map; # crusted fraction of surface (optional)
 # comp = compfrc.map;  # compacted fraction of surface (optional)
@@ -66,10 +71,7 @@ stone = stonefrc.map;  # stone fraction
 lai = lai.map;		     # map with lai 
 per = per.map; 		     # input map with cover based on lu.tbl
 
-### infiltration maps ###
-# swatre theta maps?
-
-### channel maps ### (optional)
+### channel maps ### 
 lddchan = lddchan.map; 
 chandiam = chandiameter.map;
 changrad = changrad.map; 
@@ -178,7 +180,8 @@ bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
 chanculvert = scalar(if(cover(culvert, 0) eq 1, 5)); 
 report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
 report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
-report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
+chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
+report chanman = if (lu == 2 or lu == 7,2*chanman, chanman);
 
 
 

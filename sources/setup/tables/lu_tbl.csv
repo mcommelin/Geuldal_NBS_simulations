@@ -4,5 +4,5 @@ lu_nr,description,rr,n_res,n_veg,om,smax_eq,notes
 3,(productie) grasland,-9,-9,-9,-9,8,
 4,natuurlijk grasland,-9,-9,-9,-9,8,
 5,verhard,0.05,0.05,0,0.5,7,
-6,water bodies,0,0.01,0,0,7,
+6,water bodies,0,0.1,0,0,7,
 7,naaldbos,-9,-9,-9,-9,2,

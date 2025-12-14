@@ -1,10 +1,11 @@
 point nr,soil_type,landuse,nbs_type,note,soil_nr,lu_nr,tex1,rr,n,per,om,om_corr,n_res,n_veg
 18,loess,productie grasland,,,144000,1,4,0.1,0.023,0.88,3.812177756,3.812177756,0.01,0.01
 19,loess,,Grass strips,,143000,1,4,0.33,0.091,0.95,2.656076652,2.656076652,0.03,0.1
-1,loess,loofbos,foodforest,nbs = foodforest,144000,2,4,0.82,0.089,0.9,5.783544178,5.783544178,0.03,0.1
+1,loess,loofbos,foodforest,nbs = foodforest,144000,2,4,0.82,0.089,0.9,5.783544178,5.783544178,0.06,0.1
 10,loess,loofbos,,,141000,2,4,0.09,0.12,0.4,16.2513624,8.1256812,0.06,0.1
-14,leem,loofbos,,,220000,2,2,0.08,0.13,0.85,12.37855107,6.189275535,0.03,0.1
-15,stenig leem,naaldbos,,,233000,2,3,0.08,0.13,0.5,17.16007877,17.16007877,0.06,0.1
+14,leem,loofbos,,,220000,2,2,0.08,0.13,0.85,12.37855107,6.189275535,0.06,0.1
+15,stenig leem,naaldbos,,,233000,2,3,0.08,0.13,0.5,17.16007877,8.580039385,0.05,0.1
+11,stenig leem,loofbos,,,233000,2,3,0.05,0.096,0.75,21.64346385,7.21448795,0.06,0.06
 2,loess,productie grasland,swale,nbs = swale,144000,3,4,0.17,0.058,0.2,1.281879195,1.281879195,0.03,0.1
 4,loess,productie grasland,,eigenaar Jac Nicolaes,144000,3,4,0.05,0.025,0.97,6.953617508,6.953617508,0.01,0.01
 5,leem,productie grassland,,,220000,3,2,0.12,0.025,1,9.057803468,9.057803468,0.01,0.01
@@ -19,6 +20,5 @@ point nr,soil_type,landuse,nbs_type,note,soil_nr,lu_nr,tex1,rr,n,per,om,om_corr,
 7,stenig leem,natuurlijk gras,,,233000,4,3,0.05,0.023,0.88,7.735891648,7.735891648,0.01,0.04
 8,leem,natuurlijk gras,,,220000,4,2,0.07,0.025,1,6.311510598,6.311510598,0.01,0.04
 9,loess,natuurlijk gras,,ook graften aanwezig,143000,4,4,0.05,0.144,1,8.250999692,8.250999692,0.03,0.1
-11,stenig leem,loofbos,,,233000,7,3,0.05,0.096,0.75,21.64346385,7.21448795,0.03,0.06
 12,leem,naaldbos,,for an other option see 12_alternatief,230000,7,3,0.05,0.127,0.6,24.05702183,8.019007277,0.05,0.1
 13,loess,naaldbos,,,144000,7,4,0.09,0.131,1,32.06213018,10.68737673,0.05,0.06
