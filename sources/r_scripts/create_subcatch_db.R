@@ -110,7 +110,7 @@ base_maps_subcatchment <- function(
      }
      map_out_name = paste0(sub_catch_dir, base_maps[i])
      tmp_tif = paste0(sub_catch_dir, "tmp.tif")
-     if (DEBUGm) message("in ",map_in)
+     #if (DEBUGm) message("in ",map_in)
      
      #  cut all the maps to catchment size base on sub_point.map
      # gdalwarp makes a temp tif
@@ -169,8 +169,7 @@ base_maps_subcatchment <- function(
     map_in = paste0(ih_dir[j], ih_maps[i])
     map_out_name = paste0(sub_catch_dir, "ih", ih_ev[j], ".", ih_end[i])
     tmp_tif = paste0(sub_catch_dir, "tmp.tif")
-    if (DEBUGm) message("IH in ",map_in)
-    if (DEBUGm) message("IH out ",map_out_name)
+    #if (DEBUGm) message("IH in ",map_in)
     
     # gdalwarp makes a temp tif
     gdalwarp(
@@ -190,6 +189,7 @@ base_maps_subcatchment <- function(
       of = "PCRaster",
       mo = "PCRASTER_VALUESCALE=VS_SCALAR"
     )
+    if (DEBUGm) message("out ",map_out_name)
     
   } # end init head files loop
   } # end event loop
@@ -202,7 +202,7 @@ base_maps_subcatchment <- function(
       map_in = paste0(ndvi_dir[j], "NDVI.tif")
       map_out_name = paste0(sub_catch_dir, "ndvi", ih_ev[j], ".map")
       tmp_tif = paste0(sub_catch_dir, "tmp.tif")
-      if (DEBUGm) message("NDVI in ",map_in)
+      #if (DEBUGm) message("NDVI in ",map_in)
       
       # gdalwarp makes a temp tif
       gdalwarp(
@@ -222,7 +222,7 @@ base_maps_subcatchment <- function(
         of = "PCRaster",
         mo = "PCRASTER_VALUESCALE=VS_SCALAR"
       )
-      if (DEBUGm) message("NDVI out ",map_out_name)
+      if (DEBUGm) message("out ",map_out_name)
       
     } # end event loop
   } # NDVI

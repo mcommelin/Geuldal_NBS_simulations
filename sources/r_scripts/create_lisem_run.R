@@ -141,6 +141,8 @@ create_lisem_run <- function(
   do_runfile = TRUE) 
 {
 
+  ### prepare and/or copy all maps and table in the run dir/maps
+  
   points <- read_csv("sources/setup/outpoints_description.csv")
   
   catch_info <- points %>%
@@ -202,6 +204,18 @@ create_lisem_run <- function(
               quote = FALSE)
   file.copy(from = "sources/setup/calibration/cal_lu.tbl", to = subdir, overwrite = T)
   
+  # optional: copy NDVI maps to the dir 
+  if (do_ndvi == TRUE) {
+    ndvi_maps<- dir(paste0(base_dir, "maps/"), pattern = "ndvi")
+    message(ndvi_maps)
+    for (map in ndvi_maps) {
+      file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
+                overwrite = TRUE)
+    }
+  }
+  
+  ### start running scripts
+  
   # run pcraster script to finalize run database.
   pcr_script(
     script = "prepare_db.mod",
@@ -209,20 +223,14 @@ create_lisem_run <- function(
     work_dir = subdir
   )
   
+  # optional run NDVI related script for event based ndvi, per, lai, n
   if (do_ndvi == TRUE) {
-    # prepare maps related to NDVI
-    # copy all ndvi maps 
-    ndvi_maps<- dir(paste0(base_dir, "maps/"), pattern = "ndvi")
-    for (map in ndvi_maps) {
-      file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
-                overwrite = TRUE)
-    }
     cal_events <- read_csv("sources/selected_events.csv") %>%
       filter(use == "cal")
     events <- str_extract(cal_events$event_start, "\\d*")
     ndvi_ev <- str_remove(events, "^\\d\\d")
     for (j in seq_along(events)) {
-        pcr_script(
+      pcr_script(
         script = paste0("prepare_ndvi.mod ",ndvi_ev[j]),
         script_dir = "sources/pcr_scripts",
         work_dir = subdir

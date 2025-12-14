@@ -174,7 +174,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-points_id <- c(4) # calibration catchments
+points_id <- c(4, 18) # calibration catchments
 #points_id <- c(18) # use if you want to update multiple subcatchments on the go
 reso <- c(10, 20)
 # load the function for subcatchment preparation
@@ -187,7 +187,7 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       do_NDVI = TRUE,  # copy NDVI related maps for dates
-      calc_ldd = TRUE # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
@@ -228,7 +228,7 @@ for (i in seq_along(points_id)) {
 #TODO: adjust n maps based on date when NDVI maps change!
 #TODO: update buffer features to final version maps including buffers
 
-points_id <- c(4) #c(4,10,14,18) # use if you want to update multiple subcatchments on the go
+points_id <- c(4,18) #c(4,10,14,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
 
 reso = c(10,20) # 5, 10 or 20

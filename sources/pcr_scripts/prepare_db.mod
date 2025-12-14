@@ -33,9 +33,9 @@ buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from 
 
 ### INPUT TABLES ### 
 
-lutbl = lu.tbl;     #
+lutbl = lu.tbl;     # 
 chantbl = chan.tbl;	# table with param values for different channel types
-cal_lu = cal_lu.tbl;
+cal_lu = cal_lu.tbl;# table with mulitplication factors
 
 # for info lu types: 
 # 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras, 5 = verhard, 6 = water, 7 = naaldbos
@@ -90,6 +90,7 @@ report zero = dem * 0; # map with value 0
 lu = if(lu eq 0, 5, lu); # adjust 0 values to urban area
 lu = if(lu eq 5 and cover(bua,0) eq 1, 3,lu); # all builtup that is not bua is assumed to be roads and become grass (3)
 report lu *= area; # apply ctachment mask
+forest = boolean(lu == 2 or lu == 7);
 
 ################
 ### PROFILE  ### 
@@ -124,19 +125,21 @@ report per = max(0,min(0.99,per));
 report lai = -ln(1-min(0.95,per))/0.4;
 
 # mannings N based on philips 1989: n = RR/100 + n_residue + n_vegetation * per
-n_res = lookupscalar(lutbl, 2, lu);
+n_res = lookupscalar(lutbl, 2, lu); 
 n_veg = lookupscalar(lutbl, 3, lu);
 mann_cal = lookupscalar(cal_lu, 2, lu);
-report mann = rr/100 + n_res + n_veg * per * mann_cal;
+report mann = (rr/100 + n_res + n_veg * per) * mann_cal; # VJ was: mann_cal was only multyiplied to per, now to mann
 # report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
 
 # calculate interception
 smax_eq = lookupscalar(lutbl, 5, lu);
 smax = if(smax_eq eq 1, 1.036+0.438*lai, 1);
 smax = if(smax_eq eq 2, 0.233*lai, smax);
-smax = if(smax_eq eq 6, 0.286*lai, smax);
-smax = if(smax_eq eq 7, 0.171*lai, smax);
-report smax = if(smax_eq eq 8, 0.59*lai**0.88, smax);
+smax = if(smax_eq eq 3, 0.317*lai, smax);
+smax = if(smax_eq eq 6, 0.286*lai, smax); 
+smax = if(smax_eq eq 7, 0.317*lai, smax); 
+smax = if(smax_eq eq 0, 0, smax); 
+report smax = if(smax_eq eq 8, 0.59*(lai**0.88), smax);
 
 roadwidth = roads * celllength();
 report roadwidth = if(boolean(catchment), roadwidth);
@@ -181,7 +184,8 @@ chanculvert = scalar(if(cover(culvert, 0) eq 1, 5));
 report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
 report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
 chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
-report chanman = if (lu == 2 or lu == 7,2*chanman, chanman);
+report chanman = 2.0*windowaverage(if(forest,2*chanman, chanman),60)*chanclean;
+#chosen channel manning is too low for LISEM kin wave, more in forest because of branches etc, and multiplied by 2
 
 
 

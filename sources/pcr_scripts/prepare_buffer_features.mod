@@ -36,7 +36,7 @@ initial
 # edge buffers krijgt waarde 1 en de rest van de buffer -1
 buf = nominal(cover(buffers*0,catchment));
 s = if(spread(nominal(buf),0,1) eq min(10, celllength()),2,buf); #this should be celllength() instead of 5 but with 20m this does not work
-report sm.map=s;
+report bufwall.map=s;
 # 0 is depression, wall is 2, rest is 1
 buffers1=if(s eq 2,0.5,if(s eq 0,-1,0))*catchment; # with 1 meter wall but that stops overland flow at the back?
 report buffers1 = if (cover(ponds,0) eq 1, -1, buffers1);
