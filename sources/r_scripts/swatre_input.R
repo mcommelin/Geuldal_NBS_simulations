@@ -253,4 +253,5 @@ soil_landuse_to_swatre <- function(file = "",
     }
   
   }
+  message("Done.")
 } # end function make_swatre_tables()

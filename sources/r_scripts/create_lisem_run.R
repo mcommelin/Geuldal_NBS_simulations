@@ -149,7 +149,7 @@ create_lisem_run <- function(
     filter(point == catch_num) %>%
     filter(cell_size == resolution)
   
-  ## copy basemaps to a lisem_runs folder ---------------------------------------
+  # copy basemaps to a lisem_runs folder
   catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m/")
   base_dir <- paste0("LISEM_data/", catch_dir)
   
@@ -311,6 +311,7 @@ create_lisem_run <- function(
   #file.remove(paste0(subdir, "chan.tbl"))
   #file.remove(paste0(subdir, "lu.tbl"))
   #file.remove(paste0(subdir, "soil.tbl"))
+  
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
                      swatre_dir = paste0(run_dir, "swatre/"))

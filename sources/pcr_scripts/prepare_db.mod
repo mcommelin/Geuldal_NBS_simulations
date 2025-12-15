@@ -88,7 +88,7 @@ area = dem * 0 + 1;
 report one = dem * 0 + 1; # map with value 1
 report zero = dem * 0; # map with value 0
 lu = if(lu eq 0, 5, lu); # adjust 0 values to urban area
-lu = if(lu eq 5 and cover(bua,0) eq 1, 3,lu); # all builtup that is not bua is assumed to be roads and become grass (3)
+lu = if(lu eq 5 and cover(bua,0) eq 0, 3,lu); # all builtup that is not bua is assumed to be roads and become grass (3)
 report lu *= area; # apply ctachment mask
 forest = boolean(lu == 2 or lu == 7);
 
@@ -184,7 +184,7 @@ chanculvert = scalar(if(cover(culvert, 0) eq 1, 5));
 report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
 report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
 chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
-report chanman = 2.0*windowaverage(if(forest,2*chanman, chanman),60)*chanclean;
+report chanman = windowaverage(if(forest,2*chanman, chanman),50)*chanclean;
 #chosen channel manning is too low for LISEM kin wave, more in forest because of branches etc, and multiplied by 2
 
 
