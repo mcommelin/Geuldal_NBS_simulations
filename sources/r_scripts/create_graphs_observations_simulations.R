@@ -223,33 +223,40 @@ graph_lisem_simulation <- function(
     filter(!is.na(code))
   
   # load the hydrographs
-  hydrograph_files <- dir(resdir, recursive = TRUE, pattern = "^hydrographs_")
-  hydr_points <- unlist(str_extract_all(hydrograph_files, "\\d{1,2}"))
-  hydrograph_files <- dir(resdir, recursive = TRUE, pattern = "^hydrographs_",
+  hydrograph_files <- dir(resdir, recursive = TRUE, pattern = "^hydrographs-_")
+ # hydr_points <- unlist(str_extract_all(hydrograph_files, "\\d{1,2}"))
+  hydr_points <- 13
+  hydrograph_files <- dir(resdir, recursive = TRUE, pattern = "^hydrographs-_",
                           full.names = T)
   hydr_list <- vector("list", length = length(hydr_points))
   for (i in seq_along(hydr_points)) {
     hy_names <- readLines(hydrograph_files[i])[2] %>%
       str_split(",", simplify = TRUE) %>%
       str_remove_all(" |#")
-    hydr_list[[i]] <- read_csv(hydrograph_files[i], skip = 2) %>%
+   hydr_list[[i]]  <- read_csv(hydrograph_files[i], skip = 2) %>%
       rename_with(~hy_names) %>%
-      mutate(mins = round(Time * 24 * 60, digits = 5)) %>%
-      distinct() #
+      mutate(doy = floor(Time),
+             mod = round((Time %% 1) * 24 * 60, digits = 5),
+             hours = str_pad(floor(as.numeric(mod)/60), width = 2, side = "left", pad = "0"),
+             mins = str_pad(floor(as.numeric(mod) %% 60), width = 2, side = "left", pad = "0"),
+             date = as.Date(as.numeric(doy), origin = paste0(year(ev_date), "-01-01")),
+             datestring = paste0(date, " ", hours, ":", mins),
+             timestamp = ymd_hm(datestring)) %>%
+      distinct() %>%
+      select(timestamp, all_of(hy_names))#
+    
     if (i != 1) {
       n <- length(hy_names)
       hydr_list[[i]] <- hydr_list[[i]] %>%
         select(hy_names[n-1:n])
     }
   }
-  all_hy <- bind_cols(hydr_list) %>%
-    mutate(secs = round(mins * 60),
-           timestamp = events$ts_start + seconds(secs))
+  all_hy <- bind_cols(hydr_list) 
   
   # pivot_longer and assign code
   
   a <- all_hy %>%
-    select(timestamp, mins, contains("Qchan")) %>%
+    select(timestamp, contains("Qchan")) %>%
     pivot_longer(cols = contains("Qchan"),
                  names_to = "hy_point",
                  values_to = 'Qsim') %>%
@@ -261,7 +268,7 @@ graph_lisem_simulation <- function(
   ## precipitation 5 minute resolution (GMT+1)
   rain_5min <- read_csv("data/processed_data/neerslag/KNMI_rain_5min.csv")
   
-  wdir <- paste0("LISEM_runs/", subcatch_name, "_5m/maps/")
+  wdir <- paste0("LISEM_runs/", subcatch_name, "_20m/maps/")
     
   # map2asc
   map2asc(map_in = "ID.map",
