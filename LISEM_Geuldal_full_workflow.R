@@ -15,7 +15,7 @@ source("sources/r_scripts/configuration.R")
 source("sources/r_scripts/source_to_base_maps.R")
 ## 1.1 make base maps ----------------------------------------------------------
 # based on manual work, and preparation code in 'create_base_maps_lisem.R' 
-# base raster and vector layer are made
+# base raster and vector layers are made
 
 # the resulting maps are stored online in the folder 'Geuldal_spatial_data'
 # from here a full automated workflow is possible.
@@ -39,9 +39,7 @@ catch_maps_res()
 
 #NOTE1: this data is already available from ./spatial_data/ext_data/
 #NOTE2: the input rainfall files can be found at ./prepared/rain
-  # place this folder in ./LISEM_data/ 
-
-#TODO: add additional event gulp/kelmis  
+  # place this folder in ./LISEM_run/rain 
 
 ## 1.4 prepare base dataset  ------------------------------------------------
 
@@ -52,20 +50,15 @@ spatial_data_to_pcr()
 # in the function below the local drain direction maps are made and based
 # on the csv file describing all outpoints, subcatchments are made.
 # NOTE: ldd calculations for the whole Geul catchement take a lot of time
-# these maps are also provided in /spatial_data/prepared/
+# these maps are also provided in ./spatial_data/prepared/
 # manually adding these to the correct folders will speed up time.
 # set force_ldd = TRUE to recalculate the ldd
 ldd_subcatch(force_ldd = FALSE)
 
-# we don't need base_maps at this point
-# load the list of base maps.
-base_maps <- readLines("sources/base_maps.txt")
-
 ## 1.5 prepare lookup table landuse and soil -----------------------------------
-#TODO: define all calibration parameters in this main code
-#' put them in a csv file which is called from config?
 
-# note field OM for forests is too high, max OM defined in pedotransfer is ~8% 
+# note field OM for forests is too high, now a correction done in the csv file
+#TODO move OM adjustment to code?
 pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
   mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
   # remove 1 nbs label to include in natural grassland group
@@ -100,17 +93,15 @@ lu_pars <- bind_rows(pars_lu, lu_add) %>%
   arrange(lu_nr) %>%
   mutate(od = O_depth, 
          cover = per)
-
 nms <- as.character(seq(0, ncol(lu_pars) - 1))
 names(lu_pars) <- nms
 
-# tables folder must be created
+# save the landuse parameters as table for PCRaster
 write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
 #note: here only cols 1,2, 3, 5 and 7 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
 #the other columns are used in SWATRE creation, swatre_input.R
-
 
 ## 1.6 make SWATRE soil tables -------------------------------------------------
 
@@ -129,26 +120,6 @@ source("sources/r_scripts/swatre_input.R")
 soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        swatre_out = paste0("sources/setup/calibration/", swatre_file)
                        )
-
-#TODO: solve the baseflow for calibration events!
-# Additional preparation of baseflow
-
-#WARNING for the calibration of 20230622 we use observed baseflow for 10, 4, 14, 12 and 18.
-# still need to update this better in the code!!!!!
-
-#1. If not done run the function from 2.2 for the full Geul_catchment
-#create_lisem_run(20, 1)
-
-# copy baseflow.map to full run
-#file.copy(from = "LISEM_data/Geul_5m/maps/baseflow.map", to = "LISEM_runs/Geul_5m/maps", overwrite = T)
-#file.copy(from = "LISEM_data/Geul_20m/maps/baseflow.map", to = "LISEM_runs/Geul_20m/maps", overwrite = T)
-
-# run the pcrscript to prepare the baseflow maps 'sources/pcr_scripts/baseflow_calculations.mod'
-# update the runfile, set the option: stationary baseflow as map = 1 to 0.
-# run the model until the first calculations start.
-# copy the resulting baseinflow.map from the results folder to 'LISEM_data/Geul_xm/maps'
-
-# After these steps rebuild the desired subcatchments and LISEM runs
 
 #-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # The base maps etc for the data are now finished
@@ -174,9 +145,12 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
-points_id <- c(4, 18) # calibration catchments
-#points_id <- c(18) # use if you want to update multiple subcatchments on the go
-reso <- c(10, 20)
+# the catchments and resolution are by default used from the config file
+# alternatively you can adjust the below:
+
+#points_id <- c(4, 18) # use if you want to change catchment
+#reso <- c(10, 20)
+
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
 
@@ -187,13 +161,13 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       do_NDVI = TRUE,  # copy NDVI related maps for dates
-      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-#base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T)
+#base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T, do_NDVI = T, calc_ldd = F)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -225,23 +199,14 @@ for (i in seq_along(points_id)) {
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
 
-#TODO: adjust n maps based on date when NDVI maps change!
-#TODO: update buffer features to final version maps including buffers
+#TODO: update buffer features to final version maps, including corrected volume
 
-points_id <- c(4) #c(4,10,14,18) # use if you want to update multiple subcatchments on the go
+#points_id <- c(4) #c(4,10,14,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
-
-reso = c(10, 20) # 5, 10 or 20
-
-#TODO: update rr and n maps to include calibration
-#TODO: er komt een laag met buffer dieptes per buffer -> VJ
-#V - TODO: script pcraster met arguments -> VJ 
-#V - TODO: NDVI kaarten, per, lai, smax en n -> VJ 
-#TODO redefine begin and end times for subcatch events based on P and Q observed
+#reso = c(10, 20) # 5, 10 or 20
 
 source("sources/r_scripts/create_lisem_run.R")
-# you can also run for one specific subcatchment e.g.
-#create_lisem_run(resolution = 20, catch_num = 4, swatre_file = swatre_file, T, F)
+
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(
@@ -254,8 +219,13 @@ for (i in seq_along(points_id)) {
   }
 }
 
+# you can also run for one specific subcatchment e.g.
+#create_lisem_run(resolution = 20, catch_num = 4, swatre_file = swatre_file, T, T)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
+
+# CURRENTLY NOT USED, CODE NOT FULLY FUNCTIONAL!!!
+
 # select a subcatchment and event from the LISEM_runs folder structure
 # manually execute the LISEM run
 # when finished this function below will make a graph of the discharge including
@@ -268,10 +238,10 @@ for (i in seq_along(points_id)) {
 # run_date = "20230622" # the date as character string
 # if the result directory is not 'res' set
 # res_dir = <res_folder_name>
-
-# the resulting figure is stored in ./images/simulations/
-source("sources/r_scripts/create_graphs_observations_simulations.R")
-# WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
-graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T,
-                       run_date = "20230622", res_dir = "res")
+# 
+# # the resulting figure is stored in ./images/simulations/
+# source("sources/r_scripts/create_graphs_observations_simulations.R")
+# # WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
+# graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T,
+#                        run_date = "20230622", res_dir = "res")
 
