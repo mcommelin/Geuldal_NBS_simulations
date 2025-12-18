@@ -65,6 +65,5 @@ reso <- config$resolution
 # load subcatchment points csv file
 points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
 
-
 # swatre file
-swatre_file <- config$infiltration_table
+swatre_file <- "cal_OM_swatre.csv"
