@@ -25,6 +25,7 @@ chanwidthbuf = chanwidthbuf.map;  # width of channels with buffers
 chandepthbuf = chandepthbuf.map;  # depth of channels with buffers
 chanmanbuf = chanmanbuf.map;  # man at outflow poins buffers
 changradbuf = changradbuf.map;  # gra at outflow points buffers
+chansidebuf = chansidebuf.map;
 
 dem_orig = dem_orig.map;
 buffers1 = buffers.map;
@@ -35,7 +36,7 @@ initial
 # edge buffers krijgt waarde 1 en de rest van de buffer -1
 buf = nominal(cover(buffers*0,catchment));
 s = if(spread(nominal(buf),0,1) eq min(10, celllength()),2,buf); #this should be celllength() instead of 5 but with 20m this does not work
-report sm.map=s;
+report bufwall.map=s;
 # 0 is depression, wall is 2, rest is 1
 buffers1=if(s eq 2,0.5,if(s eq 0,-1,0))*catchment; # with 1 meter wall but that stops overland flow at the back?
 report buffers1 = if (cover(ponds,0) eq 1, -1, buffers1);
@@ -45,7 +46,7 @@ report buffers1 = if (cover(ponds,0) eq 1, -1, buffers1);
 # save the original dem first, then update
 report dem_orig = dem;
 
-a = clump(nominal(if (s eq 0,1)));
+##a = clump(nominal(if (s eq 0,1)));
 ##report a.map=a;
 ##buffwall = areamaximum(dem,  a);  # does not work, wall become easily 10m high
 ##buffwall = 0;
@@ -58,12 +59,12 @@ a = clump(nominal(if (s eq 0,1)));
 #report grad = if(buffers1 eq -1, 0.005, grad); # ????? orr not, buffers are also sloping sometimes
 
 # adjust channel in buffers
-report chanwidthbuf = if(buffers1 eq -1, 3, chanwidth)*chanmask;
+report chanwidthbuf = chanwidth;
 report chandepthbuf = if(buffers1 eq -1, 0.1, chandepth)*chanmask;
 chanmanbuf = if(buffers1 eq -1, 0.1, chanman)*chanmask;
 report chanmanbuf = if(cover(bufculvert,0) eq 1, 0.013, chanman)*chanmask;
 report changradbuf = if(cover(bufculvert,0) eq 1, 0.05, changrad)*chanmask;
-
+report chansidebuf = if(buffers1 eq -1, 1, 0)*chanmask;
 
 #geschat volume als je in lisem buffers aanzet met kaart buffers1.map
 #demf = lddcreatedem(dem1 + buffers1, 10, 1e20, 1e20, 1e20);

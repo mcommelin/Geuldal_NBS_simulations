@@ -5,13 +5,12 @@ config <- yaml.load_file("config.yaml")
 
 ins <- config$install_packages
 #if (ins == "Y") {
-# install packages if needed
-# if (!require("pacman")) install.packages("pacman")
-# pacman::p_load(yaml, hydroGOF, gdalUtilities, terra, raster, cowplot, sf, 
-#                conflicted, tidyverse, sensobol, foreach, doParallel)
 if (!require("hydroGOF")) install.packages("hydroGOF")
 if (!require("gdalUtilities")) install.packages("gdalUtilities")
 if (!require("terra")) install.packages("terra")
+#install.packages('terra', repos='https://rspatial.r-universe.dev')
+#if (!require("remotes")) install.packages("remotes")
+#remotes::install_github("rspatial/terra")
 if (!require("raster")) install.packages("raster")
 if (!require("cowplot")) install.packages("cowplot")
 if (!require("sf")) install.packages("sf")
@@ -66,6 +65,5 @@ reso <- config$resolution
 # load subcatchment points csv file
 points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
 
-
 # swatre file
-swatre_file <- config$infiltration_table
+swatre_file <- "cal_OM_swatre.csv"

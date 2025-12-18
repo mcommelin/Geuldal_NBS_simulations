@@ -11,8 +11,8 @@ soil_landuse_to_swatre <- function(file = "",
   #load the UBC codes including texture, gravel
   ubc_in <- read_csv(file, show_col_types = FALSE)
   # load landuse classes with OM and O depth
-  lu_in <- read.table("LISEM_data/tables/lu.tbl")[-1, ] %>%
-    select(1, 4, 7) %>%
+  lu_in <- read.table("sources/setup/calibration/lu.tbl")[-1, ] %>%
+    select(1, 5, 7) %>%
     rename_with(~ c("lu", "om", "od")) %>%
     mutate(lu = lu * 100)
   
@@ -57,7 +57,8 @@ soil_landuse_to_swatre <- function(file = "",
   sr_params <- ubc_all %>%
     mutate(wp = wilt_point(sand, clay, om),
            fc = field_cap(sand, clay, om),
-           thetas = theta_s(sand, clay, om),
+           #thetas = theta_BD(sand, clay, om, gravel), # new function calculating the effect of gravel on porosity
+           thetas = theta_s(sand, clay, om), # <= works better for Kelmis!
            bd = bdens(thetas, DF = 1, gravel = gravel/100),
            tex_sum = sand + clay + silt)
   
@@ -95,20 +96,59 @@ soil_landuse_to_swatre <- function(file = "",
   # here we can add code to include observed porosity and ksat before making the swatre tables
   
   make_swatre_tables <- function(cal_file = "",
-                                 swatre_dir = NULL,
-                                 cal_alpha = 1.0,
-                                 cal_n = 1.0) 
+                                 swatre_dir = NULL) 
   {
     # 2. SWATRE tables LISEM-----------------------------------
     if (DEBUGm) message("make_swatre_tables")    
       ## 2.1 theta - h - k table ------------------------------------------------
+    #calibration
+  
+      soil_cal <- read_csv("sources/setup/calibration/calibration_soil.csv", 
+                         show_col_types = F) %>%
+      select(-description, -cal_comment) %>% 
+        pivot_longer(
+          cols = -soil,
+          names_to = "parameter",
+          values_to = "value"
+        ) %>%
+        separate(parameter, into = c("param", "horizon"), sep = "_") %>%
+        mutate(horizon = ifelse(horizon == "BC", "C", horizon)) %>%
+        mutate(soil = paste0(soil, "_", horizon),
+               param = paste0(param, "_cal")) %>%
+        select(-horizon) %>%
+        pivot_wider(
+          names_from = param,
+          values_from = value
+        )
+      
+    #load landuse related ksat calibration
+      lu_cal <- read_csv("sources/setup/calibration/calibration_landuse.csv") %>%
+        select(landuse, ksat_cal) %>%
+        rename("ksat_lu" = "ksat_cal")
+      
     soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file), show_col_types = FALSE) %>%
       filter(!is.na(clay)) %>%
-      mutate(CODE = str_replace(CODE, "-", "_"))
+      mutate(CODE = str_replace(CODE, "-", "_"),
+             horizon = str_extract(CODE, ".$"),
+             horizon = ifelse(horizon == "E", "C", horizon),
+             horizon = ifelse(horizon == "t", "C", horizon),
+             horizon = ifelse(horizon == "B", "C", horizon),
+             soil = floor(UBC/ 1000),
+             soil = paste0(soil, "_", horizon),
+             soil = ifelse(soil == "0_0", "0_O", soil),
+             landuse = (UBC %% 1000) / 100) %>%
+      left_join(soil_cal, by = "soil") %>%
+      left_join(lu_cal, by = "landuse") %>%
+      mutate(ksat_lu = if_else(is.na(ksat_lu), 0, ksat_lu),
+             ksat_cal = ksat_cal * ksat_lu,  #multiply is easier to understand
+        alpha_mean = alpha_mean * alpha_cal,
+             npar_mean = npar_mean * n_cal,
+             Ksat_mean = Ksat_mean * ksat_cal)
     
+
     tbl_dir <- paste0(swatre_dir, "tables/")
     
-    # cleanup /LISEM_data/swatre/tables.
+    # cleanup /swatre/tables.
     if (dir.exists(tbl_dir)) {
       unlink(tbl_dir, recursive = TRUE)
     }
@@ -123,10 +163,10 @@ soil_landuse_to_swatre <- function(file = "",
     theta_s <- soil_params$theta_s_mean[i]
     n <- soil_params$npar_mean[i]
     silt <- soil_params$silt[i]
-    if (silt > 0.450) {
-      alpha = alpha*cal_alpha
-      n = max(1.1,n*cal_n)
-    }
+    # if (silt > 0.450) {
+    #   alpha = alpha*cal_alpha
+    #   n = max(1.1,n*cal_n)
+    # }
     #message(silt, " ",alpha,"| ", n)
     m <- 1 - (1/n)
     ks <- soil_params$Ksat_mean[i]
@@ -213,4 +253,5 @@ soil_landuse_to_swatre <- function(file = "",
     }
   
   }
+  message("Done.")
 } # end function make_swatre_tables()

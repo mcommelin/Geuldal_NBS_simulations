@@ -194,6 +194,7 @@ col2map <- function(clone = "mask.map", options = "", col_in = "in.txt", map_out
   exe <- ifelse(sys_type == "Windows", ".exe", "")
   command <- paste0(pcr_dir, "col2map", exe, " --clone ", sub_dir, clone, " ",
                     options, " ", sub_dir, col_in, " ", sub_dir, map_out)
+  #message("vj ",command)
   system(command)
 }
 
@@ -221,6 +222,7 @@ map2asc <- function(asc_header = TRUE, options = "", map_in = "in.map", map_out 
 
   command <- paste0(pcr_dir, "map2asc", exe, " ", asc_option,
                     options, " ", sub_dir, map_in, " ", sub_dir, map_out)
+  message("vj ",command)
   system(command)
 }
 

@@ -2,7 +2,7 @@
 
 [Input]
 Map Directory=<<map_dir>>
-Result datetime=0
+Result datetime=1
 Include Satellite Image=0
 satImage Directory=
 satImage File=
@@ -228,14 +228,14 @@ OutSedSS=0
 OutSedBL=0
 
 [Advanced]
-Nr user Cores=6
+Nr user Cores=16
 Flooding SWOF Reconstruction=3
 Flooding SWOF flux limiter=1
 Correct MB with WH=0
 Flood max iterations=200
 Use time avg V=1
 Erosion outside 2D loop=1
-Minimum WH and V flow=1e-6
+Minimum WH and V flow=1e-9
 Pit Value=1.00
 Use linked list=0
 Use Perimeter KW=0

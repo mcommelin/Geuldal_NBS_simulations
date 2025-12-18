@@ -10,12 +10,8 @@ ext_data/*
 images/*
 LISEM_runs/*
 documenten_en_literatuur/*
-LISEM_data/Geul_*
-LISEM_data/Base_*
-LISEM_data/subcatchments/*
-LISEM_data/rain/*
-LISEM_data/HPC_*
-LISEM_data/calibration/*
+LISEM_data/*
+spatial_data/*
 images/*
 fieldwork/*
 *.html
@@ -23,6 +19,6 @@ fieldwork/*
 *.xlsx
 *.map
 *.tbl
-LISEM_data/params/*
 *.inp
 config.yaml
+sources/setup/calibration/cal_OM_swatre.csv

@@ -17,5 +17,5 @@ catch = sub.map;
 
 initial
 
-catch = catchment(Ldd_base, outlet);
+catch = catchment(Ldd_base, boolean(cover(scalar(outlet),0)));
 report catch = boolean(if(scalar(catch) eq 1, 1));

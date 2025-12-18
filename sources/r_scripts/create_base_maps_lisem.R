@@ -1,16 +1,6 @@
-# Prepare the base maps from processed spatial data for LISEM
-# the maps are converted to PCRaster format and clipped to the correct catchment
-# size.
-
-# Current list of base maps:
-# - dem.map: digital elevation model
-# - mask.map: mask map on which all other maps extents are based
-# - landuse.map: land use map
-# - soil.map: soil map
-# - subcatch.map: subcatchment map
-
-#Note: curently only the subcatchment map is created, the other maps are already
-# manually created.
+#' this file contains code to prepare base layers for the Geuldal simulations with
+#' OpenLISEM. these steps normally don't have to be done, and the resulting files
+#' can be found in ./spatial_data
 
 # Initialization ------------------------------------------------------------
 library(sf)
@@ -23,43 +13,126 @@ set_pcraster(env = "lisem", miniconda = "~/ProgramFiles/miniconda3")
 options(digits = 10)
 
 
-# 1. create subcatchment maps -------------------------------------------------
+# 1. create (sub)catchment maps -------------------------------------------------
+# WARNING !! the whole section 1 has moved to functions in 'source_to_base_maps.R'
 
-# load the outpoints csv file
-# if more subcatchment or outpoints are required, these can manually be added
-# to this file
-points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
-cell_size <- unique(points$cell_size)
+# # 1.1 delineate catchment
+# # load base layers spatial data
+# mask20 <- rast("spatial_data/mask_20m.map")
+# base_dem_5m <- rast("spatial_data/dem_region_5m.map")
 
-# loop over resolutions
-for (j in seq_along(cell_size)) {
-  subdir <- paste0("LISEM_data/Geul_", cell_size[j], "m/maps/")
-  res <- cell_size[j]
-  # filter the correct resolution
-  points_res <- points %>%
-    filter(cell_size == res) %>%
-    select(x, y, point)
-  # write csv table
-  write_csv(points_res, file = paste0(subdir, "outpoints.txt"),
-            col_names = FALSE)
-  # run col2map
-  col2map(col_in = "outpoints.txt", map_out = "outpoints.map",
-          sub_dir = subdir, options = "-N")
-  # make the subcatchment map
-  pcrcalc(
-    work_dir = subdir,
-    options = paste0("subcatch.map=subcatchment(ldd.map, outpoints.map)")
-  )
-  
-  # clean up
-  # remove outpoints.txt
-  file.remove(paste0(subdir, "outpoints.txt"))
-  # remove all aux.xml files
-  aux_files <- list.files(subdir, pattern = "aux.xml", full.names = TRUE)
-  if (length(aux_files) > 0) {
-    file.remove(aux_files)
-  }
-}
+#!!!!!!!!!!!!!!!!!!!!!!!
+# Code below to show workflow, not used due to slightly different results!!!
+
+# # resample dem with terra
+# base_dem_20 <- terra::resample(base_dem_5m, mask20, method = "average")
+# 
+# #write as PCRaster map
+# writeRaster(base_dem_20, "spatial_data/dem_region_20m.map" , filetype = "PCRaster", NAflag = -9999,
+#             overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+# 
+# # # resample dem with PCraster
+# # resample(clone = "mask_20m.map", map_in = "dem_region_5m.map", 
+# #          map_out = "dem_region_20m.map", dir = "spatial_data/")
+# 
+# # convert outlet coordinates to PCRaster map
+# col2map(clone = "mask_20m.map", col_in = "outlet.txt", map_out = "outlet.map",
+#         sub_dir = "spatial_data/")
+# 
+# # make a local drain direction for the whole regional dem on 20m
+# pcrcalc(options = "ldd_base.map=lddcreate(dem_region_20m.map,1e31,1e31,1e31,1e31)",
+#         work_dir = "spatial_data/")
+# 
+# # delineate the catchement based on the outlet
+# pcrcalc(options = "catchment.map=cover(catchment(ldd_base.map, nominal(outlet.map)),0)",
+#         work_dir = "spatial_data/")
+
+#WARNING - the catchment map was produced early in the modelling project 
+# - and newer (so the version produced with the code above) versions slightly differ at the edges 
+#!!!!!!!!!!!!!!!!!!!!
+# 
+# ## 1.1 catchment based dem etc --------------------------------
+# # load the base_catchment_20m
+# base_catch_20m <- rast("spatial_data/base_catchment_20m.map")
+# 
+# # we use 3 resolutions for the dataset
+# cell_size <- unique(points$cell_size)
+# 
+# # create maps for base database if they do not exist
+# 
+# for(i in seq_along(cell_size)) {
+#   # make folder structure
+#   res_dir <- paste0("LISEM_data/Geul_", cell_size[i], "m/")
+#   map_dir <- paste0(res_dir, "maps/")
+#   if(!dir.exists(res_dir)) {
+#     dir.create(res_dir)
+#     dir.create(map_dir)
+#   }
+#   
+#   #write maps
+#   #mask
+#   mask <- rast(paste0("spatial_data/mask_", cell_size[i],"m.map"))
+#   out <- paste0(res_dir, "maps/mask.map")
+#   writeRaster(mask, out, filetype = "PCRaster", NAflag = -9999,
+#                            overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+#   #dem
+#   out <- paste0(res_dir, "maps/dem.map")
+#   dem <- terra::resample(base_dem_5m, mask, method = "average")
+#   writeRaster(dem, out, filetype = "PCRaster", NAflag = -9999,
+#               overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+#   
+#   #catchment
+#   out <- paste0(res_dir, "maps/catchment.map")
+#   catch <- terra::resample(base_catch_20m, mask, method = "near")
+#   writeRaster(catch, out, filetype = "PCRaster", NAflag = -9999,
+#               overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+#   
+#   # generate ldd
+#   pcr_script("base_ldd.mod", script_dir = "sources/pcr_scripts/",
+#              work_dir = map_dir)
+# 
+# }
+# ## 1.2 make map with subcatchments ---------------------------------------------
+# #based on csv file with outpoint coordinates
+# 
+# # load the outpoints csv file
+# # if more subcatchment or outpoints are required, these can manually be added
+# # to this file
+# 
+# 
+# # loop over resolutions
+# cell_size <- unique(points$cell_size)
+# 
+# for(i in seq_along(cell_size)) {
+#   subdir <- paste0("LISEM_data/Geul_", cell_size[i], "m/maps/")
+#   res <- cell_size[i]
+#   # filter the correct resolution
+#   points_res <- points %>%
+#     filter(cell_size == res) %>%
+#     select(x, y, point)
+#   # write csv table
+#   write_csv(points_res, file = paste0(subdir, "outpoints.txt"),
+#             col_names = FALSE)
+#   # run col2map
+#   col2map(col_in = "outpoints.txt", map_out = "outpoints.map",
+#           sub_dir = subdir, options = "-N")
+#   # make the subcatchment map
+#   pcrcalc(
+#     work_dir = subdir,
+#     options = paste0("subcatch.map=subcatchment(ldd.map, outpoints.map)")
+#   )
+#   
+#   # clean up
+#   # remove outpoints.txt
+#   file.remove(paste0(subdir, "outpoints.txt"))
+#   # remove all aux.xml files
+#   aux_files <- list.files(subdir, pattern = "aux.xml", full.names = TRUE)
+#   if (length(aux_files) > 0) {
+#     file.remove(aux_files)
+#   }
+# }
+# 
+
 
 
 # 2. roads map clean up data ---------------------------------------------------
@@ -162,13 +235,16 @@ osm_data <- osm_data %>%
   mutate(width = as.numeric(width)) %>%
   mutate(m_width = if_else(is.na(width), m_width, width))
 
-# save the roads data
-st_write(osm_data, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = "roads_region", delete_layer = TRUE)
+# transform to EPSG:28992
+roads <- st_transform(osm_data, crs = " EPSG:28992")
 
-# make raster 
+# save the roads data
+st_write(roads, "data/processed_data/GIS_data/roads_buildings.gpkg", layer = "roads_region", delete_layer = TRUE)
+
+# make polygon with buffer in QGIS and save as polygon
 # with terra write to LISEM_data
 
-# 3. channels and culverts -----------------------------------------------------
+# 3. channels, buffers and culverts -----------------------------------------------------
 
 # the channel layer are digitized to 1 connected network in QGIS.
 # with Lines Ranking plugin additional statistics are calculated.
@@ -209,27 +285,18 @@ chandim <- left_join(chanshape, shreve_lookup,
   mutate(culvert_bool = if_else(tunnel == "culvert", 1, 0),
          chan_type = if_else(waterway == "stream", 1, 2))
 
-st_write(chandim, "data/processed_data/GIS_data/channels.gpkg", layer = "channels", delete_layer = TRUE)
+st_write(chandim, "spatial_data/channel_buffer.gpkg", layer = "channels", delete_layer = TRUE)
 
-# for baseflow make a new layer that only contains channel sections with baseflow
-chan_bf <- chandim %>%
-  filter(baseflow == 1)
-st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channels_baseflow", delete_layer = TRUE)
+# # for baseflow make a new layer that only contains channel sections with baseflow
+# chan_bf <- chandim %>%
+#   filter(baseflow == 1)
+# st_write(chan_bf, "data/processed_data/GIS_data/channels.gpkg", layer = "channels_baseflow", delete_layer = TRUE)
+# 
 
-# export the channels_baseflow layer with:
-# rasterize (GDAL), 5 m georeferenced units with as extent the mask 5m.
-# channels_baseflow.tif : select field = baseflow
-
-# export the following raster .tif from the channels layer with:
-# rasterize (GDAL), 5 m georeferenced units with as extent the mask 5m.
-# channels_bool.tif : 1 if channel, set fixed burn-in value = 1 
-# channels_depth.tif : select field = depth
-# channels_width.tif : select field = width
-# culverts_bool.tif : select field = culvert
 
 ## 3.1 buffer features --------------------------------------------------------
 
-# load WL data
+# load WL data (not openly available)
 wl_data_dir <- "data/data_wl/Data_buffers_Geul_openLisem_WRL/"
 
 # hoogtelijnen buffers
@@ -265,9 +332,11 @@ buffeat <- buffers %>%
   bind_rows(hl2) %>%
   st_make_valid()
 
+# after saving manual edits in QGIS are done to solve errors that are hard to code
+# so in general don't overwrite this layer except is you are sure that this is needed!
 # save for QGIS manual editing
-st_write(buffeat, "data/processed_data/GIS_data/buffers.gpkg", layer = "buf_new",
-         delete_layer = T)
+#st_write(buffeat, "spatial_data/channel_buffer.gpkg", layer = "buffers",
+#         delete_layer = T)
 
 # select all duikers in buffer
 duik_buf <- duiker %>%
@@ -305,15 +374,33 @@ af_buf <- duik_buf %>%
          d_new = if_else(d_new < 0.07, 0.07, d_new)) %>% # culverts cannot be fully closed.
   select(CODE, d_new)
 
-
+# after saving manual edits in QGIS are done to solve errors that are hard to code
+# so in general don't overwrite this layer except is you are sure that this is needed!
 # save for QGIS manual editing
-st_write(af_buf, "data/processed_data/GIS_data/buffers.gpkg", layer = "culvert_new",
+#st_write(af_buf, "spatial_data/channel_buffer.gpkg", layer = "buffer_outlet",
+#         delete_layer = T)
+
+## 3.2 natural ponds -----------------------------------------------------------
+
+# load osm natural water data
+osm_water <- st_read("data/osm_data.gpkg", layer = "natural_water") %>%
+  st_transform(crs = "EPSG:28992")
+
+# filter only the ponds; remove stream, river, wastewater etc
+unique(osm_water$water)
+
+pond_types <- c("lake", "pond", "moat", "basin", "reservoir", "unknown")
+
+ponds <- osm_water %>%
+  select(water) %>%
+  mutate(water = if_else(is.na(water), "unknown", water)) %>%
+  filter(water %in% pond_types)
+
+st_write(ponds, "spatial_data/channel_buffer.gpkg", layer = "ponds",
          delete_layer = T)
 
-# save buffers as boolean .tif on 5m
-# save outlet_diameter .tif on 5m
-
-# adjust PCRASTER code
+# in the PCRaster code the ponds that are within the DHydro domain are removed.
+# mainly because around the Geul river some ponds don't function as buffer.
 
 
 # 4. stormdrains ---------------------------------------------------------------
@@ -322,7 +409,7 @@ st_write(af_buf, "data/processed_data/GIS_data/buffers.gpkg", layer = "culvert_n
 # load WL data
 wl_data_dir <- "data/data_wl/Data_buffers_Geul_openLisem_WRL/"
 # riooleringsgebied
-riool_NL <- st_read("data/processed_data/GIS_data/roads_buildings.gpkg", 
+riool_NL <- st_read("spatial_data/urban.gpkg", 
                     layer = "riool_NL_geul")
 
 # overstorten
@@ -337,12 +424,26 @@ r2 <- riool_NL %>%
   select(code, berging_in_riolering_totaal_mm) %>%
   summarise(berging_in_riolering_totaal_mm = sum(berging_in_riolering_totaal_mm))
 
-# save new riool file
-st_write(r2, "data/processed_data/GIS_data/roads_buildings.gpkg", 
-         layer = "riool_NL_geul_corrected")
+# 
+# st_write(r2, "spatial_data/urban.gpkg", 
+#          layer = "riool_NL_geul_corrected")
 # mean storage in NL for other regions:
 mean(r2$berging_in_riolering_totaal_mm, na.rm = T)
 # 11.7 mm
+
+#combine with build_up_area outside NL to tilestorage map.
+r_other <- st_read("spatial_data/urban.gpkg", layer = "riool_other_geul") %>%
+  mutate(berging = 11.7) %>%
+  select(berging)
+
+r_nl <- r2 %>%
+  select(berging_in_riolering_totaal_mm) %>%
+  rename("berging" = "berging_in_riolering_totaal_mm")
+
+r_all <- r_other %>%
+  bind_rows(r_nl)
+# save new riool file
+st_write(r_all, "spatial_data/urban.gpkg", layer = "tilestorage")
 
 # further calculations in PCRASTER code
 
