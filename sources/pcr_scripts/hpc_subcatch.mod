@@ -20,15 +20,10 @@ initial
 
 # remove dhydro domain from ldd.map
 d1 = cover(nominal(dhydro), 0);
-demc = if(boolean(catch), dem);
-hpc_dem = if(d1 eq 0, demc);
-hpc_ldd = lddcreate(hpc_dem, 1e20, 1e20, 1e20, 1e20);
-
 d2 = windowdiversity(d1, 11);
 d3 = boolean(if(d2 eq 2, 1));
 dnum = nominal(uniqueid(d3));
 
-
 # calculate subcatchments
-report hpc_sub = subcatchment(hpc_ldd, dnum);
-
+hpc_sub = subcatchment(Ldd, dnum);
+report hpc_sub = if(d1 eq 0, hpc_sub);
