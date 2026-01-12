@@ -222,8 +222,9 @@ for (i in seq_along(points_id)) {
 # you can also run for one specific subcatchment e.g.
 #create_lisem_run(resolution = 20, catch_num = 4, swatre_file = swatre_file, T, T)
 
-## 2.3 Simulation and figure ---------------------------------------------------
+## 2.3 Calibrated events & subcatch --------------------------------------------
 
+# TODO: update this section with calibrated events / subcatch
 # CURRENTLY NOT USED, CODE NOT FULLY FUNCTIONAL!!!
 
 # select a subcatchment and event from the LISEM_runs folder structure
@@ -245,3 +246,33 @@ for (i in seq_along(points_id)) {
 # graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T,
 #                        run_date = "20230622", res_dir = "res")
 
+
+# 3. NBS measure explorations --------------------------------------------------
+
+#' in this section, code and functions will be developed to simulate small test
+#' catchments with NBS solutions. 
+#' Idea are:
+#' 1. LandEX workshop results for Pesaken (52) en Bocholtz (54)
+#' 2. sensitivity analysis of single measures, rainfall types etc etc.
+
+## 3.1 LandEX workshop scenarios -----------------------------------------------
+
+
+# 4. HPC runs full Geuldal -----------------------------------------------------
+
+#' this section shows the workflow for the HPC simulations of the whole Geul
+#' catchment on a HPC. 
+#' Steps:
+#' 1. from ./spatial_data to subcatchments (hpc_sub) with lateraal knopen
+#' 2. make a database for each hpc_sub, reuse the functions from section 2.
+#' 3. make a runfile for each hpc_sub
+#' 4. run all the hpc_sub on the hpc
+#' 5. collect results and make a discharge file for d-hydro
+
+## 4.1 HPC subcatchments ------------------------------------------------------
+
+# calculate subcatchments with pcraster
+# make table with subcatch ID
+# assign subcatch to lateraal ID
+# make lisem catchments based on lateraal ID
+  # question, can we have two side of dhydro domain in 1 lisem run?
