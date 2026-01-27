@@ -245,3 +245,31 @@ for (i in seq_along(points_id)) {
 # graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T,
 #                        run_date = "20230622", res_dir = "res")
 
+# 3. NBS measure explorations --------------------------------------------------
+
+#' in this section, code and functions will be developed to simulate small test
+#' catchments with NBS solutions. 
+#' Idea are:
+#' 1. LandEX workshop results for Pesaken (52) en Bocholtz (54)
+#' 2. sensitivity analysis of single measures, rainfall types etc etc.
+
+## 3.1 Update database includign NBS ------------------------------------------
+
+# update the landuse table
+#' In the csv file ./sources/setup/tables/lu_NBS_tbl.csv additional landuse
+#' classes can be added. The added landuse clas MUST correspond to the correct
+#' landuse class in the input landuse raster maps!!
+#' 
+#' Choose values for all 7 parameteres in the lu table and run the following
+#' code afterwards.
+
+
+
+# make a new swatre file
+
+
+
+
+
+
+## 3.1 LandEX workshop scenarios -----------------------------------------------
