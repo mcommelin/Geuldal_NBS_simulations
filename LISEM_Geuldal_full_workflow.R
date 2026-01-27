@@ -33,7 +33,9 @@ catch_maps_res()
 
 ## 1.3 preparation of precipitation and discharge data -------------------------
 # with the script 'prepare_rainfall_discharge_lisem.R' the radar precipitation
-# is processed to input for OpenLISEM, including a ID.map with 1km2 grid.
+# is processed to input for OpenLISEM.
+# The required ID maps are given in ./spatial_data. We use a different ID for
+# hourly and 5 minute precipitation resolution due to different sources!
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 

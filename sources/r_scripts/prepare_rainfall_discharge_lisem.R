@@ -8,6 +8,11 @@
 
 #1. Input precipitation data ---------------------------------------
 
+#WARNING the ID maps had an error, use the tif file from ./spatial_data 
+# for the correct ID's for hourly and 5minutes!!!
+
+#THIS CODE (section 1.1 and 1.2) IS NOT USED ANYMORE
+
 ##1.1  Raster with ID zones ------------------------------------------------------- 
 # make a map with numbers per cell as ID zones
 
@@ -26,7 +31,10 @@ writeRaster(a$ID_zone, paste0("data/processed_data/ID_zones_KNMI_radar.asc"),
 #' checked with the current events and that is correct. When switching to 5 min
 #' temporal resolution, check again.
 
-## 1.2 ID maps for 5 and 20 m ------------------------------------------------------
+## 1.2 hourly ID maps for 5 and 20 m ------------------------------------------------------
+# this makes the hourly ID map based on the asc radar data obtained by WRL
+# the 5 min radar ID's based on the grid points is made manually and can be found 
+# in ID_5min.map
 
 resolution = c(5, 10, 20) # 5 or 20
 
@@ -87,12 +95,14 @@ for (i in seq_along(resolution)) {
   # convert to pcraster format
   asc2map(clone = paste0(main_dir, "maps/mask.map"),
           map_in = paste0(main_dir, "maps/ID.asc"),
-          map_out = paste0(main_dir, "maps/ID.map"),
+          map_out = paste0(main_dir, "maps/ID_hourly.map"),
           options = "-S")
   # remove tmp rainfall file
   file.remove(paste0(main_dir, "maps/ID.asc"))
   file.remove(paste0(main_dir, "maps/ID.prj"))
 }
+
+#THE CODE ABOVE IS NOT USED ANYMORE!!
 
 ##1.3 Rain tables hourly per event -------------------------------------------------------
 
@@ -128,7 +138,7 @@ for (k in seq_along(events$ts_start)) {
     paste0("rain_", .)
   
   # find the number of idzones in the radar map
-  id_raster <- raster(paste0("data/processed_data/ID_zones_KNMI_radar.asc"))
+  id_raster <- raster(paste0("spatial_data/WRL_hourly_ID.tif"))
   n_cols_rain <- max(as.matrix(id_raster)) + 1 # add 1 colum for the timestamp
   
   # loop over rainfall maps and make rain input table
@@ -200,23 +210,25 @@ for (k in seq_along(events$ts_start)) {
     paste0("rain_5min_", .)
   
   # find the number of idzones in the radar map
-  id_raster <- raster(paste0("data/processed_data/ID_zones_KNMI_radar.asc"))
-  n_cols_rain <- max(as.matrix(id_raster)) + 1 # add 1 colum for the timestamp
+  id_raster <- raster(paste0("spatial_data/KNMI_5min_ID.tif"))
+  n_ids <- unique(as.vector(as.matrix(id_raster)))
+  n_cols_rain <- length(n_ids) + 1 # add 1 colum for the timestamp
   
-  # loop over rainfall maps and make rain input table
+  # loop over rainfall events and make rain input table
   rain_file <- paste0("LISEM_runs/rain/", ev_name, ".txt")
   ev_date <- date(event_start)
   # write the header
   writeLines(paste0("# 5min KNMI radar for ", ev_date, "\n", n_cols_rain, "\ntime"),
              rain_file)
   # add all gauges in the header
-  idn <- seq(1, n_cols_rain-1)
+  idn <- sort(n_ids, decreasing = F)
   header_part <- paste0("gauge ", idn)
   write(header_part, rain_file, append = T)
   
   # make the rain table 
   precip <- rain_5min %>%
     filter(timestamp >= event_start & timestamp <= event_end) %>%
+    select(timestamp, all_of(idn)) %>%
     arrange(timestamp) %>%
     mutate(mins = hour(timestamp) * 60 + minute(timestamp),
            yd = yday(timestamp),
