@@ -10,6 +10,16 @@ subcatch_rain_compare <- function(wdir = NULL,
                               tres = "hour") {
   
   # pcrcalc(options = "ID.map=ID.map*catchment.map", work_dir = wdir)
+  # load rain data
+  date_str <- str_remove_all(ev_date, "-")
+  if (tres == "min") {
+    pfile <- paste0("LISEM_runs/rain/rain_5min_", date_str, ".txt")
+    mapin <- "ID.map"
+  } else {
+    pfile <- paste0("LISEM_runs/rain/rain_", date_str, ".txt")
+    mapin <- "ID_hourly.map"
+  }
+  
   
   # map2asc
   map2asc(map_in = "ID.map",
@@ -21,13 +31,7 @@ subcatch_rain_compare <- function(wdir = NULL,
   freq <- as_tibble(table(id)) %>%
     mutate(id_nm = paste0("gauge_", id))
   
-  # load rain data
-  date_str <- str_remove_all(ev_date, "-")
-  if (tres == "min") {
-    pfile <- paste0("LISEM_runs/rain/rain_5min_", date_str, ".txt")
-  } else {
-    pfile <- paste0("LISEM_runs/rain/rain_", date_str, ".txt")
-  }
+ 
   skipval <- as.numeric(readLines(pfile)[2]) + 2
   rain_txt <- readLines(pfile)[-(1:skipval)]
   nms <- readLines(pfile)[3:(skipval)] %>%
