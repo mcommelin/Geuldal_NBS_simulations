@@ -28,7 +28,7 @@ buildings = buildings.map;  # fraction of buildings in cell. (optional)
 id = ID.map;                # rainfall id grid
 bua = bua.map; 		          # map with build up area.
 buffers = buffermask.map;   # map with boolean location of retention buffers
-profile = profile.map;	    # map with ubc soil codes for swatre
+profile0 = profile.map;	    # map with ubc soil codes for swatre
 buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 
 ### INPUT TABLES ### 
@@ -95,6 +95,7 @@ forest = boolean(lu == 2 or lu == 7);
 ################
 ### PROFILE  ### 
 ################ 
+profile = scalar(profile0); # map is not always provided as scalar, force here
 profile = if(profile eq 100, 100,profile+100*lu)*area;
 report profile = if(profile le 1000,100,profile)*area;
 report profn.map = nominal(profile);
