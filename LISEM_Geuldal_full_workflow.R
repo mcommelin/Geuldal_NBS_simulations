@@ -119,6 +119,9 @@ write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
 # Warning: equations are not tested above OM = 8%
 
 source("sources/r_scripts/swatre_input.R")
+# if running for the first time on a computer then run
+# install_rosetta()
+
 soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        swatre_out = paste0("sources/setup/calibration/", swatre_file)
                        )
