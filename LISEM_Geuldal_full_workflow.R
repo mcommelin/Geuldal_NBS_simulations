@@ -33,7 +33,9 @@ catch_maps_res()
 
 ## 1.3 preparation of precipitation and discharge data -------------------------
 # with the script 'prepare_rainfall_discharge_lisem.R' the radar precipitation
-# is processed to input for OpenLISEM, including a ID.map with 1km2 grid.
+# is processed to input for OpenLISEM.
+# The required ID maps are given in ./spatial_data. We use a different ID for
+# hourly and 5 minute precipitation resolution due to different sources!
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
 # from the KNMI data portal. It downloads the days of the selected events.
 
@@ -117,6 +119,9 @@ write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
 # Warning: equations are not tested above OM = 8%
 
 source("sources/r_scripts/swatre_input.R")
+# if running for the first time on a computer then run
+# install_rosetta()
+
 soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        swatre_out = paste0("sources/setup/calibration/", swatre_file)
                        )
@@ -148,8 +153,8 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust the below:
 
-#points_id <- c(4, 18) # use if you want to change catchment
-#reso <- c(10, 20)
+points_id <- c(4,10,14,18)# use if you want to change catchment
+reso <- c(10, 20)
 
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
@@ -167,7 +172,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-#base_maps_subcatchment(cell_size = 10, sub_catch_number = 18, calc_ldd = T, do_NDVI = T, calc_ldd = F)
+#base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, do_NDVI = F, calc_ldd = F)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -201,9 +206,9 @@ for (i in seq_along(points_id)) {
 
 #TODO: update buffer features to final version maps, including corrected volume
 
-#points_id <- c(4) #c(4,10,14,18) # use if you want to update multiple subcatchments on the go
-#swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go
-#reso = c(10, 20) # 5, 10 or 20
+points_id <- c(4,10,14,18) # use if you want to update multiple subcatchments on the go
+#swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go#
+reso = c(10, 20) # 5, 10 or 20
 
 source("sources/r_scripts/create_lisem_run.R")
 
@@ -220,7 +225,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-#create_lisem_run(resolution = 20, catch_num = 4, swatre_file = swatre_file, T, T)
+#create_lisem_run(resolution =10, catch_num = 4, swatre_file = swatre_file, T, T)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
 

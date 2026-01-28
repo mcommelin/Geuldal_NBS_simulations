@@ -16,6 +16,7 @@ buildings = buildings.map;  # fraction of buildings in cell. (optional)
 roads = roads_fraction.map;
 hard = hard_surface.map;
 id = ID.map;
+idh = ID_hourly.map;
 Ldd = ldd.map;
 
 initial
@@ -29,5 +30,5 @@ report roads = if(boolean(catchment), cover(roads,0));
 report hard = if(boolean(catchment), cover(hard,0));
 report outpoint = if(boolean(catchment), cover(outpoint,0));
 report id = if(boolean(catchment), id);
-
+report idh = if(boolean(catchment), idh);
 

@@ -17,3 +17,5 @@ tilestorage,vector,,,tilestorage,urban,berging,max
 hard_surface,vector,,,hard_surface,urban,,mean
 dhydro,vector,,,dhydro_domein,catchment,,max
 demburns,vector,,,dem_burns,catchment,,max
+ID,raster,near,,KNMI_5min_ID.tif,,,max
+ID_hourly,raster,near,,WRL_hourly_ID.tif,,,max
