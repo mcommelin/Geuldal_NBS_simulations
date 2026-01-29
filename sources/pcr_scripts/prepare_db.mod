@@ -187,9 +187,9 @@ report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
 chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
 chanman = windowaverage(if(forest,2*chanman, chanman),50)*chanclean;
 #chosen channel manning is too low for LISEM kin wave, more in forest because of branches etc, and multiplied by 2
-report chanman *= 1.5; 
-# factor 1.5 is a calibration that appears in all catchments.I assume there are delays in the discharge that we can only 
-# solve with Manining, but have other causes  
+report chanman *= 1.3; 
+# factor 1.3 is an vag calibration that appears in all catchments.I assume there are delays in the discharge that we can only 
+# solve with Manning, but have other causes 
 
 
 
