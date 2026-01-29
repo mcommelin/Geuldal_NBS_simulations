@@ -185,8 +185,11 @@ chanculvert = scalar(if(cover(culvert, 0) eq 1, 5));
 report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
 report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
 chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
-report chanman = windowaverage(if(forest,2*chanman, chanman),50)*chanclean;
+chanman = windowaverage(if(forest,2*chanman, chanman),50)*chanclean;
 #chosen channel manning is too low for LISEM kin wave, more in forest because of branches etc, and multiplied by 2
+report chanman *= 1.5; 
+# factor 1.5 is a calibration that appears in all catchments.I assume there are delays in the discharge that we can only 
+# solve with Manining, but have other causes  
 
 
 

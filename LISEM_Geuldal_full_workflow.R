@@ -153,7 +153,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust the below:
 
-points_id <- c(4,10,14,18)# use if you want to change catchment
+points_id <- c(4,10,14,18) # use if you want to change catchment
 reso <- c(10, 20)
 
 # load the function for subcatchment preparation
@@ -172,7 +172,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-#base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, do_NDVI = F, calc_ldd = F)
+base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, do_NDVI = T, calc_ldd = T)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -219,13 +219,13 @@ for (i in seq_along(points_id)) {
       catch_num = points_id[i],
       swatre_file = swatre_file,
       do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
-      do_runfile = T
+      do_runfile = F
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-#create_lisem_run(resolution =10, catch_num = 4, swatre_file = swatre_file, T, T)
+create_lisem_run(resolution =20, catch_num = 18, swatre_file = swatre_file, TRUE, F)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
 
