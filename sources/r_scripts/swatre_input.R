@@ -53,13 +53,13 @@ soil_landuse_to_swatre <- function(file = "",
   # Containing an Apache 2.0 license
   if (DEBUGm) message("pedotransfer.R")
   source("modules/rcropmod/pedotransfer.R")
-  
+  DF = 1.1  #<= CALIBRATION 260129: compaction factor in Saxton rawls, increasing buulk density by 10% to 1.1
   sr_params <- ubc_all %>%
     mutate(wp = wilt_point(sand, clay, om),
            fc = field_cap(sand, clay, om),
            #thetas = theta_BD(sand, clay, om, gravel), # new function calculating the effect of gravel on porosity
            thetas = theta_s(sand, clay, om), # <= works better for Kelmis!
-           bd = bdens(thetas, DF = 1, gravel = gravel/100),
+           bd = bdens(thetas, DF, gravel = gravel/100),
            tex_sum = sand + clay + silt)
   
   ## 1.3 S&R through Rosetta v3 --------------------------------------------------
@@ -79,7 +79,7 @@ soil_landuse_to_swatre <- function(file = "",
   
   # these results also contain uncertainty, which we can use for calibration later.  
   rosetta_params <- run_rosetta(soildat)
-  
+
   soil_params <- bind_cols(sr_params, rosetta_params) %>%
     mutate_at(vars(matches("^log10")), ~ 10^.) %>% # recalculate all log10 values
     rename_with(~ str_remove(., "^log10_")) # update names
