@@ -53,7 +53,10 @@ soil_landuse_to_swatre <- function(file = "",
   # Containing an Apache 2.0 license
   if (DEBUGm) message("pedotransfer.R")
   source("modules/rcropmod/pedotransfer.R")
-  DF = 1.1  #<= CALIBRATION 260129: compaction factor in Saxton rawls, increasing buulk density by 10% to 1.1
+  
+  DF = 1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
+  # this decreases the Ksat mainly, assuming a higher bulk density
+  
   sr_params <- ubc_all %>%
     mutate(wp = wilt_point(sand, clay, om),
            fc = field_cap(sand, clay, om),
