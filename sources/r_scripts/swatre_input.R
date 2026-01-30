@@ -187,6 +187,7 @@ soil_landuse_to_swatre <- function(file = "",
       select(theta, h, k)
     
     # write the profile tables
+
     ubc_file <- paste0(tbl_dir, ubc_tbl_n, ".tbl")
     write.table(ubc_tbl, file = ubc_file, col.names = F,
                 row.names = F, sep = " ", quote = F)
@@ -242,7 +243,7 @@ soil_landuse_to_swatre <- function(file = "",
     if (ubc_n == 100) {
       depth <- 350
       string <- paste0(
-        "140000_C.tbl\n",
+        "100.tbl\n",# 140000_C.tbl\n", # keep sandy the entire profile
         "350"
       )
       write(string, file = file, append = T) 

@@ -6,6 +6,7 @@
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
 
+
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers
 # for the whole Geul catchment
@@ -83,7 +84,7 @@ s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 # a value of 30 or more will give errors in the current code!
 # lu types: 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras,
 # 5 = verhard, 6 = water, 7 = naaldbos
-O_depth <- c(10, 20, 10, 10, 5, 1, 20)
+O_depth <- c(10, 20, 10, 10, 10, 1, 20)
 
 # add average summer plant cover to create per.map and all derivatives
 # change cover values for other seasons: maps per, lai, manning and smax 
@@ -127,9 +128,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        )
 
 #-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# The base maps etc for the data are now finished
-# All other steps can be done by adjusting PCRaster scripts
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# The base maps etc for the data are now finishedr
 
 
 # 2. Create LISEM runs for subcatchments ---------------------------------------
@@ -166,13 +165,13 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       do_NDVI = TRUE,  # copy NDVI related maps for dates
-      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, do_NDVI = T, calc_ldd = T)
+base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, do_NDVI = T, calc_ldd = F)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -219,12 +218,13 @@ for (i in seq_along(points_id)) {
       catch_num = points_id[i],
       swatre_file = swatre_file,
       do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
-      do_runfile = F
+      do_runfile = T
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
+
 create_lisem_run(resolution =20, catch_num = 18, swatre_file = swatre_file, TRUE, F)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
