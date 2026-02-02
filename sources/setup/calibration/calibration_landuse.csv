@@ -3,6 +3,6 @@ landuse,rr_cal,n_cal,ksat_cal,cal_comment
 2,1,1,1.1,loofbos
 3,1,1,0.5,prod. gras meer runoff (was 0.8)
 4,1,1,1,nat gras
-5,1,1,1,bebouwd
+5,1,1,0.8,bebouwd
 6,1,1,1,water
 7,1,1,1.1,naaldbos

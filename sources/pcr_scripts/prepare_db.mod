@@ -178,18 +178,23 @@ chanclass = if(bua eq 1,chantype, chantype + 2);
 chanman = lookupscalar(chantbl, 1, chanclass);
 chandiam = if(culvert eq 1, chanwidth);
 
-# all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
-bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
-
-chanculvert = scalar(if(cover(culvert, 0) eq 1, 5)); 
-report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
-report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
-chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
 chanman = windowaverage(if(forest,2*chanman, chanman),50)*chanclean;
 #chosen channel manning is too low for LISEM kin wave, more in forest because of branches etc, and multiplied by 2
-report chanman *= 1.3; 
+
+Dutch = (profile < 200000 and profile > 1000);
+report dutch.map = Dutch;
+report chanman *= if(Dutch, 1.0,1.5);
+
 # factor 1.3 is an vag calibration that appears in all catchments.I assume there are delays in the discharge that we can only 
 # solve with Manning, but have other causes 
+
+# culverts in channel
+# all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
+bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
+chanculvert = scalar(if(cover(culvert, 0) eq 1, 5)); 
+report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean; # culverts 2 (outlets) or 5 (in villages underground)
+report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
+chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
 
 
 

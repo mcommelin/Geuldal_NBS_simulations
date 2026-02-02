@@ -84,7 +84,7 @@ s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
 # a value of 30 or more will give errors in the current code!
 # lu types: 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras,
 # 5 = verhard, 6 = water, 7 = naaldbos
-O_depth <- c(10, 20, 10, 10, 10, 1, 20)
+O_depth <- c(10, 20, 10, 10, 7, 1, 20)
 
 # add average summer plant cover to create per.map and all derivatives
 # change cover values for other seasons: maps per, lai, manning and smax 
@@ -170,7 +170,8 @@ for (i in seq_along(points_id)) {
   }
 }
 
-# you can also run for one specific subcatchment e.g.
+  
+  # you can also run for one specific subcatchment e.g.
 base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, do_NDVI = T, calc_ldd = F)
 
 # this databases can be used to create a LISEM run. Choices in settings or
@@ -225,7 +226,7 @@ for (i in seq_along(points_id)) {
 
 # you can also run for one specific subcatchment e.g.
 
-create_lisem_run(resolution =20, catch_num = 18, swatre_file = swatre_file, TRUE, F)
+create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, T, F)
 
 ## 2.3 Simulation and figure ---------------------------------------------------
 
