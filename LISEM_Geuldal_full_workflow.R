@@ -258,17 +258,26 @@ for (i in seq_along(points_id)) {
 #' 1. LandEX workshop results for Pesaken (52) en Bocholtz (54)
 #' 2. sensitivity analysis of single measures, rainfall types etc etc.
 
-## 3.1 Update database includign NBS ------------------------------------------
+## 3.1 Update database including NBS ------------------------------------------
 
 # update the landuse table
 #' In the csv file ./sources/setup/tables/lu_NBS_tbl.csv additional landuse
 #' classes can be added. The added landuse clas MUST correspond to the correct
 #' landuse class in the input landuse raster maps!!
 #' 
-#' Choose values for all 7 parameteres in the lu table and run the following
+#' Choose values for all 7 parameters in the lu table and run the following
 #' code afterwards.
 
-
+# update the database with NBS solution maps.
+# the maps should be placed in ./spatial_data/NBS_maps
+# the name should be: nn_description.tif
+# with nn the number of the NBS landuse corresponding to the table:
+# ./sources/tables/lu_NBS_tbl.csv
+# The map should be boolean, 1 = location for measure, 0 = original landuse
+# Alternative (not yet implemented): map should have landuse number of 
+# NBS already in the map, this can be used for scenarios with multiple measures.
+source("sources/r_scripts/source_to_base_maps.R")
+spatial_data_to_pcr(only_NBS = TRUE) # assuming section 1.1 was already run. 
 
 # make a new swatre file
 
