@@ -20,8 +20,9 @@ streams = streams.map;
 initial
 
 adj = cover(chanmask, 0) * 10;
+out = cover(if(outpoints eq 1, 10, 0), 0);
 
 report dem = if(boolean(catch), dem);
 
-report Ldd = lddcreate(dem-adj, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
+report Ldd = lddcreate(dem-adj-out, 1e20,1e20,1e20,1e20); # correct topo for local depressions #
 report streams = streamorder(Ldd);

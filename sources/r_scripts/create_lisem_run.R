@@ -100,10 +100,12 @@ make_runfile_lisem <- function(work_dir = NULL,
   # replace channel buffer maps
   run_temp <- str_replace_all(run_temp, "chanwidth=chanwidth.map",
                               "chanwidth=chanwidthbuf.map")
-  run_temp <- str_replace_all(run_temp, "chanwidth=chanwidth.map",
-                              "chanwidth=chanwidthbuf.map")
   run_temp <- str_replace_all(run_temp, "chandepth=chandepth.map",
                               "chandepth=chandepthbuf.map")
+  run_temp <- str_replace_all(run_temp, "chanbuf=chanman.map",
+                              "chanwidth=chanmanbuf.map")
+  run_temp <- str_replace_all(run_temp, "changrad=changrad.map",
+                              "chandepth=changradbuf.map")
   run_temp <- str_replace_all(run_temp, "chanside=zero.map",
                               "chanside=chansidebuf.map")
   
@@ -231,7 +233,6 @@ create_lisem_run <- function(
   # optional: copy NDVI maps to the dir 
   if (do_ndvi == TRUE) {
     ndvi_maps<- dir(paste0(base_dir, "maps/"), pattern = "ndvi")
-    message(ndvi_maps)
     for (map in ndvi_maps) {
       file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
                 overwrite = TRUE)
@@ -339,6 +340,8 @@ create_lisem_run <- function(
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
                      swatre_dir = paste0(run_dir, "swatre/"))
+  
+  message("fnished run data creation.")
   
 } # end create_lisem_run
 

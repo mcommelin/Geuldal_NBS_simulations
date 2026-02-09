@@ -61,12 +61,15 @@ soil_landuse_to_swatre <- function(file = "",
   if (DEBUGm) message("pedotransfer.R")
   source("modules/rcropmod/pedotransfer.R")
   
+  DF = 1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
+  # this decreases the Ksat mainly, assuming a higher bulk density
+  
   sr_params <- ubc_all %>%
     mutate(wp = wilt_point(sand, clay, om),
            fc = field_cap(sand, clay, om),
            #thetas = theta_BD(sand, clay, om, gravel), # new function calculating the effect of gravel on porosity
            thetas = theta_s(sand, clay, om), # <= works better for Kelmis!
-           bd = bdens(thetas, DF = 1, gravel = gravel/100),
+           bd = bdens(thetas, DF, gravel = gravel/100),
            tex_sum = sand + clay + silt)
   
   ## 1.3 S&R through Rosetta v3 --------------------------------------------------
@@ -86,7 +89,7 @@ soil_landuse_to_swatre <- function(file = "",
   
   # these results also contain uncertainty, which we can use for calibration later.  
   rosetta_params <- run_rosetta(soildat)
-  
+
   soil_params <- bind_cols(sr_params, rosetta_params) %>%
     mutate_at(vars(matches("^log10")), ~ 10^.) %>% # recalculate all log10 values
     rename_with(~ str_remove(., "^log10_")) # update names
@@ -191,6 +194,7 @@ soil_landuse_to_swatre <- function(file = "",
       select(theta, h, k)
     
     # write the profile tables
+
     ubc_file <- paste0(tbl_dir, ubc_tbl_n, ".tbl")
     write.table(ubc_tbl, file = ubc_file, col.names = F,
                 row.names = F, sep = " ", quote = F)
@@ -246,7 +250,7 @@ soil_landuse_to_swatre <- function(file = "",
     if (ubc_n == 100) {
       depth <- 350
       string <- paste0(
-        "140000_C.tbl\n",
+        "100.tbl\n",# 140000_C.tbl\n", # keep sandy the entire profile
         "350"
       )
       write(string, file = file, append = T) 
@@ -260,5 +264,5 @@ soil_landuse_to_swatre <- function(file = "",
     }
   
   }
-  message("Done.")
+  message("Created SWATRE tables with calibration.")
 } # end function make_swatre_tables()

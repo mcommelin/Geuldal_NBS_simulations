@@ -41,34 +41,16 @@ report bufwall.map=s;
 buffers1=if(s eq 2,0.5,if(s eq 0,-1,0))*catchment; # with 1 meter wall but that stops overland flow at the back?
 report buffers1 = if (cover(ponds,0) eq 1, -1, buffers1);
 
-# bodem van de buffer krijgt de laagste waarde van de dem in de buffer
-# talud van de buffer krijgt hoogste waarde van dem op de rand.
-# save the original dem first, then update
-report dem_orig = dem;
-
-##a = clump(nominal(if (s eq 0,1)));
-##report a.map=a;
-##buffwall = areamaximum(dem,  a);  # does not work, wall become easily 10m high
-##buffwall = 0;
-##
-#buffloor = cover(areaminimum(dem, a),0); #/(areaarea(a.map)/cellarea())
-##buffers2 = if(buffers1 eq -1, buffloor, dem);
-#report dem = if(buffers1 eq 1, buffwall, buffers2);
-#report dif.map= buffwall-dem_orig;
-#report dem = if(buffers1 eq -1, buffloor, dem);
-#report grad = if(buffers1 eq -1, 0.005, grad); # ????? orr not, buffers are also sloping sometimes
-
 # adjust channel in buffers
 report chanwidthbuf = chanwidth;
 report chandepthbuf = if(buffers1 eq -1, 0.1, chandepth)*chanmask;
 chanmanbuf = if(buffers1 eq -1, 0.1, chanman)*chanmask;
+report chansidebuf = if(buffers1 eq -1, 1, 0)*chanmask; #trapezium shaped
+
+# buffer outlet culverts
+# this assumes that the buffer outlet has a design slope angle of 2%, and manning of concrete ...
 report chanmanbuf = if(cover(bufculvert,0) eq 1, 0.013, chanman)*chanmask;
 report changradbuf = if(cover(bufculvert,0) eq 1, 0.05, changrad)*chanmask;
-report chansidebuf = if(buffers1 eq -1, 1, 0)*chanmask;
-
-#geschat volume als je in lisem buffers aanzet met kaart buffers1.map
-#demf = lddcreatedem(dem1 + buffers1, 10, 1e20, 1e20, 1e20);
-#report bufvolest = areatotal((demf - dem1) * scalar(buffers1 eq -1),a)*cellarea();
 
 
 
