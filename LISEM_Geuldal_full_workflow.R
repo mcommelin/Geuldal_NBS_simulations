@@ -296,7 +296,12 @@ for (i in seq_along(points_id)) {
 
 # create lisem run
 source("sources/r_scripts/create_lisem_run.R")
+
 # choose which NBS measure you want
+NBS_number <- 14 # see /sources/setup/tables/lu_NBS_tbl.csv for the number 
+# corresponding to each NBS, here you can also add more
+points_id <- c(52, 54)# use if you want to change catchment
+reso <- c(10)
 
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
@@ -306,7 +311,7 @@ for (i in seq_along(points_id)) {
       swatre_file = swatre_nbs_file,
       do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
       do_runfile = T,
-      NBS_num = 14 # number corresponding to NBS in landuse table 0 = base simulation
+      NBS_num = NBS_number # number corresponding to NBS in landuse table 0 = base simulation
     )
   }
 }
