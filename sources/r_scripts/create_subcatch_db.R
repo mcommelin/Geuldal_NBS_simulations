@@ -35,7 +35,7 @@ base_maps_subcatchment <- function(
   # copy base maps from main_dir to new subcatch dir
   base_maps <- readLines("sources/base_maps.txt")
   
-  #find maps with measures and add these to the base maps list
+  #find maps with NBS measures and add these to the base maps list
   NBS_maps <- dir(main_dir, "^\\d\\d_.*.map$")
   
   base_maps <- c(base_maps, NBS_maps)

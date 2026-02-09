@@ -175,6 +175,7 @@ create_lisem_run <- function(
   }
 
   base_maps <- readLines("sources/base_maps.txt")
+  
   # copy the maps to the run_dir
   subdir <- paste0(run_dir, "maps/")
   for (map in base_maps) {

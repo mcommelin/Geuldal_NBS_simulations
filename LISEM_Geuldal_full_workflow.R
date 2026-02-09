@@ -102,6 +102,7 @@ names(lu_pars) <- nms
 write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
+# 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 7 = cover
 #note: here only cols 1,2, 3, 5 and 7 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
 #the other columns are used in SWATRE creation, swatre_input.R
 
@@ -279,9 +280,37 @@ for (i in seq_along(points_id)) {
 source("sources/r_scripts/source_to_base_maps.R")
 spatial_data_to_pcr(only_NBS = TRUE) # assuming section 1.1 was already run. 
 
-# update landuse
+# update landuse table, this works for all NBS solutions.
+# load lu table including the parameters for the NBS
+lu_tbl <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", show_col_types = FALSE) %>%
+  select(-description, - notes) 
+nms <- as.character(seq(0, ncol(lu_tbl) - 1))
+names(lu_tbl) <- nms
 
-# make a new swatre file
+# cols in lu table should be:
+# 0 = lu_nr, 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 7 = cover
+#note: here only cols 1,2, 3, 5 and 7 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
+#the other columns are used in SWATRE creation, swatre_input.R
+
+# save the landuse parameters as table for PCRaster
+write.table(lu_tbl, file = "sources/setup/calibration/lu_nbs.tbl",
+            sep = " ", row.names = FALSE,
+            quote = FALSE)
+
+# make a new swatre file, this works for all NBS solutions.
+source("sources/r_scripts/swatre_input.R")
+swatre_nbs_file <- "swatre_NBS.csv"
+soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
+                       swatre_out = paste0("sources/setup/calibration/", swatre_nbs_file),
+                       do_NBS = TRUE
+)
+
+# now functioning for landuse changing NBS. Adapt further for NBS that leave
+# original landuse applicable.
+
+## 3.2 Make a lisem run with a specific NBS measure of scenario ----------------
+
+# 
 
 
 

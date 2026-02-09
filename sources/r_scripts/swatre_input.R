@@ -4,17 +4,24 @@
 # we expect this to run inside the full workflow, so all libraries required are
 # loaded already.
 soil_landuse_to_swatre <- function(file = "",
-                                   swatre_out = "")
+                                   swatre_out = "",
+                                   do_NBS = FALSE) 
 {
   # 1. Calculate params -------------------------------------------------------------
   
+  if (do_NBS == TRUE) {
+    lutbl <- "lu.tbl"
+  } else {
+    lutbl <- "lu_nbs.tbl"
+  }
   #load the UBC codes including texture, gravel
   ubc_in <- read_csv(file, show_col_types = FALSE)
   # load landuse classes with OM and O depth
-  lu_in <- read.table("sources/setup/calibration/lu.tbl")[-1, ] %>%
+  lu_in <- read.table(paste0("sources/setup/calibration/", lutbl))[-1, ] %>%
     select(1, 5, 7) %>%
     rename_with(~ c("lu", "om", "od")) %>%
-    mutate(lu = lu * 100)
+    mutate(lu = if_else(lu < 10, lu * 100, lu))
+  # NBS value go to digit 5 and 6, original landuse to digit 4.
   
   if (DEBUGm) message("Making all soil horizon codes")
   
