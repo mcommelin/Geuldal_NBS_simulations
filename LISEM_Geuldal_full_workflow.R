@@ -308,9 +308,36 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # now functioning for landuse changing NBS. Adapt further for NBS that leave
 # original landuse applicable.
 
+# update your subcatchment database with the NBS maps
+# the function will find any NBS maps in the base dataset and include them in 
+# the subcatchments.
+points_id <- c(52, 54)# use if you want to change catchment
+reso <- c(10)
+
+# load the function for subcatchment preparation
+source("sources/r_scripts/create_subcatch_db.R")
+
+# run for both resolutions and all selected subcatchments
+for (i in seq_along(points_id)) {
+  for (j in seq_along(reso)) {
+    base_maps_subcatchment(
+      cell_size = reso[j],
+      sub_catch_number = points_id[i],
+      do_NDVI = TRUE,  # copy NDVI related maps for dates
+      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
+    )
+  }
+}
+
 ## 3.2 Make a lisem run with a specific NBS measure of scenario ----------------
 
-# 
+# create lisem run
+
+# choose which NBS measure you want
+
+# update profile_map
+
+# updatelanduse map
 
 
 

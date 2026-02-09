@@ -138,7 +138,8 @@ create_lisem_run <- function(
   catch_num = NULL,
   swatre_file = "base_swatre_params.csv",
   do_ndvi = TRUE,
-  do_runfile = TRUE) 
+  do_runfile = TRUE,
+  NBS_num = 0) 
 {
 
   ### prepare and/or copy all maps and table in the run dir/maps
@@ -157,6 +158,17 @@ create_lisem_run <- function(
   if (catch_num > 1) {
     base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
   }
+  
+  
+  #adjust folder name when simulation NBS
+  if (NBS_num != 0) {
+    NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
+      filter(lu_nr == NBS_num)
+    NBS_name <- NBS_desc$description
+    catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
+                        "m_", NBS_name, "/")
+  } 
+    
 
   run_dir <- paste0("LISEM_runs/", catch_dir)
 
@@ -175,24 +187,35 @@ create_lisem_run <- function(
   }
 
   base_maps <- readLines("sources/base_maps.txt")
-  
+  if (NBS_num != 0) {
+    nbs_map <- dir(paste0(base_dir, "maps/"), paste0("^", NBS_num, ".*"))
+    base_maps <- c(base_maps, nbs_map)
+  }
+    
   # copy the maps to the run_dir
   subdir <- paste0(run_dir, "maps/")
   for (map in base_maps) {
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
               overwrite = TRUE)
   }
-  # copy all inithead files
+ 
+  #TODO if cal use date, otherwise base situation
+  
+   # copy all inithead files
   ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "ih2")
   for (map in ih_maps) {
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
               overwrite = TRUE)
   }
   
+  #TODO if cal or base nbs
   #copy landuse and channel table to subdir
-  #file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
-  file.copy(from = "sources/setup/calibration/lu.tbl", to = subdir, overwrite = T)
-  #copy chan.tbl
+  if (NBS_num != 0) {
+    file.copy(from = "sources/setup/calibration/lu_nbs.tbl", to = paste0(subdir, "lu.tbl"), overwrite = T)
+  } else {
+    file.copy(from = "sources/setup/calibration/lu.tbl", to = subdir, overwrite = T)
+  }
+
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   
   # create landuse calibration table: used in prepare_db.map AND prepare_ndvi.mod
