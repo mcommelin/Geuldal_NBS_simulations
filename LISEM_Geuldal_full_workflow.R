@@ -279,6 +279,8 @@ for (i in seq_along(points_id)) {
 source("sources/r_scripts/source_to_base_maps.R")
 spatial_data_to_pcr(only_NBS = TRUE) # assuming section 1.1 was already run. 
 
+# update landuse
+
 # make a new swatre file
 
 
