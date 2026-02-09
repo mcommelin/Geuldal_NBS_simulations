@@ -10,9 +10,9 @@ soil_landuse_to_swatre <- function(file = "",
   # 1. Calculate params -------------------------------------------------------------
   
   if (do_NBS == TRUE) {
-    lutbl <- "lu.tbl"
-  } else {
     lutbl <- "lu_nbs.tbl"
+  } else {
+    lutbl <- "lu.tbl"
   }
   #load the UBC codes including texture, gravel
   ubc_in <- read_csv(file, show_col_types = FALSE)

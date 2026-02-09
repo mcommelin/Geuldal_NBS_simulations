@@ -22,6 +22,4 @@ fieldwork/*
 *.inp
 config.yaml
 sources/setup/calibration/cal_OM_swatre.csv
-/sources/setup/calibration/calibration_landuse (2).csv
-
 sources/setup/calibration/swatre_NBS.csv

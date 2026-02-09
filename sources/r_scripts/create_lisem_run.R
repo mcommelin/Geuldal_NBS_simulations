@@ -201,8 +201,6 @@ create_lisem_run <- function(
               overwrite = TRUE)
   }
  
-  #TODO if cal use date, otherwise base situation
-  
    # copy all inithead files
   ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "ih2")
   for (map in ih_maps) {
@@ -210,7 +208,6 @@ create_lisem_run <- function(
               overwrite = TRUE)
   }
   
-  #TODO if cal or base nbs
   #copy landuse and channel table to subdir
   if (NBS_num != 0) {
     file.copy(from = "sources/setup/calibration/lu_nbs.tbl", to = paste0(subdir, "lu.tbl"), overwrite = T)
@@ -240,7 +237,18 @@ create_lisem_run <- function(
   }
   
   ### start running scripts
-  
+  # update the landuse map, to include the NBS
+  if (NBS_num != 0) {
+    # rename the map
+    file.rename(paste0(subdir, nbs_map), paste0(subdir, "nbs.map"))
+    file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"))
+    pcr_script(
+      script = paste0("prepare_nbs.mod ", NBS_num),
+      script_dir = "sources/pcr_scripts",
+      work_dir = subdir
+    )
+    file.rename(paste0(subdir, "nbs.map"), paste0(subdir, nbs_map))
+  }
   # run pcraster script to finalize run database.
   pcr_script(
     script = "prepare_db.mod",
@@ -341,7 +349,7 @@ create_lisem_run <- function(
   make_swatre_tables(cal_file = swatre_file,
                      swatre_dir = paste0(run_dir, "swatre/"))
   
-  message("fnished run data creation.")
+  message("finished run data creation.")
   
 } # end create_lisem_run
 
