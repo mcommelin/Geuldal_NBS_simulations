@@ -1,14 +1,14 @@
-lu_nr,description,rr,n_res,n_veg,om,smax_eq,od,cover,n,notes
-1,akker,0.1,0.01,0.01,3.81,1,10,0.7,0.018,DO NOT CHANGE fixed during calibration
-2,loofbos,0.07,0.06,0.09,7.53,6,20,0.9,0.1417,DO NOT CHANGE fixed during calibration
-3,(productie) grasland,0.13,0.02,0.03,7.34,8,10,0.7,0.0423,DO NOT CHANGE fixed during calibration
-4,natuurlijk grasland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,DO NOT CHANGE fixed during calibration
-5,verhard,0.05,0.05,0,0.5,8,5,0.05,0.0505,DO NOT CHANGE fixed during calibration
-6,water bodies,0,0.1,0,0,0,1,0,0.1,DO NOT CHANGE fixed during calibration
-7,naaldbos,0.07,0.05,0.08,9.35,3,20,0.9,0.1227,DO NOT CHANGE fixed during calibration
-11,structuurrijk grasland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,
-12,natuurlijk hooiland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,
-13,productie grasland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,
-14,voedselbos,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,
-15,natuurlijk bos,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,
-16,omvorming naaldbos,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,
+lu_nr,description,rr,n_res,n_veg,om,smax_eq,od,cover,n,ksat_factor,notes
+1,akker,0.1,0.01,0.01,3.81,1,10,0.7,0.018,1,DO NOT CHANGE fixed during calibration
+2,loofbos,0.07,0.06,0.09,7.53,6,20,0.9,0.1417,1,DO NOT CHANGE fixed during calibration
+3,(productie) grasland,0.13,0.02,0.03,7.34,8,10,0.7,0.0423,1,DO NOT CHANGE fixed during calibration
+4,natuurlijk grasland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,1,DO NOT CHANGE fixed during calibration
+5,verhard,0.05,0.05,0,0.5,8,5,0.05,0.0505,1,DO NOT CHANGE fixed during calibration
+6,water bodies,0,0.1,0,0,0,1,0,0.1,1,DO NOT CHANGE fixed during calibration
+7,naaldbos,0.07,0.05,0.08,9.35,3,20,0.9,0.1227,1,DO NOT CHANGE fixed during calibration
+11,structuurrijk grasland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,1,
+12,natuurlijk hooiland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,1,
+13,productie grasland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,1,
+14,voedselbos,0.1,0.01,0.06,8,6,20,0.9,0.14,1.2,
+15,natuurlijk bos,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,1,
+16,omvorming naaldbos,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,1,

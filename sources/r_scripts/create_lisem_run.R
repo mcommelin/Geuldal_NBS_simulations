@@ -144,6 +144,14 @@ create_lisem_run <- function(
   NBS_num = 0) 
 {
 
+  # set some triggers
+  if (NBS_num != 0) {
+    do_NBS = TRUE
+  } else {
+    do_NBS = FALSE
+  }
+  
+  
   ### prepare and/or copy all maps and table in the run dir/maps
   
   points <- read_csv("sources/setup/outpoints_description.csv")
@@ -347,7 +355,8 @@ create_lisem_run <- function(
   
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
-                     swatre_dir = paste0(run_dir, "swatre/"))
+                     swatre_dir = paste0(run_dir, "swatre/"),
+                     do_NBS = do_NBS)
   
   message("finished run data creation.")
   

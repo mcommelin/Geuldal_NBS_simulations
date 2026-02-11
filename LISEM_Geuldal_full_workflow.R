@@ -6,7 +6,6 @@
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
 
-
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers
 # for the whole Geul catchment
@@ -229,7 +228,7 @@ create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, T, F
 #' classes can be added. The added landuse clas MUST correspond to the correct
 #' landuse class in the input landuse raster maps!!
 #' 
-#' Choose values for all 7 parameters in the lu table and run the following
+#' Choose values for all 9 parameters in the lu table and run the following
 #' code afterwards.
 
 # update the database with NBS solution maps.
@@ -251,7 +250,8 @@ nms <- as.character(seq(0, ncol(lu_tbl) - 1))
 names(lu_tbl) <- nms
 
 # cols in lu table should be:
-# 0 = lu_nr, 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 7 = cover; 8 = n
+# 0 = lu_nr, 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 
+# 7 = cover; 8 = n; 9 = ksat_factor
 #note: here only cols 1,2, 3, 5 and 7 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
 #the other columns are used in SWATRE creation, swatre_input.R
 
@@ -315,11 +315,6 @@ for (i in seq_along(points_id)) {
     )
   }
 }
-
-
-
-
-
 
 
 ## 3.1 LandEX workshop scenarios -----------------------------------------------

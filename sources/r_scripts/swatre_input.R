@@ -106,7 +106,8 @@ soil_landuse_to_swatre <- function(file = "",
   # here we can add code to include observed porosity and ksat before making the swatre tables
   
   make_swatre_tables <- function(cal_file = "",
-                                 swatre_dir = NULL) 
+                                 swatre_dir = NULL,
+                                 do_NBS = FALSE) 
   {
     # 2. SWATRE tables LISEM-----------------------------------
     if (DEBUGm) message("make_swatre_tables")    
@@ -146,7 +147,9 @@ soil_landuse_to_swatre <- function(file = "",
              soil = floor(UBC/ 1000),
              soil = paste0(soil, "_", horizon),
              soil = ifelse(soil == "0_0", "0_O", soil),
-             landuse = (UBC %% 1000) / 100) %>%
+             landuse = str_remove(as.character(UBC), "^\\d\\d\\d"),
+             landuse = as.numeric(landuse),
+             landuse = if_else(landuse > 99, landuse / 100, landuse)) %>%
       left_join(soil_cal, by = "soil") %>%
       left_join(lu_cal, by = "landuse") %>%
       mutate(ksat_lu = if_else(is.na(ksat_lu), 1.0, ksat_lu),
@@ -154,6 +157,17 @@ soil_landuse_to_swatre <- function(file = "",
         alpha_mean = alpha_mean * alpha_cal,
              npar_mean = npar_mean * n_cal,
              Ksat_mean = Ksat_mean * ksat_cal)
+    
+    if (do_NBS == TRUE) {
+      soil_NBS <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
+        select(lu_nr, ksat_factor) %>%
+        rename(landuse = lu_nr)
+      
+      soil_params <- soil_params %>%
+        left_join(soil_NBS, by = "landuse") %>%
+        mutate(ksat_factor = if_else(is.na(ksat_factor), 1.0, ksat_factor),
+               Ksat_mean = Ksat_mean * ksat_factor)
+    }
     
 
     tbl_dir <- paste0(swatre_dir, "tables/")
