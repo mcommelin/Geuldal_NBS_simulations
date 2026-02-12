@@ -126,7 +126,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      do_NDVI = TRUE,  # copy NDVI related maps for dates
+      run_type = "cal",  # run_type: choose from "cal" or "base"
       calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
@@ -286,7 +286,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      do_NDVI = TRUE,  # copy NDVI related maps for dates
+      run_type = "base",  # run_type: choose from "cal" or "base"
       calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }

@@ -6,16 +6,28 @@
 #1. Fill runfile template ------------------------------------------------------
 
 make_runfile_lisem <- function(work_dir = NULL,
-                               rain_dir = NULL,
+                               rain_dir = "LISEM_runs/rain",
                                infil_dir = NULL,
                                inp_file = NULL,
                                evdate = NULL,
                                start_time = NULL,
                                end_time = NULL,
                                resolution = 5,
-                               do_ndvi_run = TRUE
+                               do_ndvi_run = TRUE,
+                               run_type = ""
                                ) 
 {
+  
+  # select run type
+  if (run_type == "cal") {
+    do_ndvi = TRUE
+  } else if (run_type == "base") {
+    do_ndvi = FALSE
+  } else {
+    print("ERROR: wrong run_type. Choose from: cal OR base")
+    return()
+  }
+  
   # Adjust runfile lisem 
   run_template <- readLines("sources/setup/runfile_template.run")
   
@@ -44,12 +56,26 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
                               paste0(proj_wd, "/", infil_dir))
   
+  if (run_type == "cal") {
   # set correct inithead for event
   runname <- str_remove_all(as.character(evdate), "-")
   ih_ev <- str_remove(runname, "^\\d\\d")
   
   run_temp <- str_replace_all(run_temp, "<<ih>>", 
                               paste0("ih", ih_ev))
+  } else {
+    runname <- evdate
+    run_temp <- str_replace_all(run_temp, "<<ih>>", 
+                                paste0("ih"))
+    #set homogeneous init head
+    inihead <- -100
+    run_temp <- str_replace_all(run_temp, "Use one matrix potential=0", 
+                                paste0("Use one matrix potential=1"))
+    run_temp <- str_replace_all(run_temp, "Initial matrix potential=-100", 
+                                paste0("Initial matrix potential=", inihead))
+    
+  }
+  
   # flow solution
   if (resolution > 10) {
     run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
@@ -72,6 +98,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   # set end time
   run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
   
+  if (run_type == "cal") {
   # set baseflowmap
   run_temp <- str_replace(run_temp, "<<baseflow_map>>",
                           paste0("baseflow_", runname, ".map"))
@@ -90,6 +117,9 @@ make_runfile_lisem <- function(work_dir = NULL,
   }
   
   writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
+  }
+  
+  
   
   # runfile with buffers
   run_temp <- str_replace_all(run_temp, "Include Mitigation/Conservation=0",
@@ -114,19 +144,6 @@ make_runfile_lisem <- function(work_dir = NULL,
 
 } # end function make_runfile_lisem()
 
-# # temp code
-# # check if lisem result directory exists, otherwise make
-# if (!dir.exists(paste0(main_dirs[i], "res"))) {
-#   dir.create(paste0(main_dirs[i], "res"))
-# }
-# # if it exists, remove and make new
-# if (dir.exists(paste0(main_dirs[i], "res"))) {
-#   unlink(paste0(main_dirs[i], "res"), recursive = TRUE)
-#   dir.create(paste0(main_dirs[i], "res"))
-# }
-
-
-
 #2. Run pcraster db script----------------------------------------------------
 #points <- read_csv("LISEM_data/setup/outpoints_descriptionN.csv")
 
@@ -139,12 +156,23 @@ create_lisem_run <- function(
   resolution = NULL,
   catch_num = NULL,
   swatre_file = "base_swatre_params.csv",
-  do_ndvi = TRUE,
+  run_type = "",
   do_runfile = TRUE,
   NBS_num = 0) 
 {
 
+  
   # set some triggers
+  # select run type
+  if (run_type == "cal") {
+    do_ndvi = TRUE
+  } else if (run_type == "base") {
+    do_ndvi = FALSE
+  } else {
+    print("ERROR: wrong run_type. Choose from: cal OR base")
+    return()
+  }
+  
   if (NBS_num != 0) {
     do_NBS = TRUE
   } else {
@@ -293,6 +321,7 @@ create_lisem_run <- function(
     work_dir = subdir
   )
   
+  if (run_type == "cal") {
   # add runfiles for selected events
   events <- read_csv("sources/selected_events.csv", show_col_types = FALSE) %>%
     filter(use == "cal") %>%
@@ -332,27 +361,50 @@ create_lisem_run <- function(
     
     # make runfile  
     if (do_runfile == TRUE) {
+      
+      # loop over standard events in stead of dates
+      standart_ev <- c("T50", "T100", "T500", "T500_uur")
+      
       message("Making run file")
       make_runfile_lisem(
         work_dir = run_dir,
-        rain_dir = "LISEM_runs/rain/",   #<= more logical, just one level higher then the runs as common dataset
+        rain_dir = "LISEM_runs/rain/",
         infil_dir = paste0(run_dir, "swatre/tables/"),  
         inp_file = paste0(run_dir, "swatre/profile.inp"),
         evdate = date(events$ts_start[i]),
         start_time = events$str_start[i],
         end_time = events$str_end[i],
         resolution = resolution,
-        do_ndvi_run = do_ndvi
+        do_ndvi_run = do_ndvi,
+        run_type = run_type
       )
     }
   } # end date specific loop
-    
-  #delete intermediate files
-  # leave the tables for later reference
-  #file.remove(paste0(subdir, "chan.tbl"))
-  #file.remove(paste0(subdir, "lu.tbl"))
-  #file.remove(paste0(subdir, "soil.tbl"))
+  } # end run_type = "cal"
   
+  if (run_type == "base") {
+    # make runfile  
+    if (do_runfile == TRUE) {
+      message("Making run file")
+      make_runfile_lisem(
+        work_dir = run_dir,
+        infil_dir = paste0(run_dir, "swatre/tables/"),  
+        inp_file = paste0(run_dir, "swatre/profile.inp"),
+        evdate = standart_ev[i],
+        start_time = "000:0000", #fixed for all stadard events
+        end_time = "000:1440", #fixed for all stadard events
+        resolution = resolution,
+        do_ndvi_run = do_ndvi,
+        run_type = run_type
+      )
+    }
+    
+    
+    
+    
+  }
+  #delete intermediate files
+
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
                      swatre_dir = paste0(run_dir, "swatre/"),
