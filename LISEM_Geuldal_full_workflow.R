@@ -317,4 +317,4 @@ for (i in seq_along(points_id)) {
 }
 
 
-## 3.1 LandEX workshop scenarios -----------------------------------------------
+

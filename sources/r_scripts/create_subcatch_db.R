@@ -6,11 +6,22 @@ base_maps_subcatchment <- function(
     cell_size = NULL,
     sub_catch_number = NULL, # adjust the number to select the subcatchment you want
     calc_ldd = FALSE,
-    do_NDVI = TRUE
+    run_type = ""
     )
 {
   
-  # general settings
+ # select run type
+  if (run_type == "cal") {
+    do_NDVI = TRUE
+  } else if (run_type == "base") {
+    do_NDVI = FALSE
+  } else {
+    print("ERROR: wrong run_type. Choose from: cal OR base")
+    return()
+  }
+  
+  
+   # general settings
   res = cell_size
   srs = "EPSG:28992"
   resample_method = "near"
@@ -31,15 +42,17 @@ base_maps_subcatchment <- function(
   if (!dir.exists(sub_catch_dir)) {
     dir.create(sub_catch_dir, recursive = TRUE)
   }
-  
+
   # copy base maps from main_dir to new subcatch dir
   base_maps <- readLines("sources/base_maps.txt")
-  
+ 
+   if(run_type == "base") {
   #find maps with NBS measures and add these to the base maps list
   NBS_maps <- dir(main_dir, "^\\d\\d_.*.map$")
   
   base_maps <- c(base_maps, NBS_maps)
-
+  }
+  
   # add "base" suffix to the base maps names in the subcatch dir
   for (i in seq_along(base_maps)) {
     file.copy(
