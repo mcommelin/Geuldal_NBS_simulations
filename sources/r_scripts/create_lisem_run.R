@@ -43,7 +43,14 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
                               paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
   # rain files
+  if (run_type == "cal") {
   rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
+  } else {
+    rain_file <- paste0("rain_",str_remove_all(as.character(evdate), "-"), ".txt")
+    # set ID map to 1 zone
+    run_temp <- str_replace_all(run_temp, "ID=ID.map",
+                                paste0("ID=one.map"))
+  }
   run_temp <- str_replace_all(run_temp, "<<rain_dir>>",
                               paste0(proj_wd, "/", rain_dir))
   run_temp <- str_replace_all(run_temp, "<<rain_file>>",
@@ -115,8 +122,16 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "manning=n.map",
                                 paste0("manning=n", datestr, ".map"))
   }
-  
   writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
+  
+  } else {
+    # no baseflow
+    # set dummy value
+    run_temp <- str_replace(run_temp, "<<baseflow_map>>",
+                            paste0("nobaseflow.map"))
+    # set baseflow method
+    run_temp <- str_replace(run_temp, "Channel baseflow method=2",
+                            paste0("Channel baseflow method=0"))
   }
   
   
@@ -362,9 +377,6 @@ create_lisem_run <- function(
     # make runfile  
     if (do_runfile == TRUE) {
       
-      # loop over standard events in stead of dates
-      standart_ev <- c("T50", "T100", "T500", "T500_uur")
-      
       message("Making run file")
       make_runfile_lisem(
         work_dir = run_dir,
@@ -383,20 +395,27 @@ create_lisem_run <- function(
   } # end run_type = "cal"
   
   if (run_type == "base") {
-    # make runfile  
     if (do_runfile == TRUE) {
-      message("Making run file")
+    # loop over standard events in stead of dates
+    standard_ev <- c("T50", "T100", "T500", "T500_uur")
+    
+    
+     # make runfile  
+    message("Making run file")
+    
+    for (i in seq_along(standard_ev)) {
       make_runfile_lisem(
         work_dir = run_dir,
         infil_dir = paste0(run_dir, "swatre/tables/"),  
         inp_file = paste0(run_dir, "swatre/profile.inp"),
-        evdate = standart_ev[i],
+        evdate = standard_ev[i],
         start_time = "000:0000", #fixed for all stadard events
         end_time = "000:1440", #fixed for all stadard events
         resolution = resolution,
         do_ndvi_run = do_ndvi,
         run_type = run_type
       )
+    }
     }
     
     

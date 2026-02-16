@@ -180,7 +180,7 @@ for (i in seq_along(points_id)) {
       resolution = reso[j], 
       catch_num = points_id[i],
       swatre_file = swatre_file,
-      do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
+      run_type = "cal",
       do_runfile = T
     )
   }
@@ -309,7 +309,7 @@ for (i in seq_along(points_id)) {
       resolution = reso[j], 
       catch_num = points_id[i],
       swatre_file = swatre_nbs_file,
-      do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
+      run_type = "base",
       do_runfile = T,
       NBS_num = NBS_number # number corresponding to NBS in landuse table 0 = base simulation
     )
