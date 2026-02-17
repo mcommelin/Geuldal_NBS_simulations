@@ -71,6 +71,8 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "<<ih>>", 
                               paste0("ih", ih_ev))
   } else {
+    # for now we use a homogeneous inithead in the base runs.
+    # TODO update to corrected inithead profiles
     runname <- evdate
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
                                 paste0("ih"))
@@ -89,7 +91,6 @@ make_runfile_lisem <- function(work_dir = NULL,
   }
   
   # set timestep
-  #dt <- ceiling(resolution * 0.75)
   if (resolution < 20)
     dt = 5 # makkelijker voor grafieken en berekeningen
   else    
@@ -134,8 +135,7 @@ make_runfile_lisem <- function(work_dir = NULL,
                             paste0("Channel baseflow method=0"))
   }
   
-  
-  
+  #TODO remove the buffer additional option, just include in main calibration
   # runfile with buffers
   run_temp <- str_replace_all(run_temp, "Include Mitigation/Conservation=0",
                               "Include Mitigation/Conservation=1")
@@ -159,12 +159,8 @@ make_runfile_lisem <- function(work_dir = NULL,
 
 } # end function make_runfile_lisem()
 
-#2. Run pcraster db script----------------------------------------------------
-#points <- read_csv("LISEM_data/setup/outpoints_descriptionN.csv")
+#2. Make LISEM run ----------------------------------------------------
 
-# settings
-# <- 5 # fill resolution here
-#catch_num <- 18 # fill catchment number here (see points table)
 
 # function create_lisem_run
 create_lisem_run <- function(
@@ -176,7 +172,6 @@ create_lisem_run <- function(
   NBS_num = 0) 
 {
 
-  
   # set some triggers
   # select run type
   if (run_type == "cal") {
@@ -188,6 +183,7 @@ create_lisem_run <- function(
     return()
   }
   
+  # check if it is a base run, or simulation a NBS
   if (NBS_num != 0) {
     do_NBS = TRUE
   } else {
@@ -196,7 +192,6 @@ create_lisem_run <- function(
   
   
   ### prepare and/or copy all maps and table in the run dir/maps
-  
   points <- read_csv("sources/setup/outpoints_description.csv")
   
   catch_info <- points %>%
@@ -207,13 +202,12 @@ create_lisem_run <- function(
   catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m/")
   base_dir <- paste0("LISEM_data/", catch_dir)
   
-  # if catch_num > 1 add subcatchements after LISEM_data/
+  # if catch_num > 1 add subcatchments after LISEM_data/
   if (catch_num > 1) {
     base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
   }
   
-  
-  #adjust folder name when simulation NBS
+  #adjust folder name when simulating NBS
   if (NBS_num != 0) {
     NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
       filter(lu_nr == NBS_num)
@@ -222,7 +216,6 @@ create_lisem_run <- function(
                         "m_", NBS_name, "/")
   } 
     
-
   run_dir <- paste0("LISEM_runs/", catch_dir)
 
   # create subdir for the run
@@ -240,6 +233,8 @@ create_lisem_run <- function(
   }
 
   base_maps <- readLines("sources/base_maps.txt")
+  
+  # Add NBS maps if simulating NBS
   if (NBS_num != 0) {
     nbs_map <- dir(paste0(base_dir, "maps/"), paste0("^", NBS_num, ".*"))
     base_maps <- c(base_maps, nbs_map)
@@ -253,13 +248,17 @@ create_lisem_run <- function(
   }
  
    # copy all inithead files
+  # TODO adjust for cal or base run
+  if (run_type == "cal") {
   ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "ih2")
   for (map in ih_maps) {
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
               overwrite = TRUE)
   }
+  }
   
   #copy landuse and channel table to subdir
+  # make a difference based on NBS simulations
   if (NBS_num != 0) {
     file.copy(from = "sources/setup/calibration/lu_nbs.tbl", to = paste0(subdir, "lu.tbl"), overwrite = T)
   } else {
