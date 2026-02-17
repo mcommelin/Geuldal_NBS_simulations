@@ -6,7 +6,6 @@
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
 
-
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers
 # for the whole Geul catchment
@@ -58,55 +57,29 @@ spatial_data_to_pcr()
 # set force_ldd = TRUE to recalculate the ldd
 ldd_subcatch(force_ldd = FALSE)
 
-## 1.5 prepare lookup table landuse and soil -----------------------------------
+# 2. Calibration on subcatchments ---------------------------------------
+# we use subcatchments to test the model setup and do the calibration
+# the used subcatchments are (ID number points table):
+# Watervalderbeek (10), Eyserbeek (14)
+# Kelmis (18), Gulp (4), Lemiers (12)
+# Sippenaeken (90) -> 1km2 for testing only 
 
-# note field OM for forests is too high, now a correction done in the csv file
-#TODO move OM adjustment to code?
-pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
-  mutate(nbs_type = if_else(nbs_type == "extensieve begrazing", NA, nbs_type)) %>%
-  # remove 1 nbs label to include in natural grassland group
-  filter(is.na(nbs_type)) %>%
-  group_by(lu_nr) %>%
-  summarise(rr = round(mean(rr), digits = 2),
-         n_res = round(mean(n_res), digits = 2),
-         n_veg = round(mean(n_veg), digits = 2),
-         om = round(mean(om_corr), digits = 2))
 
-# load lu table
-lu_tbl <- read_csv("sources/setup/tables/lu_tbl.csv", show_col_types = FALSE)
-lu_add <- lu_tbl %>%
-  filter(rr != -9) %>%
-  select(-description, -smax_eq, - notes) 
-s_eq <- lu_tbl %>% select(lu_nr, smax_eq)
+## 2.1 prepare lookup table landuse and soil -----------------------------------
 
-# the O horizon has the high OM values measured in the fieldcampaign
-# a value between 1 and < 30 cm can be chosen for each landuse
-# a value of 30 or more will give errors in the current code!
-# lu types: 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras,
-# 5 = verhard, 6 = water, 7 = naaldbos
-O_depth <- c(10, 20, 10, 10, 7, 1, 20)
+#' we load the landuse properties from fieldwork and literature.
+#' these are stored in /sources/setup/tables/
+#' 
+#' In addition we multiply the values with the calibration factors
+#' these are stored in /sources/setup/calibration/calibration_landuse.csv
+#' The factors in this table are used for all subcatchments and dates.
 
-# add average summer plant cover to create per.map and all derivatives
-# change cover values for other seasons: maps per, lai, manning and smax 
-# Alternatively we also have data from the fieldwork for per.
-per <- c(0.7,0.9,0.7,0.8,0.05,0,0.9)
+source("sources/r_scripts/prepare_landuse_table.R")
 
-lu_pars <- bind_rows(pars_lu, lu_add) %>%
-  left_join(s_eq, by = "lu_nr")%>%
-  arrange(lu_nr) %>%
-  mutate(od = O_depth, 
-         cover = per)
-nms <- as.character(seq(0, ncol(lu_pars) - 1))
-names(lu_pars) <- nms
+# the resulting lu.tbl has the following columns:
+# 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 7 = cover; 8 = n
 
-# save the landuse parameters as table for PCRaster
-write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
-            sep = " ", row.names = FALSE,
-            quote = FALSE)
-#note: here only cols 1,2, 3, 5 and 7 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
-#the other columns are used in SWATRE creation, swatre_input.R
-
-## 1.6 make SWATRE soil tables -------------------------------------------------
+## 2.2 make SWATRE soil tables -------------------------------------------------
 
 # for the simulations of infiltration we use the SWATRE mobel inside OpenLISEM
 # this requires the van Genuchten parameters for differents soil layers for
@@ -127,18 +100,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        swatre_out = paste0("sources/setup/calibration/", swatre_file)
                        )
 
-#-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# The base maps etc for the data are now finishedr
-
-
-# 2. Create LISEM runs for subcatchments ---------------------------------------
-# we use subcatchments to test the model setup and do the calibration
-# the used subcatchments are (ID number points table):
-# Watervalderbeek (10), Eyserbeek (14)
-# Kelmis (18), Gulp (4), Lemiers (12)
-# Sippenaeken (90) -> 1km2 for testing only 
-
-## 2.1 prepare subcatchments ----------------------------------------------------
+## 2.3 prepare subcatchments ----------------------------------------------------
 
 # PCR scripts called in this function: 
 # 1. delineate_catchment.mod   = make the subcatchment
@@ -164,7 +126,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size = reso[j],
       sub_catch_number = points_id[i],
-      do_NDVI = TRUE,  # copy NDVI related maps for dates
+      run_type = "cal",  # run_type: choose from "cal" or "base"
       calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
@@ -177,7 +139,7 @@ base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, do_NDVI = T, calc_l
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
 
-## 2.2 make lisem runs ------------------------------------------------
+## 2.4 make lisem runs ------------------------------------------------
 
 # this function mainly works for manual calibration
 # to do many runs exploring a parameter space, code is developed in section 3.
@@ -218,7 +180,7 @@ for (i in seq_along(points_id)) {
       resolution = reso[j], 
       catch_num = points_id[i],
       swatre_file = swatre_file,
-      do_ndvi = TRUE,  # make NDVI related maps and change run file to NDVI maps
+      run_type = "cal",
       do_runfile = T
     )
   }
@@ -228,7 +190,7 @@ for (i in seq_along(points_id)) {
 
 create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, T, F)
 
-## 2.3 Simulation and figure ---------------------------------------------------
+## 2.5 Calibration settings and figures ----------------------------------------
 
 # CURRENTLY NOT USED, CODE NOT FULLY FUNCTIONAL!!!
 
@@ -250,4 +212,109 @@ create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, T, F
 # # WARNING; this function only works on a clean res folder, so empty it before a new lisem simulation!!!!
 # graph_lisem_simulation(point_id = 10, resolution = 20, clean_up = T,
 #                        run_date = "20230622", res_dir = "res")
+
+# 3. NBS measure explorations --------------------------------------------------
+
+#' in this section, code and functions will be developed to simulate small test
+#' catchments with NBS solutions. 
+#' Idea are:
+#' 1. LandEX workshop results for Pesaken (52) en Bocholtz (54)
+#' 2. sensitivity analysis of single measures, rainfall types etc etc.
+
+## 3.1 Update database including NBS ------------------------------------------
+
+# update the landuse table
+#' In the csv file ./sources/setup/tables/lu_NBS_tbl.csv additional landuse
+#' classes can be added. The added landuse clas MUST correspond to the correct
+#' landuse class in the input landuse raster maps!!
+#' 
+#' Choose values for all 9 parameters in the lu table and run the following
+#' code afterwards.
+
+# update the database with NBS solution maps.
+# the maps should be placed in ./spatial_data/NBS_maps
+# the name should be: nn_description.tif
+# with nn the number of the NBS landuse corresponding to the table:
+# ./sources/tables/lu_NBS_tbl.csv
+# The map should be boolean, 1 = location for measure, 0 = original landuse
+# Alternative (not yet implemented): map should have landuse number of 
+# NBS already in the map, this can be used for scenarios with multiple measures.
+source("sources/r_scripts/source_to_base_maps.R")
+spatial_data_to_pcr(only_NBS = TRUE) # assuming section 1.1 was already run. 
+
+# update landuse table, this works for all NBS solutions.
+# load lu table including the parameters for the NBS
+lu_tbl <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", show_col_types = FALSE) %>%
+  select(-description, - notes) 
+nms <- as.character(seq(0, ncol(lu_tbl) - 1))
+names(lu_tbl) <- nms
+
+# cols in lu table should be:
+# 0 = lu_nr, 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 
+# 7 = cover; 8 = n; 9 = ksat_factor
+#note: here only cols 1,2, 3, 5 and 7 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
+#the other columns are used in SWATRE creation, swatre_input.R
+
+# save the landuse parameters as table for PCRaster
+write.table(lu_tbl, file = "sources/setup/calibration/lu_nbs.tbl",
+            sep = " ", row.names = FALSE,
+            quote = FALSE)
+
+# make a new swatre file, this works for all NBS solutions.
+source("sources/r_scripts/swatre_input.R")
+swatre_nbs_file <- "swatre_NBS.csv"
+soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
+                       swatre_out = paste0("sources/setup/calibration/", swatre_nbs_file),
+                       do_NBS = TRUE
+)
+
+# now functioning for landuse changing NBS. Adapt further for NBS that leave
+# original landuse applicable.
+
+# update your subcatchment database with the NBS maps
+# the function will find any NBS maps in the base dataset and include them in 
+# the subcatchments.
+points_id <- c(52, 54)# use if you want to change catchment
+reso <- c(10)
+
+# load the function for subcatchment preparation
+source("sources/r_scripts/create_subcatch_db.R")
+
+# run for both resolutions and all selected subcatchments
+for (i in seq_along(points_id)) {
+  for (j in seq_along(reso)) {
+    base_maps_subcatchment(
+      cell_size = reso[j],
+      sub_catch_number = points_id[i],
+      run_type = "base",  # run_type: choose from "cal" or "base"
+      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
+    )
+  }
+}
+
+## 3.2 Make a lisem run with a specific NBS measure of scenario ----------------
+
+# create lisem run
+source("sources/r_scripts/create_lisem_run.R")
+
+# choose which NBS measure you want
+NBS_number <- 14 # see /sources/setup/tables/lu_NBS_tbl.csv for the number 
+# corresponding to each NBS, here you can also add more
+points_id <- c(52, 54)# use if you want to change catchment
+reso <- c(10)
+
+for (i in seq_along(points_id)) {
+  for (j in seq_along(reso)) {
+    create_lisem_run(
+      resolution = reso[j], 
+      catch_num = points_id[i],
+      swatre_file = swatre_nbs_file,
+      run_type = "base",
+      do_runfile = T,
+      NBS_num = NBS_number # number corresponding to NBS in landuse table 0 = base simulation
+    )
+  }
+}
+
+
 

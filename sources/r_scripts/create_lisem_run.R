@@ -6,16 +6,28 @@
 #1. Fill runfile template ------------------------------------------------------
 
 make_runfile_lisem <- function(work_dir = NULL,
-                               rain_dir = NULL,
+                               rain_dir = "LISEM_runs/rain",
                                infil_dir = NULL,
                                inp_file = NULL,
                                evdate = NULL,
                                start_time = NULL,
                                end_time = NULL,
                                resolution = 5,
-                               do_ndvi_run = TRUE
+                               do_ndvi_run = TRUE,
+                               run_type = ""
                                ) 
 {
+  
+  # select run type
+  if (run_type == "cal") {
+    do_ndvi = TRUE
+  } else if (run_type == "base") {
+    do_ndvi = FALSE
+  } else {
+    print("ERROR: wrong run_type. Choose from: cal OR base")
+    return()
+  }
+  
   # Adjust runfile lisem 
   run_template <- readLines("sources/setup/runfile_template.run")
   
@@ -31,7 +43,14 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
                               paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
   # rain files
+  if (run_type == "cal") {
   rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
+  } else {
+    rain_file <- paste0("rain_",str_remove_all(as.character(evdate), "-"), ".txt")
+    # set ID map to 1 zone
+    run_temp <- str_replace_all(run_temp, "ID=ID.map",
+                                paste0("ID=one.map"))
+  }
   run_temp <- str_replace_all(run_temp, "<<rain_dir>>",
                               paste0(proj_wd, "/", rain_dir))
   run_temp <- str_replace_all(run_temp, "<<rain_file>>",
@@ -44,12 +63,26 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
                               paste0(proj_wd, "/", infil_dir))
   
+  if (run_type == "cal") {
   # set correct inithead for event
   runname <- str_remove_all(as.character(evdate), "-")
   ih_ev <- str_remove(runname, "^\\d\\d")
   
   run_temp <- str_replace_all(run_temp, "<<ih>>", 
                               paste0("ih", ih_ev))
+  } else {
+    runname <- evdate
+    run_temp <- str_replace_all(run_temp, "<<ih>>", 
+                                paste0("ih"))
+    #set homogeneous init head
+    inihead <- -100
+    run_temp <- str_replace_all(run_temp, "Use one matrix potential=0", 
+                                paste0("Use one matrix potential=1"))
+    run_temp <- str_replace_all(run_temp, "Initial matrix potential=-100", 
+                                paste0("Initial matrix potential=", inihead))
+    
+  }
+  
   # flow solution
   if (resolution > 10) {
     run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
@@ -72,6 +105,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   # set end time
   run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
   
+  if (run_type == "cal") {
   # set baseflowmap
   run_temp <- str_replace(run_temp, "<<baseflow_map>>",
                           paste0("baseflow_", runname, ".map"))
@@ -88,8 +122,19 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "manning=n.map",
                                 paste0("manning=n", datestr, ".map"))
   }
-  
   writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
+  
+  } else {
+    # no baseflow
+    # set dummy value
+    run_temp <- str_replace(run_temp, "<<baseflow_map>>",
+                            paste0("nobaseflow.map"))
+    # set baseflow method
+    run_temp <- str_replace(run_temp, "Channel baseflow method=2",
+                            paste0("Channel baseflow method=0"))
+  }
+  
+  
   
   # runfile with buffers
   run_temp <- str_replace_all(run_temp, "Include Mitigation/Conservation=0",
@@ -114,19 +159,6 @@ make_runfile_lisem <- function(work_dir = NULL,
 
 } # end function make_runfile_lisem()
 
-# # temp code
-# # check if lisem result directory exists, otherwise make
-# if (!dir.exists(paste0(main_dirs[i], "res"))) {
-#   dir.create(paste0(main_dirs[i], "res"))
-# }
-# # if it exists, remove and make new
-# if (dir.exists(paste0(main_dirs[i], "res"))) {
-#   unlink(paste0(main_dirs[i], "res"), recursive = TRUE)
-#   dir.create(paste0(main_dirs[i], "res"))
-# }
-
-
-
 #2. Run pcraster db script----------------------------------------------------
 #points <- read_csv("LISEM_data/setup/outpoints_descriptionN.csv")
 
@@ -139,10 +171,30 @@ create_lisem_run <- function(
   resolution = NULL,
   catch_num = NULL,
   swatre_file = "base_swatre_params.csv",
-  do_ndvi = TRUE,
-  do_runfile = TRUE) 
+  run_type = "",
+  do_runfile = TRUE,
+  NBS_num = 0) 
 {
 
+  
+  # set some triggers
+  # select run type
+  if (run_type == "cal") {
+    do_ndvi = TRUE
+  } else if (run_type == "base") {
+    do_ndvi = FALSE
+  } else {
+    print("ERROR: wrong run_type. Choose from: cal OR base")
+    return()
+  }
+  
+  if (NBS_num != 0) {
+    do_NBS = TRUE
+  } else {
+    do_NBS = FALSE
+  }
+  
+  
   ### prepare and/or copy all maps and table in the run dir/maps
   
   points <- read_csv("sources/setup/outpoints_description.csv")
@@ -159,6 +211,17 @@ create_lisem_run <- function(
   if (catch_num > 1) {
     base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
   }
+  
+  
+  #adjust folder name when simulation NBS
+  if (NBS_num != 0) {
+    NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
+      filter(lu_nr == NBS_num)
+    NBS_name <- NBS_desc$description
+    catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
+                        "m_", NBS_name, "/")
+  } 
+    
 
   run_dir <- paste0("LISEM_runs/", catch_dir)
 
@@ -177,13 +240,19 @@ create_lisem_run <- function(
   }
 
   base_maps <- readLines("sources/base_maps.txt")
+  if (NBS_num != 0) {
+    nbs_map <- dir(paste0(base_dir, "maps/"), paste0("^", NBS_num, ".*"))
+    base_maps <- c(base_maps, nbs_map)
+  }
+    
   # copy the maps to the run_dir
   subdir <- paste0(run_dir, "maps/")
   for (map in base_maps) {
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
               overwrite = TRUE)
   }
-  # copy all inithead files
+ 
+   # copy all inithead files
   ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "ih2")
   for (map in ih_maps) {
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
@@ -191,9 +260,12 @@ create_lisem_run <- function(
   }
   
   #copy landuse and channel table to subdir
-  #file.copy(from = "LISEM_data/tables/lu.tbl", to = subdir, overwrite = T)
-  file.copy(from = "sources/setup/calibration/lu.tbl", to = subdir, overwrite = T)
-  #copy chan.tbl
+  if (NBS_num != 0) {
+    file.copy(from = "sources/setup/calibration/lu_nbs.tbl", to = paste0(subdir, "lu.tbl"), overwrite = T)
+  } else {
+    file.copy(from = "sources/setup/calibration/lu.tbl", to = subdir, overwrite = T)
+  }
+
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   
   # create landuse calibration table: used in prepare_db.map AND prepare_ndvi.mod
@@ -216,7 +288,18 @@ create_lisem_run <- function(
   }
   
   ### start running scripts
-  
+  # update the landuse map, to include the NBS
+  if (NBS_num != 0) {
+    # rename the map
+    file.rename(paste0(subdir, nbs_map), paste0(subdir, "nbs.map"))
+    file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"))
+    pcr_script(
+      script = paste0("prepare_nbs.mod ", NBS_num),
+      script_dir = "sources/pcr_scripts",
+      work_dir = subdir
+    )
+    file.rename(paste0(subdir, "nbs.map"), paste0(subdir, nbs_map))
+  }
   # run pcraster script to finalize run database.
   pcr_script(
     script = "prepare_db.mod",
@@ -253,6 +336,7 @@ create_lisem_run <- function(
     work_dir = subdir
   )
   
+  if (run_type == "cal") {
   # add runfiles for selected events
   events <- read_csv("sources/selected_events.csv", show_col_types = FALSE) %>%
     filter(use == "cal") %>%
@@ -292,32 +376,60 @@ create_lisem_run <- function(
     
     # make runfile  
     if (do_runfile == TRUE) {
+      
       message("Making run file")
       make_runfile_lisem(
         work_dir = run_dir,
-        rain_dir = "LISEM_runs/rain/",   #<= more logical, just one level higher then the runs as common dataset
+        rain_dir = "LISEM_runs/rain/",
         infil_dir = paste0(run_dir, "swatre/tables/"),  
         inp_file = paste0(run_dir, "swatre/profile.inp"),
         evdate = date(events$ts_start[i]),
         start_time = events$str_start[i],
         end_time = events$str_end[i],
         resolution = resolution,
-        do_ndvi_run = do_ndvi
+        do_ndvi_run = do_ndvi,
+        run_type = run_type
       )
     }
   } # end date specific loop
-    
-  #delete intermediate files
-  # leave the tables for later reference
-  #file.remove(paste0(subdir, "chan.tbl"))
-  #file.remove(paste0(subdir, "lu.tbl"))
-  #file.remove(paste0(subdir, "soil.tbl"))
+  } # end run_type = "cal"
   
+  if (run_type == "base") {
+    if (do_runfile == TRUE) {
+    # loop over standard events in stead of dates
+    standard_ev <- c("T50", "T100", "T500", "T500_uur")
+    
+    
+     # make runfile  
+    message("Making run file")
+    
+    for (i in seq_along(standard_ev)) {
+      make_runfile_lisem(
+        work_dir = run_dir,
+        infil_dir = paste0(run_dir, "swatre/tables/"),  
+        inp_file = paste0(run_dir, "swatre/profile.inp"),
+        evdate = standard_ev[i],
+        start_time = "000:0000", #fixed for all stadard events
+        end_time = "000:1440", #fixed for all stadard events
+        resolution = resolution,
+        do_ndvi_run = do_ndvi,
+        run_type = run_type
+      )
+    }
+    }
+    
+    
+    
+    
+  }
+  #delete intermediate files
+
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
-                     swatre_dir = paste0(run_dir, "swatre/"))
+                     swatre_dir = paste0(run_dir, "swatre/"),
+                     do_NBS = do_NBS)
   
-  message("fnished run data creation.")
+  message("finished run data creation.")
   
 } # end create_lisem_run
 

@@ -32,10 +32,10 @@ profile0 = profile.map;	    # map with ubc soil codes for swatre
 buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 
 ### INPUT TABLES ### 
-
+# calibration for standard maps moved to R code,
+# still active in date specific do_ndvi = TRUE
 lutbl = lu.tbl;     # 
 chantbl = chan.tbl;	# table with param values for different channel types
-cal_lu = cal_lu.tbl;# table with mulitplication factors
 
 # for info lu types: 
 # 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras, 5 = verhard, 6 = water, 7 = naaldbos
@@ -89,14 +89,15 @@ report one = dem * 0 + 1; # map with value 1
 report zero = dem * 0; # map with value 0
 lu = if(lu eq 0, 5, lu); # adjust 0 values to urban area
 lu = if(lu eq 5 and cover(bua,0) eq 0, 3,lu); # all builtup that is not bua is assumed to be roads and become grass (3)
-report lu *= area; # apply ctachment mask
+report lu *= area; # apply catchment mask
 forest = boolean(lu == 2 or lu == 7);
 
 ################
 ### PROFILE  ### 
 ################ 
+lu_num = if(lu < 10, lu * 100, lu); # original landuse to digit 4 nbs on digit 5 and 6
 profile = scalar(profile0); # map is not always provided as scalar, force here
-profile = if(profile eq 100, 100,profile+100*lu)*area;
+profile = if(profile eq 100, 100,profile + lu_num)*area;
 report profile = if(profile le 1000,100,profile)*area;
 report profn.map = nominal(profile);
 
@@ -116,9 +117,7 @@ out1 = scalar(outlet) * 100; # used to force channel outlet to correct location
 ####################
 ### SURFACE MAPS ### 
 ####################
-calbrRR = scalar(10.0); ## the field data were not very conclusive, at least multiply by 10 or more!
-rr_cal = lookupscalar(cal_lu, 1, lu);
-report rr = calbrRR*lookupscalar(lutbl, 1, lu) * rr_cal; # random roughness (=std dev in cm) 
+report rr = lookupscalar(lutbl, 1, lu); # random roughness (=std dev in cm) 
 
 # added per as last col
 per = lookupscalar(lutbl, 7, lu);
@@ -126,10 +125,7 @@ report per = max(0,min(0.99,per));
 report lai = -ln(1-min(0.95,per))/0.4;
 
 # mannings N based on philips 1989: n = RR/100 + n_residue + n_vegetation * per
-n_res = lookupscalar(lutbl, 2, lu); 
-n_veg = lookupscalar(lutbl, 3, lu);
-mann_cal = lookupscalar(cal_lu, 2, lu);
-report mann = (rr/100 + n_res + n_veg * per) * mann_cal; # VJ was: mann_cal was only multyiplied to per, now to mann
+report mann = lookupscalar(lutbl, 8, lu);
 # report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
 
 # calculate interception
@@ -178,23 +174,15 @@ chanclass = if(bua eq 1,chantype, chantype + 2);
 chanman = lookupscalar(chantbl, 1, chanclass);
 chandiam = if(culvert eq 1, chanwidth);
 
-chanman = windowaverage(if(forest,2*chanman, chanman),50)*chanclean;
-#chosen channel manning is too low for LISEM kin wave, more in forest because of branches etc, and multiplied by 2
-
-Dutch = (profile < 200000 and profile > 1000);
-report dutch.map = Dutch;
-report chanman *= if(Dutch, 1.0,1.5);
-
-# factor 1.3 is an vag calibration that appears in all catchments.I assume there are delays in the discharge that we can only 
-# solve with Manning, but have other causes 
-
-# culverts in channel
 # all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
 bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
+
 chanculvert = scalar(if(cover(culvert, 0) eq 1, 5)); 
-report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean; # culverts 2 (outlets) or 5 (in villages underground)
+report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
 report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
 chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
+report chanman = windowaverage(if(forest,2*chanman, chanman),50)*chanclean;
+#chosen channel manning is too low for LISEM kin wave, more in forest because of branches etc, and multiplied by 2
 
 
 
