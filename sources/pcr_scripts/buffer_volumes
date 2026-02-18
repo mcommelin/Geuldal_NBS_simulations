@@ -1,0 +1,60 @@
+#! --matrixtable --lddin --clone mask.map
+
+# PCRASTER script calculate buffer volume and adjust to overlap with WL data
+# made by Meindert Commelin 2026-02-18        
+###################################################
+
+binding 
+
+### INPUT MAPS ### 
+
+# input maps
+bufvol = buffermask.map;      # map with volume of retention buffers
+bufculvert = buffer_outlet.map;
+dem = dem.map;
+catchment = catchment.map;
+ponds = pondmask.map;
+
+buffers1 = buffers.map;
+bufvolest = bufvolest.map;
+
+bufvol_wl = bufvolwl.map;
+bufvol_dem = bufvol_dem.map;
+
+# values emperically found to improve the buffer simulation for the Geul catchment.
+# the required change in the buffers depends on the resolution!!
+wall_add = 0.0; # value to increase wall height
+floor_down = -0.0; #value to decrease buffer floor 
+
+# the max Q from buffer outlets is based on the volume and the time they empty:
+empty_hours = 24; # 
+
+initial 
+
+buffers = if(bufvol > 0, 1, 0);
+
+# edge buffers krijgt waarde 1 en de rest van de buffer -1
+buf = nominal(cover(buffers*0,catchment));
+s = if(spread(nominal(buf),0,1) eq min(10, celllength()),2,buf); #this should be celllength() instead of 5 but with 20m this does not work
+report bufwall.map=s;
+# 0 is depression, wall is 2, rest is 1
+buffers1=if(s eq 2, wall_add,if(s eq 0, floor_down,0))*catchment; # adding a wall can stops overland flow at the back!?
+report buffers1 = if (cover(ponds,0) eq 1, floor_down, buffers1); # also add the ponds to the buffer map.
+
+
+# make nominal classes for all buffers
+a = clump(nominal(s eq 0));
+
+# fill the original dem
+demf = lddcreatedem(dem, 10, 1e20, 1e20, 1e20);
+# based on the difference between filled and original dem, we can estimate volume for each buffer.
+report bufvolest = areatotal((demf - dem) * scalar(s eq 0),a)*cellarea();
+# calculate the average volume for the dem based buffers as well as the WL based buffers
+report bufvol_wl = areaaverage(if(bufvol > 1, bufvol) * catchment, nominal(catchment));
+report bufvol_dem = areaaverage(if(bufvolest > 0, bufvolest), nominal(catchment));
+
+# this check shows that on 10 m resolution the difference between dem buffers and wl buffer volumes is very small!
+# so we propose to not change anything.
+
+# calculate maxQ from buffer outlets
+# 

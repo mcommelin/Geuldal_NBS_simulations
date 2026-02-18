@@ -31,6 +31,9 @@ dem_orig = dem_orig.map;
 buffers1 = buffers.map;
 bufvolest = bufvolest.map;
 
+bufvol_wl = bufvolwl.map;
+bufvol_dem = bufvold_dem.map;
+
 initial
 
 buffers = if(bufvol > 0, 1, 0);
@@ -40,7 +43,7 @@ buf = nominal(cover(buffers*0,catchment));
 s = if(spread(nominal(buf),0,1) eq min(10, celllength()),2,buf); #this should be celllength() instead of 5 but with 20m this does not work
 report bufwall.map=s;
 # 0 is depression, wall is 2, rest is 1
-buffers1=if(s eq 2,0.5,if(s eq 0,-1,0))*catchment; # with 1 meter wall but that stops overland flow at the back?
+buffers1=if(s eq 2,0.5,if(s eq 0,-1,0))*catchment; # with 0.5 meter wall but that stops overland flow at the back?
 report buffers1 = if (cover(ponds,0) eq 1, -1, buffers1);
 
 # adjust channel in buffers
@@ -50,12 +53,12 @@ chanmanbuf = if(buffers1 eq -1, 0.1, chanman)*chanmask;
 report chansidebuf = if(buffers1 eq -1, 1, 0)*chanmask; #trapezium shaped
 
 # buffer outlet culverts
-# this assumes that the buffer outlet has a design slope angle of 2%, and manning of concrete ...
+# this assumes that the buffer outlet has a design slope angle of 5%, and manning of concrete ...
 report chanmanbuf = if(cover(bufculvert,0) eq 1, 0.013, chanman)*chanmask;
 report changradbuf = if(cover(bufculvert,0) eq 1, 0.05, changrad)*chanmask;
 
 #geschat volume als je in lisem buffers aanzet met kaart buffers1.map
-#demf = lddcreatedem(dem1 + buffers1, 10, 1e20, 1e20, 1e20);
-#report bufvolest = areatotal((demf - dem1) * scalar(buffers1 eq -1),a)*cellarea();
-
-
+a = clump(nominal(buffers1 eq -1));
+#demf = lddcreatedem(dem, 10, 1e20, 1e20, 1e20);
+#report bufvolest = areatotal((demf - dem) * scalar(buffers1 eq -1),a)*cellarea();
+#report bufvoldif = cover(bufvol, 0) - bufvolest;
