@@ -8,7 +8,7 @@
 binding
 
 # input maps
-buffers = buffermask.map;      # map with boolean location of retention buffers
+bufvol = buffermask.map;      # map with volume of retention buffers
 bufculvert = buffer_outlet.map;
 dem = dem.map;
 catchment = catchment.map;
@@ -20,7 +20,7 @@ chanman = chanman.map;     # Manning n of channels
 chanmask = chanmask.map;    # location of channels value = 1 (optional)
 ponds = pondmask.map;
 
-# save as differetn named maps to avoid confusion and be able to really run with and without buffers
+# save as different named maps to avoid confusion and be able to really run with and without buffers
 chanwidthbuf = chanwidthbuf.map;  # width of channels with buffers
 chandepthbuf = chandepthbuf.map;  # depth of channels with buffers
 chanmanbuf = chanmanbuf.map;  # man at outflow poins buffers
@@ -32,6 +32,8 @@ buffers1 = buffers.map;
 bufvolest = bufvolest.map;
 
 initial
+
+buffers = if(bufvol > 0, 1, 0);
 
 # edge buffers krijgt waarde 1 en de rest van de buffer -1
 buf = nominal(cover(buffers*0,catchment));
@@ -52,5 +54,8 @@ report chansidebuf = if(buffers1 eq -1, 1, 0)*chanmask; #trapezium shaped
 report chanmanbuf = if(cover(bufculvert,0) eq 1, 0.013, chanman)*chanmask;
 report changradbuf = if(cover(bufculvert,0) eq 1, 0.05, changrad)*chanmask;
 
+#geschat volume als je in lisem buffers aanzet met kaart buffers1.map
+#demf = lddcreatedem(dem1 + buffers1, 10, 1e20, 1e20, 1e20);
+#report bufvolest = areatotal((demf - dem1) * scalar(buffers1 eq -1),a)*cellarea();
 
 
