@@ -139,7 +139,7 @@ for (i in seq_along(points_id)) {
 
   
   # you can also run for one specific subcatchment e.g.
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 14, calc_ldd = F, run_type = "cal")
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 4, calc_ldd = F, run_type = "cal")
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -190,7 +190,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 10, catch_num = 14, swatre_file = swatre_file, T, F,
+create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, T, F,
                  run_type = "cal")
 
 ## 2.5 Calibration settings and figures ----------------------------------------

@@ -71,7 +71,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   ih_ev <- str_remove(runname, "^\\d\\d")
   
   run_temp <- str_replace_all(run_temp, "<<ih>>", 
-                              paste0("ih", ih_ev))
+                              paste0("i", ih_ev, "head"))
   } else {
     # run with standard rain
     
@@ -241,7 +241,7 @@ create_lisem_run <- function(
    # copy all inithead files
   # TODO adjust for cal or base run
   if (run_type == "cal") {
-  ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "ih2")
+  ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "i2")
   for (map in ih_maps) {
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
               overwrite = TRUE)
