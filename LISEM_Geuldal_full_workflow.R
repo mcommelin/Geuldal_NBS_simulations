@@ -57,6 +57,8 @@ spatial_data_to_pcr()
 # set force_ldd = TRUE to recalculate the ldd
 ldd_subcatch(force_ldd = FALSE)
 
+#TODO add the buffer volumes script in the above function
+
 # 2. Calibration on subcatchments ---------------------------------------
 # we use subcatchments to test the model setup and do the calibration
 # the used subcatchments are (ID number points table):
@@ -134,7 +136,7 @@ for (i in seq_along(points_id)) {
 
   
   # you can also run for one specific subcatchment e.g.
-base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, do_NDVI = T, calc_ldd = F)
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 14, calc_ldd = F, run_type = "cal")
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set in this stage.
@@ -188,7 +190,8 @@ for (i in seq_along(points_id)) {
 
 # you can also run for one specific subcatchment e.g.
 
-create_lisem_run(resolution = 10, catch_num = 54, swatre_file = swatre_file, T, F)
+create_lisem_run(resolution = 10, catch_num = 14, swatre_file = swatre_file, T, F,
+                 run_type = "cal")
 
 ## 2.5 Calibration settings and figures ----------------------------------------
 

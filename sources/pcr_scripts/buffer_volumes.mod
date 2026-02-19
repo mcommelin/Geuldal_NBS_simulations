@@ -10,7 +10,7 @@ binding
 
 # input maps
 bufvol = buffermask.map;      # map with volume (by WL) of retention buffers
-bufculvert = buffer_outlet.map; # outlet locations + diameter of buffers
+#bufculvert = buffer_outlet.map; # outlet locations + diameter of buffers
 dem = dem.map;
 catchment = catchment.map;
 ponds = pondmask.map;
@@ -29,7 +29,7 @@ bufmean_wl = bufmean_wl.map; # mean buffer volume WL data
 bufmean_dem = bufmean_dem.map; # mean buffer volume DEM
 bufmean_comb = bufmean_comb.map; 
 
-buffer_out = outlet_buf.map;
+buffer_out = buffer_outlet.map;
 maxq = maxq.map;
 
 # values emperically found to improve the buffer simulation for the Geul catchment.
@@ -69,16 +69,16 @@ report bufvolest = areatotal(if(bufwall eq 0, demf - dem), a) * cellarea();
 bufvol_comb = if(bufwall eq 0, if(bufvol > 1, bufvol, bufvolest));
 
 # calculate the average volume for the dem based buffers as well as the WL based buffers
-report bufmean_wl = areaaverage(if(bufvol > 1, bufvol) * catchment, nominal(catchment));
-report bufmean_dem = areaaverage(if(bufvolest > 0, bufvolest), nominal(catchment));
-report bufmean_comb = areaaverage(if(bufvol_comb > 0, bufvol_comb), nominal(catchment));
+#report bufmean_wl = areaaverage(if(bufvol > 1, bufvol) * catchment, nominal(catchment));
+#report bufmean_dem = areaaverage(if(bufvolest > 0, bufvolest), nominal(catchment));
+#report bufmean_comb = areaaverage(if(bufvol_comb > 0, bufvol_comb), nominal(catchment));
 
 # this check shows that on 10 m resolution the difference between dem buffers and wl buffer volumes is very small!
 # so we propose to not change anything.
 
 # all buffers with a very small volume are adapted to have at least the capacity to storm 1 m water over the
 # floor area.
-report bufvol_comb = if(bufvol_comb / areaarea(a) < 1, areaarea(a), bufvol_comb);
+bufvol_comb = if(bufvol_comb / areaarea(a) < 1, areaarea(a), bufvol_comb);
 
 # find channel cells that leave a buffer
 report buffer_out = scalar(if(bufwall eq 2 and downstream(Ldd, bufwall) eq 1, 1, 0)) * chanmask;

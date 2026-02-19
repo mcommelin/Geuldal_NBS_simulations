@@ -137,24 +137,25 @@ make_runfile_lisem <- function(work_dir = NULL,
   
   #TODO remove the buffer additional option, just include in main calibration
   # runfile with buffers
-  run_temp <- str_replace_all(run_temp, "Include Mitigation/Conservation=0",
-                              "Include Mitigation/Conservation=1")
-  run_temp <- str_replace_all(run_temp, "Include buffers=0",
-                              "Include buffers=1")
   
-  # replace channel buffer maps
-  run_temp <- str_replace_all(run_temp, "chanwidth=chanwidth.map",
-                              "chanwidth=chanwidthbuf.map")
-  run_temp <- str_replace_all(run_temp, "chandepth=chandepth.map",
-                              "chandepth=chandepthbuf.map")
-  run_temp <- str_replace_all(run_temp, "chanbuf=chanman.map",
-                              "chanwidth=chanmanbuf.map")
-  run_temp <- str_replace_all(run_temp, "changrad=changrad.map",
-                              "chandepth=changradbuf.map")
-  run_temp <- str_replace_all(run_temp, "chanside=zero.map",
-                              "chanside=chansidebuf.map")
-  
-  writeLines(run_temp, paste0(work_dir, "runfiles/", runname, "buf.run"))
+  # run_temp <- str_replace_all(run_temp, "Include Mitigation/Conservation=0",
+  #                             "Include Mitigation/Conservation=1")
+  # run_temp <- str_replace_all(run_temp, "Include buffers=0",
+  #                             "Include buffers=1")
+  # 
+  # # replace channel buffer maps
+  # run_temp <- str_replace_all(run_temp, "chanwidth=chanwidth.map",
+  #                             "chanwidth=chanwidthbuf.map")
+  # run_temp <- str_replace_all(run_temp, "chandepth=chandepth.map",
+  #                             "chandepth=chandepthbuf.map")
+  # run_temp <- str_replace_all(run_temp, "chanman=chanman.map",
+  #                             "chanman=chanmanbuf.map")
+  # run_temp <- str_replace_all(run_temp, "changrad=changrad.map",
+  #                             "changrad=changradbuf.map")
+  # run_temp <- str_replace_all(run_temp, "chanside=zero.map",
+  #                             "chanside=chansidebuf.map")
+  # 
+  # writeLines(run_temp, paste0(work_dir, "runfiles/", runname, "buf.run"))
   
 
 } # end function make_runfile_lisem()
