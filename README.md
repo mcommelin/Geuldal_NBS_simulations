@@ -20,7 +20,7 @@ The repository only contains code and some tables with parameters and settings. 
 Set basic settings in the config_template.yaml and save it as config.yaml. 
 The main workflow can be followed with the R script: LISEM_Geuldal_full_workflow.R  
 
-At the moment the workflow is finished untill the setup and evaluation of sub catchments for calibration.
+At the moment the workflow is finished until the setup and evaluation of sub catchments for calibration.
 To run the code properly the ./LISEM_data/ and ./spatial_data/ folders are required.
 
 # Required Software
