@@ -14,7 +14,8 @@ make_runfile_lisem <- function(work_dir = NULL,
                                end_time = NULL,
                                resolution = 5,
                                do_ndvi_run = TRUE,
-                               run_type = ""
+                               run_type = "",
+                               theta_cal = NULL
                                ) 
 {
   
@@ -63,6 +64,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "<<swatre_dir>>", 
                               paste0(proj_wd, "/", infil_dir))
   
+  # initial head
   if (run_type == "cal") {
   # set correct inithead for event
   runname <- str_remove_all(as.character(evdate), "-")
@@ -71,6 +73,8 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "<<ih>>", 
                               paste0("ih", ih_ev))
   } else {
+    # run with standard rain
+    
     # for now we use a homogeneous inithead in the base runs.
     # TODO update to corrected inithead profiles
     runname <- evdate
@@ -123,7 +127,7 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace_all(run_temp, "manning=n.map",
                                 paste0("manning=n", datestr, ".map"))
   }
-  writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
+
   
   } else {
     # no baseflow
@@ -134,30 +138,16 @@ make_runfile_lisem <- function(work_dir = NULL,
     run_temp <- str_replace(run_temp, "Channel baseflow method=2",
                             paste0("Channel baseflow method=0"))
   }
+ 
+  # set theta calibration
+  if (!is.null(theta_cal)) {
+    run_temp <- str_replace(run_temp, "Theta calibration=1.00",
+                            paste0("Theta calibration=", theta_cal))
+  }
   
-  #TODO remove the buffer additional option, just include in main calibration
-  # runfile with buffers
-  
-  # run_temp <- str_replace_all(run_temp, "Include Mitigation/Conservation=0",
-  #                             "Include Mitigation/Conservation=1")
-  # run_temp <- str_replace_all(run_temp, "Include buffers=0",
-  #                             "Include buffers=1")
-  # 
-  # # replace channel buffer maps
-  # run_temp <- str_replace_all(run_temp, "chanwidth=chanwidth.map",
-  #                             "chanwidth=chanwidthbuf.map")
-  # run_temp <- str_replace_all(run_temp, "chandepth=chandepth.map",
-  #                             "chandepth=chandepthbuf.map")
-  # run_temp <- str_replace_all(run_temp, "chanman=chanman.map",
-  #                             "chanman=chanmanbuf.map")
-  # run_temp <- str_replace_all(run_temp, "changrad=changrad.map",
-  #                             "changrad=changradbuf.map")
-  # run_temp <- str_replace_all(run_temp, "chanside=zero.map",
-  #                             "chanside=chansidebuf.map")
-  # 
-  # writeLines(run_temp, paste0(work_dir, "runfiles/", runname, "buf.run"))
-  
-
+  # save the runfile
+   writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
+   
 } # end function make_runfile_lisem()
 
 #2. Make LISEM run ----------------------------------------------------
@@ -350,7 +340,10 @@ create_lisem_run <- function(
                                     side = "left", pad = "0"), ":",
                             str_pad(as.character(hour(ts_end) * 60 + minute(ts_end)), width = 4,
                                     side = "left", pad = "0")))
-  
+  # load theta_cal file
+  cn = catch_num
+  theta_factors <- read_csv("sources/setup/calibration/calibration_theta.csv") %>%
+    filter(catch_num == cn)
   
   for (i in seq_along(events$event_start)) {
     #make baseflow
@@ -374,13 +367,21 @@ create_lisem_run <- function(
     file.rename(paste0(subdir, "baseflow.map"),
                 paste0(subdir, "baseflow_", date_event, ".map"))
     
-    # make runfile  
+    # get theta_cal
+    if (nrow(theta_factors) == 0) {
+      theta_cal <-  1.00
+    } else {
+    theta_cal <- theta_factors %>%
+      filter(date == date_event)
+    
+    theta_cal <- theta_cal$theta_cal}
+  
+        # make runfile  
     if (do_runfile == TRUE) {
       
       message("Making run file")
       make_runfile_lisem(
         work_dir = run_dir,
-        rain_dir = "LISEM_runs/rain/",
         infil_dir = paste0(run_dir, "swatre/tables/"),  
         inp_file = paste0(run_dir, "swatre/profile.inp"),
         evdate = date(events$ts_start[i]),
@@ -388,7 +389,8 @@ create_lisem_run <- function(
         end_time = events$str_end[i],
         resolution = resolution,
         do_ndvi_run = do_ndvi,
-        run_type = run_type
+        run_type = run_type,
+        theta_cal = theta_cal
       )
     }
   } # end date specific loop
