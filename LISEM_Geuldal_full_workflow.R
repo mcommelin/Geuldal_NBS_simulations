@@ -49,15 +49,18 @@ catch_maps_res()
 # in ./spatial_data/
 spatial_data_to_pcr()
 
+#note, the volumes of rainwater retention buffers and the corresponding outflow
+# rate is calculated with ./sources/pcr_scripts/buffer_volumes.mod
+# this is done manually for 10 resolution - the resulting maxq map is available
+# in ./spatial_data and is used for all resolutions.
+
 # in the function below the local drain direction maps are made and based
 # on the csv file describing all outpoints, subcatchments are made.
-# NOTE: ldd calculations for the whole Geul catchement take a lot of time
+# NOTE: ldd calculations for the whole Geul catchment take a lot of time
 # these maps are also provided in ./spatial_data/prepared/
 # manually adding these to the correct folders will speed up time.
 # set force_ldd = TRUE to recalculate the ldd
 ldd_subcatch(force_ldd = FALSE)
-
-#TODO add the buffer volumes script in the above function
 
 # 2. Calibration on subcatchments ---------------------------------------
 # we use subcatchments to test the model setup and do the calibration

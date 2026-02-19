@@ -84,4 +84,4 @@ bufvol_comb = if(bufvol_comb / areaarea(a) < 1, areaarea(a), bufvol_comb);
 report buffer_out = scalar(if(bufwall eq 2 and downstream(Ldd, bufwall) eq 1, 1, 0)) * chanmask;
 
 # calculate maxQ for buffer outlets
-report maxq = if(buffer_out eq 1, upstream(Ldd, cover(bufvol_comb, 0)) / empty_hours, 0) / 3600; # m3 /sec
+report maxq = cover(if(buffer_out eq 1, upstream(Ldd, cover(bufvol_comb, 0)) / empty_hours, 0) / 3600, 0) * catchment; # m3 /sec
