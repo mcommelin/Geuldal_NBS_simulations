@@ -10,8 +10,8 @@ chandepth,vector,,,channels,channel_buffer,depth,max
 chantype,vector,,,channels,channel_buffer,chan_type,max
 culvertmask,vector,,,channels,channel_buffer,culvert_bool,min
 bua,vector,,,build_up_area,urban,bua,max
-buffermask,vector,,,buffers,channel_buffer,,max
-buffer_outlet,vector,,,buffer_outlet,channel_buffer,d_new,max
+buffermask,vector,,,buffers,channel_buffer,volumes,max
+maxq,raster,max,,maxq_buffer_outlet.map,,,max
 pondmask,vector,,,ponds,channel_buffer,,max
 tilestorage,vector,,,tilestorage,urban,berging,max
 hard_surface,vector,,,hard_surface,urban,,mean

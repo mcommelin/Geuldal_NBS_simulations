@@ -380,6 +380,22 @@ af_buf <- duik_buf %>%
 #st_write(af_buf, "spatial_data/channel_buffer.gpkg", layer = "buffer_outlet",
 #         delete_layer = T)
 
+
+# add buffer volume to buffer layer, this is based on the manual edited version!
+
+# load buffer volume data (from pdok)
+buf_vol <- st_read("data/data_wl/pdok_buffers.gpkg", layer = "Regenwaterbuffer") %>%
+  select(actueelvolume)
+
+# load buffers from spatial_data
+buffers <- st_read("spatial_data/channel_buffer.gpkg", layer = "buffers")%>%
+  st_join(buf_vol) %>%
+  mutate(volumes = ifelse(is.na(actueelvolume), 1, actueelvolume)) %>%
+  select(-actueelvolume)
+
+st_write(buffers, "spatial_data/channel_buffer.gpkg", layer = "buffers",
+                  delete_layer = T)
+
 ## 3.2 natural ponds -----------------------------------------------------------
 
 # load osm natural water data

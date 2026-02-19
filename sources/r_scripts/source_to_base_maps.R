@@ -39,11 +39,7 @@ spatial_data_to_pcr <- function(only_NBS = FALSE) {
         c <- F
         cover_maps <- c("roads_fraction", "buildings", "hard_surface")
         if (maps_list$name[i] %in% cover_maps)
-          c = T
-        # if (maps_list$name[i] == "buildings")
-        #   c = T
-        # if (maps_list$name[i] == "hard_surface")
-        #   c = T
+          {c = T}
         
         # resample 
         map_res <- terra::rasterize(map, mask[[r]], field = f, cover = c, fun = maps_list$fun[i])

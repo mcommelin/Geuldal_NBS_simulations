@@ -186,7 +186,7 @@ base_maps_subcatchment <- function(
   for (j in seq_along(events)) {
   for (i in seq_along(ih_maps)) {
     map_in = paste0(ih_dir[j], ih_maps[i])
-    map_out_name = paste0(sub_catch_dir, "ih", ih_ev[j], ".", ih_end[i])
+    map_out_name = paste0(sub_catch_dir, "i", ih_ev[j], "head.", ih_end[i])
     tmp_tif = paste0(sub_catch_dir, "tmp.tif")
     #if (DEBUGm) message("IH in ",map_in)
     
