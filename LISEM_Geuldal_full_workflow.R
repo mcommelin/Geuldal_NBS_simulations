@@ -1,17 +1,19 @@
 # full workflow for lisem simulations in the Geul catchment.
 # select lines and execute these with Ctrl + Enter
 
+#=======================================================================#
+#       To run the code below you need the folder spatial_data          #
+#=======================================================================#
+#First download all maps from Sharepoint - Geuldal spatial data         #  
+# 1. place the content inside this cloned repository in ./spatial_data  #
+# 2. move the folder ./spatial_data/prepared/LISEM_data to ./LISEM_data #
+# 3. move the folder ./spatial_data/prepared/rain to ./LISEM_runs/rain  #
+#=======================================================================#
+
 # Initialization ---------------------------------------------------------------
 
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
-
-# To run the code below you need the spatial data!!!
-#First download all maps from Sharepoint - Geuldal spatial data
-# 1. place the content inside this cloned repository in ./spatial_data
-# 2. move the folder ./spatial_data/prepared/LISEM_data to ./LISEM_data
-# 3. move the folder ./spatial_data/prepared/rain to ./LISEM_runs/rain
-
 
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers
@@ -54,7 +56,7 @@ catch_maps_res()
 # in ./spatial_data/
 spatial_data_to_pcr()
 
-#NOTE, the volumes of rainwater retention buffers and the corresponding outflow
+##NOTE, the volumes of rainwater retention buffers and the corresponding outflow
 # rate is calculated with ./sources/pcr_scripts/buffer_volumes.mod
 # this is done manually for 10 resolution - the resulting maxq map is available
 # in ./spatial_data and is used for all resolutions.
@@ -126,8 +128,8 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
 
-points_id <- c(4, 18) # use if you want to change catchment
-reso <- c(10) # select different resolution
+points_id <- c(4, 10, 14, 18) # use if you want to change catchment
+reso <- c(10, 20) # select different resolution
 
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
@@ -139,15 +141,13 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       run_type = "cal",  # run_type: choose from "cal" or "base"
-      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
 
-  
 # you can also run for one specific subcatchment e.g.
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 4, calc_ldd = F, 
-                       run_type = "cal")
+base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, run_type = "cal", calc_ldd = F)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set after this stage.
@@ -178,7 +178,7 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 4, calc_ldd = F,
 
 points_id <- c(4,18) # use if you want to update multiple subcatchments on the go
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go#
-reso = c(10) # 5, 10 or 20
+reso = c(10, 20) # 5, 10 or 20
 
 source("sources/r_scripts/create_lisem_run.R")
 
@@ -195,8 +195,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, T, F,
-                 run_type = "cal")
+create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, run_type = "cal", T)
 
 ## 2.5 Calibration settings and figures ----------------------------------------
 
@@ -232,7 +231,7 @@ create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, T, F
 
 ## 3.1 Simulating standard events ----------------------------------------------
 
-#' Based on the calibration we can run simulations for standard events. 
+# ' Based on the calibration we can run simulations for standard events. 
 #' The have recurrence times of 50, 100 and 500 years.
 #' Set run_type to 'base' to create standard event lisem runs.
 #' All NBS simulations will also be done with standard events.

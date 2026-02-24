@@ -29,6 +29,7 @@ id = ID.map;                # rainfall id grid
 bua = bua.map; 		          # map with build up area.
 profile0 = profile.map;	    # map with ubc soil codes for swatre
 buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
+village = OSMvillage.map;
 
 ### INPUT TABLES ### 
 # calibration for standard maps moved to R code,
@@ -38,6 +39,8 @@ chantbl = chan.tbl;	# table with param values for different channel types
 
 # for info lu types: 
 # 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras, 5 = verhard, 6 = water, 7 = naaldbos
+# parameters:
+# 1 = rr, 5 = smax, 7 = per, 8 = mann
 
 ###################
 ### PROCES MAPS ###
@@ -169,14 +172,18 @@ report chandepth = windowaverage(cd,30) * chanclean;
 
 # calculate mannings for channel
 bua = cover(bua, 0);
-chanclass = if(bua eq 1,chantype, chantype + 2);
+chanclass = if(bua eq 1,chantype, chantype + 2);  
 chanman = lookupscalar(chantbl, 1, chanclass);
-chandiam = if(culvert eq 1, chanwidth);
+chandiam = if(culvert eq 1, chanwidth); # hoezo channel width, is er geen user defined diameter for buffer outlets?
 
 # all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
 bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
 
-chanculvert = scalar(if(cover(culvert, 0) eq 1, 5)); 
+# recalc culvert mask with OSM village
+report culvert = if(cover(village, 0) eq 1 or cover(bufculvert,0) gt 0, 1, 0)*chanclean;  # village are bigger villages in OSM, bua is every hamlet, too much
+# chan culvert type 5 under villages
+chanculvert = scalar(if(cover(culvert, 0) eq 1, 5, 0))*chanclean; 
+# chan culvert type 2 (cilindrical) for buffer outlets
 report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
 report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
 chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 

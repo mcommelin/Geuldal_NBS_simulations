@@ -411,8 +411,8 @@ create_lisem_run <- function(
         infil_dir = paste0(run_dir, "swatre/tables/"),  
         inp_file = paste0(run_dir, "swatre/profile.inp"),
         evdate = standard_ev[i],
-        start_time = "000:0000", #fixed for all stadard events
-        end_time = "000:1440", #fixed for all stadard events
+        start_time = "001:0000", #fixed for all stadard events
+        end_time = "001:1440", #fixed for all stadard events
         resolution = resolution,
         do_ndvi_run = do_ndvi,
         run_type = run_type

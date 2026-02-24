@@ -61,7 +61,7 @@ soil_landuse_to_swatre <- function(file = "",
   if (DEBUGm) message("pedotransfer.R")
   source("modules/rcropmod/pedotransfer.R")
   
-  DF = 1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
+  DF = 1.1;#1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
   # this decreases the Ksat mainly, assuming a higher bulk density
   
   sr_params <- ubc_all %>%
