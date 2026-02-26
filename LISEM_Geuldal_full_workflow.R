@@ -360,7 +360,7 @@ for (i in seq_along(points_id)) {
 #' 2. make a database for each hpc_sub, reuse the functions from section 2.
 #' 3. make a runfile for each hpc_sub
 #' 4. run all the hpc_sub on the hpc
-#' 5. collect results and make a discharge file for d-hydro
+#' 5. collect results and make a discharge file for d-hydro (HKV)
 
 ## 4.1 HPC subcatchments ------------------------------------------------------
 
@@ -368,4 +368,3 @@ for (i in seq_along(points_id)) {
 # make table with subcatch ID
 # assign subcatch to lateraal ID
 # make lisem catchments based on lateraal ID
-  # question, can we have two side of dhydro domain in 1 lisem run?
