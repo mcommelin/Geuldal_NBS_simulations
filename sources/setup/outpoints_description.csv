@@ -23,11 +23,11 @@ x,y,point,cell_size,name,description,subcatch_name,code
 188511.616,309012.18,22,5,Slenaken,Slenaken,Gulp,13.H.25
 189620.437,307386.242,23,5,Teuven,Teuven,Gulp,13.H.159
 197337.52,303242.83,51,5,Leverbach,LandEX exploration catchment,Leverbach,
-189036.726,312487.305,52,5,Pesakergrub,LandEX exploration catchment,Pesakergrub,
+189036.726,312487.305,52,5,Pesaken,LandEX exploration catchment,Pesaken,
 192442.23,311358.341,53,5,Landeus,LandEX exploration catchment,Landeus,
 198601.08,313423.14,54,5,Bocholtz,LandEX exploration catchment,Bocholtz,
 193705.77,307547.49,90,5,Sippenaeken,Test catchment,Sippenaeken,
-178376.67,323010.425,1,10,juliana kanaal,outlet Geul bij Julianakanaal,Geul,10.Q.36
+178376.67,323000.425,1,10,juliana kanaal,outlet Geul bij Julianakanaal,Geul,10.Q.36
 189258.8,318193.66,2,10,scheumerbeek,Ransdalerveld,Ransdalerveld,
 189912.65,316792.76,3,10,lange gracht,Vrakelbergerweg,Vrakelbergerweg,
 190797.423,314431.295,4,10,Gulp,Instroom Gulp in de Geul,Gulp,
@@ -51,7 +51,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 188511.616,309012.18,22,10,Slenaken,Slenaken,Gulp,13.H.25
 189620.437,307386.242,23,10,Teuven,Teuven,Gulp,13.H.159
 197388.74,303269.99,51,10,LeverBach,LandEX exploration catchment,LeverBach,
-189080.13,312415.68,52,10,Pesakergrub,LandEX exploration catchment,Pesakergrub,
+189080.13,312415.68,52,10,Pesaken,LandEX exploration catchment,Pesaken,
 192437.42,311351.15,53,10,Landeus,LandEX exploration catchment,Landeus,
 198600.03,313424.19,54,10,Bocholtz,LandEX exploration catchment,Bocholtz,
 193719.549,307559.559,90,10,Sippenaeken,Test catchment,Sippenaeken,
@@ -79,7 +79,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 188511.616,309012.18,22,20,Slenaken,Slenaken,Gulp,13.H.25
 189620.437,307386.242,23,20,Teuven,Teuven,Gulp,13.H.159
 197378.98,303268.59,51,20,LeverBach,LandEX exploration catchment,LeverBach,
-189080.13,312415.68,52,20,Pesakergrub,LandEX exploration catchment,Pesakergrub,
+189080.13,312415.68,52,20,Pesaken,LandEX exploration catchment,Pesaken,
 192437.42,311351.15,53,20,Landeus,LandEX exploration catchment,Landeus,
 198600.03,313424.19,54,20,Bocholtz,LandEX exploration catchment,Bocholtz,
 193699.06,307546.35,90,20,Sippenaeken,Test catchment,Sippenaeken,

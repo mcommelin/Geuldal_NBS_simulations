@@ -1,5 +1,5 @@
 Land,UBC,soil_map_unit,description,main_tex,CODE,depth,clay,silt,sand,gravel,om,note
-X,100,bebouwde kom,,S,100,100,0.08,0.35,0.57,0,0.35,bebouwde kom (zandig)
+X,100,bebouwde kom,tuinaarde,S,100,100,0.12,0.18,0.7,0,0.6,bebouwde kom (zandig)
 NL,120000,KK en  varianten,"Kleefaarde, verweerde kalksteen",K,120000-A,30,0.284,0.584,0.133,0,1.6,
 NL,120000,KK en  varianten,"Kleefaarde, verweerde kalksteen",K,120000-B,40,0.284,0.584,0.133,5,0.8,
 NL,120000,KK en  varianten,"Kleefaarde, verweerde kalksteen",K,120000-C,120,0.284,0.584,0.133,10,0.35,

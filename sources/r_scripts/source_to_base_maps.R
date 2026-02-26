@@ -1,20 +1,25 @@
 # functions to convert the base data from ./spatial_data to Geul input
 
 ## spatial_data to Geul_xm 
-spatial_data_to_pcr <- function() {
+spatial_data_to_pcr <- function(only_NBS = FALSE) {
   
   res <- c(5, 10, 20)
   maps_list <- read_csv("sources/transformations_maps.csv")
   dir_sd <- "spatial_data/"
   
+  NBS_maps <- dir("spatial_data/NBS_maps/", pattern = ".tif$")
+  NBS_out <- str_replace_all(NBS_maps, "tif$", "map")
+
   # load outline of catchment to reduce data load
-  catch_poly <- st_read(paste0(dir_sd,"catchment.gpkg"), layer = "catch_buffered_250")
+  #catch_poly <- st_read(paste0(dir_sd,"catchment.gpkg"), layer = "catch_buffered_250")
   #prepare resolution specific base data
   res_dir <- paste0("LISEM_data/Geul_", res, "m/maps/")
   mask <- vector("list", length = length(res))
   for (r in seq_along(res)) {
     mask[[r]] <- rast(paste0(dir_sd, "mask_", res[r], "m.map"))
   }
+  
+  if(only_NBS == FALSE) {
   
   for (i in seq_along(maps_list$name)) { #loop over base maps
   #for (i in 1:17) {
@@ -34,11 +39,7 @@ spatial_data_to_pcr <- function() {
         c <- F
         cover_maps <- c("roads_fraction", "buildings", "hard_surface")
         if (maps_list$name[i] %in% cover_maps)
-          c = T
-        # if (maps_list$name[i] == "buildings")
-        #   c = T
-        # if (maps_list$name[i] == "hard_surface")
-        #   c = T
+          {c = T}
         
         # resample 
         map_res <- terra::rasterize(map, mask[[r]], field = f, cover = c, fun = maps_list$fun[i])
@@ -58,6 +59,7 @@ spatial_data_to_pcr <- function() {
     
   } #end maps list loop
   
+
   # run a PCRaster script to do some additional step for all resolutions
   # 1: remove ponds from dhydro domain
   # 2: fill nodata values in soil UBC profile.map
@@ -73,6 +75,20 @@ spatial_data_to_pcr <- function() {
       file.remove(aux_files)
     }
   }
+    
+  } # end section only_NBS == FALSE
+  
+  # loop over NBS_maps
+  for (i in seq_along(NBS_maps)) { 
+    map <- rast(paste0(dir_sd, "NBS_maps/", NBS_maps[i]))
+    for (r in seq_along(res)) {
+      map_res <- terra::resample(map, mask[[r]], method = "near")
+      map_out <- paste0(res_dir[[r]], NBS_out[i])
+      writeRaster(map_res, map_out , filetype = "PCRaster", NAflag = -9999,
+                  overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+    }
+  }
+  
 } #end function spatial_data_to_pcr
 
 ##  catchment based dem etc 
@@ -97,7 +113,6 @@ for(i in seq_along(cell_size)) {
     dir.create(res_dir)
     dir.create(map_dir)
   }
-  
   #write maps
   #mask
   mask <- rast(paste0("spatial_data/mask_", cell_size[i],"m.map"))
@@ -109,13 +124,11 @@ for(i in seq_along(cell_size)) {
   dem <- terra::resample(base_dem_5m, mask, method = "average")
   writeRaster(dem, out, filetype = "PCRaster", NAflag = -9999,
               overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
-  
   #catchment
   out <- paste0(res_dir, "maps/catchment.map")
   catch <- terra::resample(base_catch_20m, mask, method = "near")
   writeRaster(catch, out, filetype = "PCRaster", NAflag = -9999,
               overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
-  
 }
 } #end function catch_maps_res
 
