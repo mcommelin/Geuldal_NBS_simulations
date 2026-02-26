@@ -9,7 +9,7 @@ binding
 
 # input maps
 bufvol = buffermask.map;      # map with volume of retention buffers
-bufculvert = buffer_outlet.map;
+maxq = maxq.map;
 dem = dem.map;
 catchment = catchment.map;
 grad = grad.map;
@@ -24,6 +24,9 @@ initial
 
 # make a boolean buffermask
 buffers = if(bufvol > 0, 1, 0);
+
+# make a bufculvert boolean map
+bufculvert = if(maxq > 0, 1, 0);
 
 # identify buffers, find the wall and the buffer floor.
 buf = nominal(cover(buffers*0,catchment));

@@ -28,8 +28,8 @@ buildings = buildings.map;  # fraction of buildings in cell. (optional)
 id = ID.map;                # rainfall id grid
 bua = bua.map; 		          # map with build up area.
 profile0 = profile.map;	    # map with ubc soil codes for swatre
-buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
-village = OSMvillage.map;
+buf_outlet = maxq.map; # location and maximum Q of buffer outlets
+village = bua.map;
 
 ### INPUT TABLES ### 
 # calibration for standard maps moved to R code,

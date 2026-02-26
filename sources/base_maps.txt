@@ -18,9 +18,7 @@ outpoints.map
 ldd.map
 bua.map
 buffermask.map
-buffer_outlet.map
 maxq.map
 pondmask.map
 tilestorage.map
 hard_surface.map
-OSMvillage.map
