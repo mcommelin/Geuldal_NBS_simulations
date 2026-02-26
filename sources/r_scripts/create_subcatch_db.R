@@ -169,6 +169,7 @@ base_maps_subcatchment <- function(
     work_dir = sub_catch_dir
   )
   
+  # get the inithead maps for calibration events or wet/dry conditions
   if(run_type == "cal") {
   # initial head per subcatch
   # initial head maps
@@ -212,6 +213,50 @@ base_maps_subcatchment <- function(
   } # end init head files loop
   } # end event loop
   } # end run_type = "cal"
+  
+  # for standard events we run wil a wet and a dry condition
+  if(run_type == "base") {
+    # initial head per subcatch
+    # initial head maps
+    # if resolution = 20, copy from base to Geul
+    # if different, copy and resample
+    cond <- c("wet", "dry")
+
+    ih_dir <- paste0("spatial_data/inithead/inith_", cond, "_20m/")
+    ih_maps <- dir(ih_dir[1], pattern = "\\d$")
+    ih_end <- str_extract(ih_maps, "\\d*$")
+    
+    # per condition
+    for (j in seq_along(cond)) {
+      for (i in seq_along(ih_maps)) {
+        map_in = paste0(ih_dir[j], ih_maps[i])
+        map_out_name = paste0(sub_catch_dir, "ihead_", cond[j], ".", ih_end[i])
+        tmp_tif = paste0(sub_catch_dir, "tmp.tif")
+        #if (DEBUGm) message("IH in ",map_in)
+        # gdalwarp makes a temp tif
+        gdalwarp(
+          srcfile = map_in,
+          dstfile = tmp_tif,
+          t_srs   = srs,         
+          te      = c(xmin, ymin, xmax, ymax),
+          ts      = c(ncol, nrow),         
+          r       = resample_method,    
+          overwrite = TRUE
+        )
+        # use gdaltranslate to create a PCRaster map  
+        gdal_translate(
+          src_dataset = tmp_tif,
+          dst_dataset = map_out_name,
+          ot = "Float32",
+          of = "PCRaster",
+          mo = "PCRASTER_VALUESCALE=VS_SCALAR"
+        )
+        if (DEBUGm) message("out ",map_out_name)
+        
+      } # end init head files loop
+    } # end condition loop
+  } # end run_type = "base"
+  
   
   if (do_NDVI == TRUE) {
   # 10m NDVI maps, called NDVI.tif in a dir with an event date

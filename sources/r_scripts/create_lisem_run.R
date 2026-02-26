@@ -242,11 +242,14 @@ create_lisem_run <- function(
   # TODO adjust for cal or base run
   if (run_type == "cal") {
   ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "i2")
+  } else if (run_type == "base") {
+    ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "ihead")
+  }
   for (map in ih_maps) {
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
               overwrite = TRUE)
   }
-  }
+  
   
   #copy landuse and channel table to subdir
   # make a difference based on NBS simulations
@@ -411,8 +414,8 @@ create_lisem_run <- function(
         infil_dir = paste0(run_dir, "swatre/tables/"),  
         inp_file = paste0(run_dir, "swatre/profile.inp"),
         evdate = standard_ev[i],
-        start_time = "001:0000", #fixed for all stadard events
-        end_time = "001:1440", #fixed for all stadard events
+        start_time = "001:0000", #fixed for all standard events
+        end_time = "001:1440", #fixed for all standard events
         resolution = resolution,
         do_ndvi_run = do_ndvi,
         run_type = run_type
