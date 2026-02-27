@@ -128,7 +128,6 @@ report lai = -ln(1-min(0.95,per))/0.4;
 
 # mannings N based on philips 1989: n = RR/100 + n_residue + n_vegetation * per
 report mann = lookupscalar(lutbl, 8, lu);
-# report mann = 0.051*rr+0.104*per; # or use simple regression from Limburg data: CAREFULL this is not published 
 
 # calculate interception
 smax_eq = lookupscalar(lutbl, 5, lu);
