@@ -15,7 +15,8 @@ make_runfile_lisem <- function(work_dir = NULL,
                                resolution = 5,
                                do_ndvi_run = TRUE,
                                run_type = "",
-                               theta_cal = NULL
+                               theta_cal = NULL,
+                               cpu_cores = 0
                                ) 
 {
   
@@ -146,6 +147,11 @@ make_runfile_lisem <- function(work_dir = NULL,
                             paste0("Theta calibration=", theta_cal))
   }
   
+  #set number of used cpu cores
+  run_temp <- str_replace(run_temp, "Nr user Cores=0",
+                          paste0("Nr user Cores=", cpu_cores))
+  
+  
   # save the runfile
    writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
    
@@ -161,7 +167,8 @@ create_lisem_run <- function(
   swatre_file = "base_swatre_params.csv",
   run_type = "",
   do_runfile = TRUE,
-  NBS_num = 0) 
+  NBS_num = 0,
+  cpu_cores = 0) 
 {
 
   # set some triggers
@@ -390,7 +397,8 @@ create_lisem_run <- function(
         resolution = resolution,
         do_ndvi_run = do_ndvi,
         run_type = run_type,
-        theta_cal = theta_cal
+        theta_cal = theta_cal,
+        cpu_cores = cpu_cores
       )
     }
   } # end date specific loop
@@ -414,11 +422,12 @@ create_lisem_run <- function(
         infil_dir = paste0(run_dir, "swatre/tables/"),  
         inp_file = paste0(run_dir, "swatre/profile.inp"),
         evdate = standard_ev[i],
-        start_time = "001:0000", #fixed for all stadard events
-        end_time = "001:1440", #fixed for all stadard events
+        start_time = "001:0000", #fixed for all standard events
+        end_time = "001:1440", #fixed for all standard events
         resolution = resolution,
         do_ndvi_run = do_ndvi,
-        run_type = run_type
+        run_type = run_type,
+        cpu_cores = cpu_cores
       )
     }
     }

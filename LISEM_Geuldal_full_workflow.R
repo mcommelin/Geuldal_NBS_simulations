@@ -341,7 +341,8 @@ for (i in seq_along(points_id)) {
       swatre_file = swatre_nbs_file,
       run_type = "base",
       do_runfile = T,
-      NBS_num = NBS_number # number corresponding to NBS in landuse table 0 = base simulation
+      NBS_num = NBS_number, # number corresponding to NBS in landuse table 0 = base simulation
+      cpu_cores = ncpu # number of cpu cores used by lisem (defaults to 50%)
     )
   }
 }
