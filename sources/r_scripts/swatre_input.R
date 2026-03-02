@@ -9,18 +9,26 @@ soil_landuse_to_swatre <- function(file = "",
 {
   # 1. Calculate params -------------------------------------------------------------
   
-  if (do_NBS == TRUE) {
-    lutbl <- "lu_nbs.tbl"
-  } else {
-    lutbl <- "lu.tbl"
-  }
   #load the UBC codes including texture, gravel
   ubc_in <- read_csv(file, show_col_types = FALSE)
   # load landuse classes with OM and O depth
+  lutbl <- "lu.tbl"
   lu_in <- read.table(paste0("sources/setup/calibration/", lutbl))[-1, ] %>%
     select(1, 5, 7) %>%
     rename_with(~ c("lu", "om", "od")) %>%
     mutate(lu = if_else(lu < 10, lu * 100, lu))
+  
+  # the first 7 rows in lu nbs are adapted to reflect the result of the
+  # calibration, but give different output when feeded into the workflow
+  # so for original landuse (1-7) always use the lu.tbl!!!
+  if (do_NBS == TRUE) {
+    lutbl <- "lu_nbs.tbl"
+    lu_nbs <- read.table(paste0("sources/setup/calibration/", lutbl))[-(1:8), ] %>%
+      select(1, 5, 7) %>%
+      rename_with(~ c("lu", "om", "od")) %>%
+      mutate(lu = if_else(lu < 10, lu * 100, lu))
+    lu_in <- bind_rows(lu_in, lu_nbs)
+  } 
   # NBS value go to digit 5 and 6, original landuse to digit 4.
   
   if (DEBUGm) message("Making all soil horizon codes")
@@ -61,7 +69,7 @@ soil_landuse_to_swatre <- function(file = "",
   if (DEBUGm) message("pedotransfer.R")
   source("modules/rcropmod/pedotransfer.R")
   
-  DF = 1.1 #1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
+  DF = 1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
   # this decreases the Ksat mainly, assuming a higher bulk density
   
   sr_params <- ubc_all %>%
