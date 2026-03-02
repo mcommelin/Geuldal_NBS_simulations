@@ -280,8 +280,7 @@ names(lu_tbl) <- nms
 
 # cols in lu table should be:
 # 0 = lu_nr, 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 
-# 7 = cover; 8 = n; 9 = ksat_factor
-#TODO remove ksat_factor and switch to bulkdensity
+# 7 = cover; 8 = n;
 
 #note: columns 4 and 6 are used in SWATRE creation, swatre_input.R
 

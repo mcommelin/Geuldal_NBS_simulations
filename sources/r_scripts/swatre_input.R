@@ -61,7 +61,7 @@ soil_landuse_to_swatre <- function(file = "",
   if (DEBUGm) message("pedotransfer.R")
   source("modules/rcropmod/pedotransfer.R")
   
-  DF = 1.1;#1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
+  DF = 1.1 #1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
   # this decreases the Ksat mainly, assuming a higher bulk density
   
   sr_params <- ubc_all %>%
@@ -158,18 +158,6 @@ soil_landuse_to_swatre <- function(file = "",
              npar_mean = npar_mean * n_cal,
              Ksat_mean = Ksat_mean * ksat_cal)
     
-    if (do_NBS == TRUE) {
-      soil_NBS <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
-        select(lu_nr, ksat_factor) %>%
-        rename(landuse = lu_nr)
-      
-      soil_params <- soil_params %>%
-        left_join(soil_NBS, by = "landuse") %>%
-        mutate(ksat_factor = if_else(is.na(ksat_factor), 1.0, ksat_factor),
-               Ksat_mean = Ksat_mean * ksat_factor)
-    }
-    
-
     tbl_dir <- paste0(swatre_dir, "tables/")
     
     # cleanup /swatre/tables.
