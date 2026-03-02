@@ -47,7 +47,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   if (run_type == "cal") {
   rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
   } else {
-    rain_file <- paste0("rain_",str_remove_all(as.character(evdate), "-"), ".txt")
+    rain_file <- paste0("rain_",str_remove_all(evdate, "_(w|d).*"), ".txt")
     # set ID map to 1 zone
     run_temp <- str_replace_all(run_temp, "ID=ID.map",
                                 paste0("ID=one.map"))
@@ -75,13 +75,14 @@ make_runfile_lisem <- function(work_dir = NULL,
   } else {
     # run with standard rain
     
-    # for now we use a homogeneous inithead in the base runs.
-    # TODO update to corrected inithead profiles
+    # in the standard runs we use a homogeneous inithead:
+    # -50 = wet and -100 = dry
     runname <- evdate
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
                                 paste0("ih"))
     #set homogeneous init head
-    inihead <- -100
+    inihead <- ifelse(str_detect(evdate, "wet"), -50, -100)
+    
     run_temp <- str_replace_all(run_temp, "Use one matrix potential=0", 
                                 paste0("Use one matrix potential=1"))
     run_temp <- str_replace_all(run_temp, "Initial matrix potential=-100", 
@@ -239,7 +240,6 @@ create_lisem_run <- function(
   }
  
    # copy all inithead files
-  # TODO adjust for cal or base run
   if (run_type == "cal") {
   ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "i2")
   for (map in ih_maps) {
@@ -399,8 +399,11 @@ create_lisem_run <- function(
   if (run_type == "base") {
     if (do_runfile == TRUE) {
     # loop over standard events in stead of dates
-    standard_ev <- c("T50", "T100", "T500", "T500_uur")
-    
+    rains <- c("T50", "T100", "T500", "T500_uur")
+    initheads <- c("wet", "dry")
+    standard_ev <- expand_grid(rains, initheads) %>%
+      mutate(ev = paste0(rains, "_", initheads))
+    standard_ev <- standard_ev$ev
     
      # make runfile  
     message("Making run file")
