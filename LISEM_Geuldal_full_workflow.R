@@ -330,8 +330,8 @@ for (i in seq_along(points_id)) {
 source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
-#NBS_number <- 14 # see /sources/setup/tables/lu_NBS_tbl.csv for the number 
-nbs_ids <- c(11, 12, 13, 14, 15, 16)
+# see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
+nbs_ids <- c(0, 11, 12, 13, 14, 15, 16) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment

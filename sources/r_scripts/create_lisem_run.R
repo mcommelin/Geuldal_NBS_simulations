@@ -55,6 +55,11 @@ make_runfile_lisem <- function(work_dir = NULL,
     # set ID map to 1 zone
     run_temp <- str_replace_all(run_temp, "ID=ID.map",
                                 paste0("ID=one.map"))
+    
+    # set to event based
+    run_temp <- str_replace_all(run_temp, "Event based=0",
+                                paste0("Event based=1"))
+    
   }
   run_temp <- str_replace_all(run_temp, "<<rain_dir>>",
                               paste0(proj_wd, "/", rain_dir))
@@ -433,8 +438,8 @@ create_lisem_run <- function(
         infil_dir = paste0(run_dir, "swatre/tables/"),  
         inp_file = paste0(run_dir, "swatre/profile.inp"),
         evdate = standard_ev[i],
-        start_time = "001:0000", #fixed for all standard events
-        end_time = "001:1440", #fixed for all standard events
+        start_time = "000:0000", #fixed for all standard events
+        end_time = "000:1440", #fixed for all standard events
         resolution = resolution,
         do_ndvi_run = do_ndvi,
         run_type = run_type,
