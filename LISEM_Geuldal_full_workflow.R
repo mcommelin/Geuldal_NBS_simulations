@@ -201,6 +201,7 @@ create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, run_
 
 ## 2.5 Calibration settings and figures ----------------------------------------
 
+# TODO: update this section with calibrated events / subcatch
 # CURRENTLY NOT USED, CODE NOT FULLY FUNCTIONAL!!!
 
 # select a subcatchment and event from the LISEM_runs folder structure
@@ -329,8 +330,8 @@ for (i in seq_along(points_id)) {
 source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
-#NBS_number <- 14 # see /sources/setup/tables/lu_NBS_tbl.csv for the number 
-nbs_ids <- c(11, 12, 13, 14, 15, 16)
+# see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
+nbs_ids <- c(0, 11, 12, 13, 14, 15, 16) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
@@ -356,3 +357,21 @@ for (i in seq_along(points_id)) {
 # on linux use parallel to run all the simulations.
 # find ~/Werk/Geuldal_NBS/LISEM_runs/ -name "*.run" | parallel --dry-run -j 3 /home/mc/lisem-bin/Lisem -ni -r {}
 
+
+# 4. HPC runs full Geuldal -----------------------------------------------------
+
+#' this section shows the workflow for the HPC simulations of the whole Geul
+#' catchment on a HPC. 
+#' Steps:
+#' 1. from ./spatial_data to subcatchments (hpc_sub) with lateraal knopen
+#' 2. make a database for each hpc_sub, reuse the functions from section 2.
+#' 3. make a runfile for each hpc_sub
+#' 4. run all the hpc_sub on the hpc
+#' 5. collect results and make a discharge file for d-hydro (HKV)
+
+## 4.1 HPC subcatchments ------------------------------------------------------
+
+# calculate subcatchments with pcraster
+# make table with subcatch ID
+# assign subcatch to lateraal ID
+# make lisem catchments based on lateraal ID
