@@ -54,7 +54,9 @@ catch_maps_res()
 
 # the function below makes PCRaster maps for all resolutions from the data
 # in ./spatial_data/
-spatial_data_to_pcr()
+spatial_data_to_pcr(res = c(5, 10, 20)) # you can also select only 1 resolution -> faster
+
+# warning: if you only make 1 resolution here, this need to be applied in the whole workflow!
 
 ##NOTE, the volumes of rainwater retention buffers and the corresponding outflow
 # rate is calculated with ./sources/pcr_scripts/buffer_volumes.mod
@@ -66,7 +68,7 @@ spatial_data_to_pcr()
 # NOTE: ldd calculations for the whole Geul catchment take a lot of time
 # these maps are also provided in ./spatial_data/prepared/LISEM_data
 # set force_ldd = TRUE to recalculate the ldd
-ldd_subcatch(force_ldd = FALSE)
+ldd_subcatch(force_ldd = FALSE, res = c(5, 10, 20))
 
 # 2. Calibration on subcatchments ---------------------------------------
 # we use subcatchments to test the model setup and do the calibration
@@ -327,13 +329,13 @@ for (i in seq_along(points_id)) {
 source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
-NBS_number <- 14 # see /sources/setup/tables/lu_NBS_tbl.csv for the number 
+#NBS_number <- 14 # see /sources/setup/tables/lu_NBS_tbl.csv for the number 
 nbs_ids <- c(11, 12, 13, 14, 15, 16)
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
 reso <- c(10)
-for(n in nbs_ids) {
+for(k in seq_along(nbs_ids)) {
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(
@@ -342,7 +344,7 @@ for (i in seq_along(points_id)) {
       swatre_file = swatre_nbs_file,
       run_type = "base",
       do_runfile = T,
-      NBS_num = nbs_ids[n], # number corresponding to NBS in landuse table 0 = base simulation
+      NBS_num = nbs_ids[k], # number corresponding to NBS in landuse table 0 = base simulation
       cpu_cores = ncpu # number of cpu cores used by lisem (defaults to 50%)
     )
   }
@@ -350,4 +352,7 @@ for (i in seq_along(points_id)) {
 }
 
 ## 3.3 Explore 6 NBS in batch --------------------------------------------------
+
+# on linux use parallel to run all the simulations.
+# find ~/Werk/Geuldal_NBS/LISEM_runs/ -name "*.run" | parallel --dry-run -j 3 /home/mc/lisem-bin/Lisem -ni -r {}
 

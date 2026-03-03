@@ -57,7 +57,7 @@ options(digits = 10)
 source("sources/r_scripts/aux_functions.R")
 
 #! Always load the following data - adjust if needed for custom settings
-points_id <- config$subcatchments #, 18, 4, 12, 90)
+points_id <- config$subcatchments 
 reso <- config$resolution
 
 # load subcatchment points csv file
