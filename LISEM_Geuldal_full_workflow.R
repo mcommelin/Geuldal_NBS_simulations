@@ -328,11 +328,12 @@ source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
 NBS_number <- 14 # see /sources/setup/tables/lu_NBS_tbl.csv for the number 
+nbs_ids <- c(11, 12, 13, 14, 15, 16)
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
 reso <- c(10)
-
+for(n in nbs_ids) {
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(
@@ -341,11 +342,12 @@ for (i in seq_along(points_id)) {
       swatre_file = swatre_nbs_file,
       run_type = "base",
       do_runfile = T,
-      NBS_num = NBS_number, # number corresponding to NBS in landuse table 0 = base simulation
+      NBS_num = nbs_ids[n], # number corresponding to NBS in landuse table 0 = base simulation
       cpu_cores = ncpu # number of cpu cores used by lisem (defaults to 50%)
     )
   }
 }
+}
 
-
+## 3.3 Explore 6 NBS in batch --------------------------------------------------
 
