@@ -42,8 +42,11 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "^Map Directory=<<map_dir>>", 
                               paste0("Map Directory=", proj_wd, "/", work_dir, "maps"))
   # result directory
+  if (run_type == "base") {
+    res <- paste0("res_", evdate)
+  } else {res <- "res"}
   run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
-                              paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
+                              paste0("Result Directory=", proj_wd, "/", work_dir, res, "/"))
   # rain files
   if (run_type == "cal") {
   rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
@@ -413,6 +416,14 @@ create_lisem_run <- function(
       mutate(ev = paste0(rains, "_", initheads))
     standard_ev <- standard_ev$ev
     
+    #make an additional results directory for each standard event
+    dirs <- paste0("res_", standard_ev)
+    for (dir in dirs) {
+      dir_path <- paste0(run_dir, dir)
+      if (!dir.exists(dir_path)) {
+        dir.create(dir_path)
+      }
+    }
      # make runfile  
     message("Making run file")
     
