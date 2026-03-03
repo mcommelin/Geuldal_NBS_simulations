@@ -51,7 +51,8 @@ report bufwall = if(spread(nominal(buf),0,1) eq min(10, celllength()),2,buf);
 # 0 is depression, wall is 2, rest is 1
 
 # edge buffers krijgt waarde 'wall_add' en de rest van de buffer 'floor_down'
-buffers1=if(bufwall eq 2, wall_add,if(bufwall eq 0, floor_down,0))*catchment; # adding a wall can stops overland flow at the back!?
+buffers1=if(bufwall eq 2, wall_add,if(bufwall eq 0, floor_down,0))*catchment; 
+
 report buffers1 = if (cover(ponds,0) eq 1, floor_down, buffers1); # also add the ponds to the buffer map.
 
 

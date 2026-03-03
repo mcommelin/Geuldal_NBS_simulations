@@ -28,6 +28,8 @@ O_depth <- c(10, 20, 10, 10, 7, 1, 20)
 # change cover values for other seasons: maps per, lai, manning and smax 
 # Alternatively we also have data from the fieldwork for per.
 per <- c(0.7,0.9,0.7,0.8,0.05,0,0.9)
+#per <- c(0.356,0.616,0.502,0.587,0.317,0.381,0.488)  
+# ter vergelijking areaaverage june 2023! niet goed door veel mixels
 
 lu_pars <- bind_rows(pars_lu, lu_add) %>%
   left_join(s_eq, by = "lu_nr")%>%
@@ -47,8 +49,6 @@ lu_pars <- lu_pars %>%
   mutate(rr = rr * rr_cal * 10, # the field data were not very conclusive, at least multiply by 10 or more!
          n = (rr/100 + n_res + n_veg * per) * n_cal) %>%
   select(-ksat_cal, -n_cal, -rr_cal)
-
-# why not this equation? (n_res + 0.1*rr+0.104*per**1.2) * mann_cal -> comes from the date specific calibration 'prepare_ndvi.mod' 
 
 nms <- as.character(seq(0, ncol(lu_pars) - 1))
 names(lu_pars) <- nms

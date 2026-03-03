@@ -29,7 +29,14 @@ report lai = -ln(1.0-per)/0.4;
 n_res = lookupscalar(lutbl, 2, lu); # residual n
 mann_cal = lookupscalar(cal_lu, 2, lu);
 report mann_cal.map = mann_cal;
-report mann = (n_res + 0.1*rr+0.104*per**1.2) * mann_cal; 
+
+# 1 = akker, 2 = loofbos, 3 = productie gras, 4 = natuur gras, 5 = verhard, 6 = water, 7 = naaldbos
+basedens = scalar(if(lu eq 1, 0.06, 0));
+basedens = if(lu eq 3 or lu eq 4 or lu eq 2, 0.2, basedens);
+basedens = if(lu eq 7, 0.104, basedens);
+basedens = if(lu eq 5, 0.104, basedens); # bebouwde kom begroeid
+report mann = (0.02 + 0.01*rr+basedens*per**1.2) * mann_cal; 
+
 # the relation between basal cover of stems and canopy cover is approx. bc = factor*c**1.2, 
 # where the factor depends on the nr of stems poer m2. factor is ~0.06 for maize and  about 0.2 for grass or wheat
 # so the regression of lisem data of 0.104 is actually quite good!

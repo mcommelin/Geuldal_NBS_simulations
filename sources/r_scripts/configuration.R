@@ -65,3 +65,10 @@ points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = F
 
 # swatre file
 swatre_file <- "cal_OM_swatre.csv"
+
+# cpu cores
+ncpu <- config$cpu_cores
+if (ncpu == -1) {
+  ncpu <- floor(num_cores() / 2)
+}
+ 

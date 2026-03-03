@@ -113,7 +113,6 @@ for(i in seq_along(cell_size)) {
     dir.create(res_dir)
     dir.create(map_dir)
   }
-  
   #write maps
   #mask
   mask <- rast(paste0("spatial_data/mask_", cell_size[i],"m.map"))
@@ -125,13 +124,11 @@ for(i in seq_along(cell_size)) {
   dem <- terra::resample(base_dem_5m, mask, method = "average")
   writeRaster(dem, out, filetype = "PCRaster", NAflag = -9999,
               overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
-  
   #catchment
   out <- paste0(res_dir, "maps/catchment.map")
   catch <- terra::resample(base_catch_20m, mask, method = "near")
   writeRaster(catch, out, filetype = "PCRaster", NAflag = -9999,
               overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
-  
 }
 } #end function catch_maps_res
 

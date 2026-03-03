@@ -46,7 +46,7 @@ base_maps_subcatchment <- function(
   # copy base maps from main_dir to new subcatch dir
   base_maps <- readLines("sources/base_maps.txt")
  
-   if(run_type == "base") {
+  if(run_type == "base") {
   #find maps with NBS measures and add these to the base maps list
   NBS_maps <- dir(main_dir, "^\\d\\d_.*.map$")
   
@@ -189,7 +189,6 @@ base_maps_subcatchment <- function(
     map_out_name = paste0(sub_catch_dir, "i", ih_ev[j], "head.", ih_end[i])
     tmp_tif = paste0(sub_catch_dir, "tmp.tif")
     #if (DEBUGm) message("IH in ",map_in)
-    
     # gdalwarp makes a temp tif
     gdalwarp(
       srcfile = map_in,

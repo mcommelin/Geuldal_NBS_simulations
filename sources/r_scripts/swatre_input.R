@@ -9,18 +9,26 @@ soil_landuse_to_swatre <- function(file = "",
 {
   # 1. Calculate params -------------------------------------------------------------
   
-  if (do_NBS == TRUE) {
-    lutbl <- "lu_nbs.tbl"
-  } else {
-    lutbl <- "lu.tbl"
-  }
   #load the UBC codes including texture, gravel
   ubc_in <- read_csv(file, show_col_types = FALSE)
   # load landuse classes with OM and O depth
+  lutbl <- "lu.tbl"
   lu_in <- read.table(paste0("sources/setup/calibration/", lutbl))[-1, ] %>%
     select(1, 5, 7) %>%
     rename_with(~ c("lu", "om", "od")) %>%
     mutate(lu = if_else(lu < 10, lu * 100, lu))
+  
+  # the first 7 rows in lu nbs are adapted to reflect the result of the
+  # calibration, but give different output when feeded into the workflow
+  # so for original landuse (1-7) always use the lu.tbl!!!
+  if (do_NBS == TRUE) {
+    lutbl <- "lu_nbs.tbl"
+    lu_nbs <- read.table(paste0("sources/setup/calibration/", lutbl))[-(1:8), ] %>%
+      select(1, 5, 7) %>%
+      rename_with(~ c("lu", "om", "od")) %>%
+      mutate(lu = if_else(lu < 10, lu * 100, lu))
+    lu_in <- bind_rows(lu_in, lu_nbs)
+  } 
   # NBS value go to digit 5 and 6, original landuse to digit 4.
   
   if (DEBUGm) message("Making all soil horizon codes")
@@ -158,18 +166,6 @@ soil_landuse_to_swatre <- function(file = "",
              npar_mean = npar_mean * n_cal,
              Ksat_mean = Ksat_mean * ksat_cal)
     
-    if (do_NBS == TRUE) {
-      soil_NBS <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
-        select(lu_nr, ksat_factor) %>%
-        rename(landuse = lu_nr)
-      
-      soil_params <- soil_params %>%
-        left_join(soil_NBS, by = "landuse") %>%
-        mutate(ksat_factor = if_else(is.na(ksat_factor), 1.0, ksat_factor),
-               Ksat_mean = Ksat_mean * ksat_factor)
-    }
-    
-
     tbl_dir <- paste0(swatre_dir, "tables/")
     
     # cleanup /swatre/tables.
