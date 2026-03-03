@@ -57,7 +57,7 @@ options(digits = 10)
 source("sources/r_scripts/aux_functions.R")
 
 #! Always load the following data - adjust if needed for custom settings
-points_id <- config$subcatchments #, 18, 4, 12, 90)
+points_id <- config$subcatchments 
 reso <- config$resolution
 
 # load subcatchment points csv file
@@ -65,3 +65,10 @@ points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = F
 
 # swatre file
 swatre_file <- "cal_OM_swatre.csv"
+
+# cpu cores
+ncpu <- config$cpu_cores
+if (ncpu == -1) {
+  ncpu <- floor(num_cores() / 2)
+}
+ 

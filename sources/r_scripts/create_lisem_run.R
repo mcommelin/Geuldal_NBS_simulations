@@ -15,7 +15,8 @@ make_runfile_lisem <- function(work_dir = NULL,
                                resolution = 5,
                                do_ndvi_run = TRUE,
                                run_type = "",
-                               theta_cal = NULL
+                               theta_cal = NULL,
+                               cpu_cores = 0
                                ) 
 {
   
@@ -41,13 +42,16 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "^Map Directory=<<map_dir>>", 
                               paste0("Map Directory=", proj_wd, "/", work_dir, "maps"))
   # result directory
+  if (run_type == "base") {
+    res <- paste0("res_", evdate)
+  } else {res <- "res"}
   run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
-                              paste0("Result Directory=", proj_wd, "/", work_dir, "res/"))
+                              paste0("Result Directory=", proj_wd, "/", work_dir, res, "/"))
   # rain files
   if (run_type == "cal") {
   rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
   } else {
-    rain_file <- paste0("rain_",str_remove_all(as.character(evdate), "-"), ".txt")
+    rain_file <- paste0("rain_",str_remove_all(evdate, "_(w|d).*"), ".txt")
     # set ID map to 1 zone
     run_temp <- str_replace_all(run_temp, "ID=ID.map",
                                 paste0("ID=one.map"))
@@ -75,13 +79,14 @@ make_runfile_lisem <- function(work_dir = NULL,
   } else {
     # run with standard rain
     
-    # for now we use a homogeneous inithead in the base runs.
-    # TODO update to corrected inithead profiles
+    # in the standard runs we use a homogeneous inithead:
+    # -50 = wet and -100 = dry
     runname <- evdate
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
                                 paste0("ih"))
     #set homogeneous init head
-    inihead <- -100
+    inihead <- ifelse(str_detect(evdate, "wet"), -50, -100)
+    
     run_temp <- str_replace_all(run_temp, "Use one matrix potential=0", 
                                 paste0("Use one matrix potential=1"))
     run_temp <- str_replace_all(run_temp, "Initial matrix potential=-100", 
@@ -145,6 +150,11 @@ make_runfile_lisem <- function(work_dir = NULL,
                             paste0("Theta calibration=", theta_cal))
   }
   
+  #set number of used cpu cores
+  run_temp <- str_replace(run_temp, "Nr user Cores=0",
+                          paste0("Nr user Cores=", cpu_cores))
+  
+  
   # save the runfile
    writeLines(run_temp, paste0(work_dir, "runfiles/", runname, ".run"))
    
@@ -160,7 +170,8 @@ create_lisem_run <- function(
   swatre_file = "base_swatre_params.csv",
   run_type = "",
   do_runfile = TRUE,
-  NBS_num = 0) 
+  NBS_num = 0,
+  cpu_cores = 0) 
 {
 
   # set some triggers
@@ -239,7 +250,6 @@ create_lisem_run <- function(
   }
  
    # copy all inithead files
-  # TODO adjust for cal or base run
   if (run_type == "cal") {
   ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "i2")
   for (map in ih_maps) {
@@ -390,7 +400,8 @@ create_lisem_run <- function(
         resolution = resolution,
         do_ndvi_run = do_ndvi,
         run_type = run_type,
-        theta_cal = theta_cal
+        theta_cal = theta_cal,
+        cpu_cores = cpu_cores
       )
     }
   } # end date specific loop
@@ -399,9 +410,20 @@ create_lisem_run <- function(
   if (run_type == "base") {
     if (do_runfile == TRUE) {
     # loop over standard events in stead of dates
-    standard_ev <- c("T50", "T100", "T500", "T500_uur")
+    rains <- c("T50", "T100", "T500", "T500_uur")
+    initheads <- c("wet", "dry")
+    standard_ev <- expand_grid(rains, initheads) %>%
+      mutate(ev = paste0(rains, "_", initheads))
+    standard_ev <- standard_ev$ev
     
-    
+    #make an additional results directory for each standard event
+    dirs <- paste0("res_", standard_ev)
+    for (dir in dirs) {
+      dir_path <- paste0(run_dir, dir)
+      if (!dir.exists(dir_path)) {
+        dir.create(dir_path)
+      }
+    }
      # make runfile  
     message("Making run file")
     
@@ -411,11 +433,12 @@ create_lisem_run <- function(
         infil_dir = paste0(run_dir, "swatre/tables/"),  
         inp_file = paste0(run_dir, "swatre/profile.inp"),
         evdate = standard_ev[i],
-        start_time = "001:0000", #fixed for all stadard events
-        end_time = "001:1440", #fixed for all stadard events
+        start_time = "001:0000", #fixed for all standard events
+        end_time = "001:1440", #fixed for all standard events
         resolution = resolution,
         do_ndvi_run = do_ndvi,
-        run_type = run_type
+        run_type = run_type,
+        cpu_cores = cpu_cores
       )
     }
     }
