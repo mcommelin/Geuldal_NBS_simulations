@@ -95,7 +95,9 @@ base_maps_subcatchment <- function(
   )
   
     # for the hpc we dont need (real) ldd map so we never calculate it
+    #if(!file.exists(paste0(sub_catch_dir,"ldd.map"))){
     calc_ldd <- FALSE
+    #}
   }
   
    map_clone = paste0(sub_catch_dir, "sub.map")

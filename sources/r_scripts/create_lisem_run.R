@@ -176,7 +176,8 @@ create_lisem_run <- function(
   run_type = "",
   do_runfile = TRUE,
   NBS_num = 0,
-  cpu_cores = 0) 
+  cpu_cores = 0,
+  do_hpc = FALSE) 
 {
 
   # set some triggers
@@ -197,41 +198,62 @@ create_lisem_run <- function(
     do_NBS = FALSE
   }
   
-  
-  ### prepare and/or copy all maps and table in the run dir/maps
-  points <- read_csv("sources/setup/outpoints_description.csv")
-  
-  catch_info <- points %>%
-    filter(point == catch_num) %>%
-    filter(cell_size == resolution)
-  
-  # copy basemaps to a lisem_runs folder
-  catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m/")
-  base_dir <- paste0("LISEM_data/", catch_dir)
-  
-  # if catch_num > 1 add subcatchments after LISEM_data/
-  if (catch_num > 1) {
-    base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
-  }
-  
-  #adjust folder name when simulating NBS
-  if (NBS_num != 0) {
-    NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
-      filter(lu_nr == NBS_num)
-    NBS_name <- NBS_desc$description
-    catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
-                        "m_", NBS_name, "/")
-  } 
+  # change directories etc if doing hpc run
+  if (do_hpc == FALSE) {
+    ### prepare and/or copy all maps and table in the run dir/maps
+    points <- read_csv("sources/setup/outpoints_description.csv")
     
-  run_dir <- paste0("LISEM_runs/", catch_dir)
+    catch_info <- points %>%
+      filter(point == catch_num) %>%
+      filter(cell_size == resolution)
+    
+    # copy basemaps to a lisem_runs folder
+    catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m/")
+    base_dir <- paste0("LISEM_data/", catch_dir)
+    
+    
+    # if catch_num > 1 add subcatchments after LISEM_data/
+    if (catch_num > 1) {
+      base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
+    }
+    
+    #adjust folder name when simulating NBS
+    if (NBS_num != 0) {
+      NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
+        filter(lu_nr == NBS_num)
+      NBS_name <- NBS_desc$description
+      catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
+                          "m_", NBS_name, "/")
+    } 
+    
+    run_dir <- paste0("LISEM_runs/", catch_dir)
+  } else if (do_hpc == TRUE) {
+    # copy basemaps to a lisem_runs folder
+    catch_dir <- paste0(catch_num, "_", resolution, "m/")
+    base_dir <- paste0("LISEM_data/hpc_subcatchments/", catch_dir)
+    
+    #adjust folder name when simulating NBS
+    if (NBS_num != 0) {
+      NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
+        filter(lu_nr == NBS_num)
+      NBS_name <- NBS_desc$description
+      catch_dir <- paste0(catch_num, "_", resolution, "m_", NBS_name, "/")
+    } 
+    run_dir <- paste0("LISEM_runs/hpc_runs/", catch_dir)
 
+  } else {
+    print("ERROR: set do_hpc to TRUE or FALSE")
+    return()
+  }
+    
   # create subdir for the run
   if (!dir.exists(run_dir)) {
     dir.create(run_dir, recursive = TRUE)
   }
   
-  # create the following folders in the run_dir: maps, rain, res, runfiles
-  dirs <- c("maps", "swatre", "res", "runfiles")
+  # create the following folders in the run_dir: maps, rain, runfiles
+  dirs <- c("maps", "swatre", "runfiles")
+  if (run_type == "cal") {dirs[4] <- "res"} # standard events more res folders are made!
   for (dir in dirs) {
     dir_path <- paste0(run_dir, dir)
     if (!dir.exists(dir_path)) {
@@ -305,7 +327,26 @@ create_lisem_run <- function(
     )
     file.rename(paste0(subdir, "nbs.map"), paste0(subdir, nbs_map))
   }
+  
   # run pcraster script to finalize run database.
+  # ldd dependend maps are calculated differently for hpc runs, split in two scripts
+  if (do_hpc == FALSE) {
+    pcr_script(
+      script = "prepare_ldd_db.mod",
+      script_dir = "sources/pcr_scripts",
+      work_dir = subdir
+    )
+  } else {
+    # no specific outlet is needed for the hpc runs. the lowest cell on
+    # the flow boundary is used.
+    pcr_script(
+      script = "prepare_hpc_db.mod",
+      script_dir = "sources/pcr_scripts",
+      work_dir = subdir
+    )
+  }
+  
+  
   pcr_script(
     script = "prepare_db.mod",
     script_dir = "sources/pcr_scripts",

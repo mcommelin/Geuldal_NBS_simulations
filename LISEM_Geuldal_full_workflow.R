@@ -245,8 +245,10 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 4, calc_ldd = F,
                        run_type = "base")
 
 # create the run:
-create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, T, F,
-                 run_type = "base")
+source("sources/r_scripts/create_lisem_run.R")
+create_lisem_run(resolution = 10, catch_num = 54, swatre_file = swatre_file,
+                 run_type = "base", do_hpc = FALSE, cpu_cores = ncpu)
+
 
 # TODO add meaningfull visualisation and reporting.
 
@@ -372,7 +374,7 @@ for (i in seq_along(points_id)) {
 ## 4.1 HPC subcatchments ------------------------------------------------------
 
 # standard runs on 10m
-# cut based on shapefile with subcatchments
+# cut based on shapefile with subcatchments - DONE
 # assign outlet boudnary to whole lower section of catchment
 # add option to only run subset
 # add option to include a NBS
@@ -383,3 +385,10 @@ for (i in seq_along(points_id)) {
 source("sources/r_scripts/create_subcatch_db.R")
 base_maps_subcatchment(cell_size = 10, sub_catch_number = 24,
                        run_type = "base", do_hpc = TRUE)
+
+
+# set ldd.map to one.map in runfile to prevent error messages
+
+source("sources/r_scripts/create_lisem_run.R")
+create_lisem_run(resolution = 10, catch_num = 24, swatre_file = swatre_file,
+                 run_type = "base", do_hpc = TRUE, cpu_cores = ncpu)
