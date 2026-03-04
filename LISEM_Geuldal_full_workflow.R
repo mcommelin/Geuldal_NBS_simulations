@@ -149,7 +149,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-base_maps_subcatchment(cell_size = 20, sub_catch_number = 18, run_type = "cal", calc_ldd = F)
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 54, run_type = "cal", calc_ldd = F)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set after this stage.
@@ -378,3 +378,8 @@ for (i in seq_along(points_id)) {
 # add option to include a NBS
 #   which maps are influenced by NBS?
 
+# step one: produce a subcatchment based on the map
+
+source("sources/r_scripts/create_subcatch_db.R")
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 24,
+                       run_type = "base", do_hpc = TRUE)

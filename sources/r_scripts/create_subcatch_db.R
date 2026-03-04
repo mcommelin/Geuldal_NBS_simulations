@@ -6,7 +6,8 @@ base_maps_subcatchment <- function(
     cell_size = NULL,
     sub_catch_number = NULL, # adjust the number to select the subcatchment you want
     calc_ldd = FALSE,
-    run_type = ""
+    run_type = "",
+    do_hpc = FALSE
     )
 {
   
@@ -26,6 +27,7 @@ base_maps_subcatchment <- function(
   srs = "EPSG:28992"
   resample_method = "near"
   
+  if (do_hpc == FALSE) {
   # load subcatchment points csv file
   points <- read_csv("sources/setup/outpoints_description.csv")
   
@@ -37,6 +39,13 @@ base_maps_subcatchment <- function(
 
   # create dir for subcatch
   sub_catch_dir <- paste0("LISEM_data/subcatchments/", subcatch_name, "_", res, "m/maps/")
+  } else if (do_hpc == TRUE) {
+    sub_catch_dir <- paste0("LISEM_data/hpc_subcatchments/", sub_catch_number, "_", res, "m/maps/")
+  } else {
+    print("ERROR: set do_hpc to TRUE or FALSE")
+    return()
+  }
+  
   main_dir <- paste0("LISEM_data/Geul_", res, "m/maps/")
 
   if (!dir.exists(sub_catch_dir)) {
@@ -65,7 +74,7 @@ base_maps_subcatchment <- function(
   if (DEBUGm) message(sub_catch_dir)
   
   # delineate the subcatchment
-  
+  if (do_hpc == FALSE) {
   # pcraster create map with selected outpoint
   pcrcalc(
     work_dir = sub_catch_dir,
@@ -77,8 +86,17 @@ base_maps_subcatchment <- function(
     script_dir = "sources/pcr_scripts",
     work_dir = sub_catch_dir
   )
-
-  # add alternative delineation based on area here
+  } else {
+  
+  # in case of hpc use the subcatchments map for delineation
+  pcrcalc(
+    work_dir = sub_catch_dir,
+    options = paste0("sub.map=boolean(if(base_hpc_sub.map eq ", sub_catch_number, ", 1))")
+  )
+  
+    # for the hpc we dont need (real) ldd map so we never calculate it
+    calc_ldd <- FALSE
+  }
   
    map_clone = paste0(sub_catch_dir, "sub.map")
    map_clone_tif = paste0(sub_catch_dir, "sub.tif")
@@ -120,7 +138,8 @@ base_maps_subcatchment <- function(
    # remove catchment because it is already correct size
    base_maps <- gsub("^catchment\\.map$", "", base_maps)
    base_maps <- base_maps[base_maps != ""]  # Remove empty lines  
-   base_maps[[length(base_maps) + 1]] <- "sub_point.map"
+   if (do_hpc == FALSE) {
+   base_maps[[length(base_maps) + 1]] <- "sub_point.map"}
    
    for (i in seq_along(base_maps)) {
      map_in = paste0(sub_catch_dir,"base_", base_maps[i])
