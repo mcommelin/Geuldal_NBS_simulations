@@ -124,7 +124,7 @@ soil_landuse_to_swatre <- function(file = "",
   
       soil_cal <- read_csv("sources/setup/calibration/calibration_soil.csv", 
                          show_col_types = F) %>%
-      select(-description, -cal_comment) %>% 
+      select(-description) %>% 
         pivot_longer(
           cols = -soil,
           names_to = "parameter",
