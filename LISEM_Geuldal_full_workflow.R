@@ -371,7 +371,10 @@ for (i in seq_along(points_id)) {
 
 ## 4.1 HPC subcatchments ------------------------------------------------------
 
-# calculate subcatchments with pcraster
-# make table with subcatch ID
-# assign subcatch to lateraal ID
-# make lisem catchments based on lateraal ID
+# standard runs on 10m
+# cut based on shapefile with subcatchments
+# assign outlet boudnary to whole lower section of catchment
+# add option to only run subset
+# add option to include a NBS
+#   which maps are influenced by NBS?
+

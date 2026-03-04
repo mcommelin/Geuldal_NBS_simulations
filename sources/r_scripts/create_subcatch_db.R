@@ -78,6 +78,8 @@ base_maps_subcatchment <- function(
     work_dir = sub_catch_dir
   )
 
+  # add alternative delineation based on area here
+  
    map_clone = paste0(sub_catch_dir, "sub.map")
    map_clone_tif = paste0(sub_catch_dir, "sub.tif")
    map_clone_cut_tif = paste0(sub_catch_dir, "subc.tif")
@@ -113,12 +115,11 @@ base_maps_subcatchment <- function(
    nrow <- nrow(ref)
    #if (DEBUGm) message(ref)
    
-   # #remove ldd map because cannot be resampled.
+   # remove ldd map because cannot be resampled.
    base_maps <- gsub("^ldd\\.map$", "", base_maps)
-   # # remove catchment because it is already correct size
+   # remove catchment because it is already correct size
    base_maps <- gsub("^catchment\\.map$", "", base_maps)
    base_maps <- base_maps[base_maps != ""]  # Remove empty lines  
-   #base_maps[24] <- "sub_point.map"
    base_maps[[length(base_maps) + 1]] <- "sub_point.map"
    
    for (i in seq_along(base_maps)) {
