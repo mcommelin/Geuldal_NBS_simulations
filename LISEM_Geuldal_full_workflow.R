@@ -380,17 +380,22 @@ for (i in seq_along(points_id)) {
 # add option to include a NBS
 #   which maps are influenced by NBS?
 
-# step one: produce a subcatchment based on the map
+#load the csv file to identify all sub catch numbers
+hpc_ids <- read_csv("sources/setup/hpc/subcatch_id_link.csv")
 
-source("sources/r_scripts/create_subcatch_db.R")
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 24,
-                       run_type = "base", do_hpc = TRUE)
+#produce all subcatchments base maps
+#subnums <- hpc_ids$LISEM_ID
 
+# or use a subset (now Belgian part of the Gulp)
+subnums <- c(120, 125, 128, 130, 131, 140)
 
-# remove swatre building for every sub catch
-# make one main function, include option to subset
-# use ID csv file to identify subcatch numbers
+for (i in seq_along(subnums)) {
+  source("sources/r_scripts/create_subcatch_db.R")
+  base_maps_subcatchment(cell_size = 10, sub_catch_number = subnums[i],
+                         run_type = "base", do_hpc = TRUE)
+}
 
-source("sources/r_scripts/create_lisem_run.R")
-create_lisem_run(resolution = 10, catch_num = 24, swatre_file = swatre_file,
-                 run_type = "base", do_hpc = TRUE, cpu_cores = ncpu)
+# make the actual run databases for the hpc
+source("sources/r_scripts/create_hpc_run.R")
+create_hpc_runs(subset = subnums)
+
