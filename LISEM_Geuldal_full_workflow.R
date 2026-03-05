@@ -387,7 +387,9 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 24,
                        run_type = "base", do_hpc = TRUE)
 
 
-# set ldd.map to one.map in runfile to prevent error messages
+# remove swatre building for every sub catch
+# make one main function, include option to subset
+# use ID csv file to identify subcatch numbers
 
 source("sources/r_scripts/create_lisem_run.R")
 create_lisem_run(resolution = 10, catch_num = 24, swatre_file = swatre_file,
