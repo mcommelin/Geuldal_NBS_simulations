@@ -29,7 +29,7 @@ id = ID.map;                # rainfall id grid
 bua = bua.map; 		          # map with build up area.
 profile0 = profile.map;	    # map with ubc soil codes for swatre
 buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
-village = OSMvillage.map;
+maxq = maxq.map;            # maximum discharge at buffer outlets
 
 ### INPUT TABLES ### 
 # calibration for standard maps moved to R code,
@@ -158,9 +158,11 @@ report chanmask=chanclean;
 # reduce the slope of channels when they are close to a road
 # often roads cause errors in the change grad due to DEM elevation
 changrad=max(0.005,sin(atan(slope(chanclean*dem)))); 
+
+# adjust channel gradient for crossing a highway or railway dike
 rbuf = windowmaximum(cover(roads_bool, 0), 60);
 changrad = if(rbuf eq 1, 0.02, changrad)*chanclean;
-report changrad=windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
+changrad = windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
 
 # avoid abrupt changes in channel width and depth
 # gives better stability and lower MB error 
@@ -176,26 +178,27 @@ chanman = lookupscalar(chantbl, 1, chanclass);
 chandiam = if(culvert eq 1, chanwidth); # hoezo channel width, is er geen user defined diameter for buffer outlets?
 
 # all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
-bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
+report buf_outlet = if(cover(maxq,0) > 0, 1,0)*chanclean;
+bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0))*chanclean;
+report chanmaxq.map=cover(maxq,0)*chanclean;
 
-# recalc culvert mask with OSM village
-report culvert = if(cover(village, 0) eq 1 or cover(bufculvert,0) gt 0, 1, 0)*chanclean;  # village are bigger villages in OSM, bua is every hamlet, too much
-# chan culvert type 5 under villages
+# all underground culverts are type 5, free flow but no surface connection
 chanculvert = scalar(if(cover(culvert, 0) eq 1, 5, 0))*chanclean; 
 # chan culvert type 2 (cilindrical) for buffer outlets
-report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
-report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
+report chanculvert = if(buf_outlet eq 1, 2, chanculvert)*chanclean;
+report chandiam = scalar(if(buf_outlet eq 1, 0.6, chandiam))*chanclean;
+report changrad = scalar(if(buf_outlet eq 1, 0.05, changrad))*chanclean;
 
-prf = profile;#roundoff(profile/100);
+# calibration of Maniing for channel: all mannings n needs to be higher than the original tabel values:
+# - forerst needs to be higher, assumed becaus of vegegation and dead wood in the channels
+# - Wallonia needs to be higher even branches, assumption that there is more meandering, less maintenance and therefor e more delay in flow
+prf = profile;
 factor = if(prf > 219000 and prf < 360000, 2, 1.5)*chanclean;
 factor = if(prf > 424000 and prf < 426000, 2, factor)*chanclean;
 factor = if(forest, factor*2,factor)*chanclean;
 #report factor.map=factor;
 chanman = windowaverage(factor*chanman,50)*chanclean;
-#chanman = windowaverage(if(forest,2*chanman, chanman),50)*chanclean;
 report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
-#chosen channel manning is too low for LISEM kin wave, more in forest because of branches etc, and multiplied by 2
-
 
 
 

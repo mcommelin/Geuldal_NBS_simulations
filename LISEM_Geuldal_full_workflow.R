@@ -125,6 +125,8 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
+# data from this function is stored in LISEM_data/subcatchments/
+
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
 

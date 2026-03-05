@@ -86,7 +86,7 @@ soil_landuse_to_swatre <- function(file = "",
     mutate(sand = sand * 100,
            silt = silt * 100,
            clay = clay * 100)
-
+  
   # these results also contain uncertainty, which we can use for calibration later.  
   rosetta_params <- run_rosetta(soildat)
 

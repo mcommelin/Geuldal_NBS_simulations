@@ -320,11 +320,12 @@ create_lisem_run <- function(
   )
     
   # run pcraster script to make buffer features.
-  pcr_script(
-    script = "prepare_buffer_features.mod",
-    script_dir = "sources/pcr_scripts",
-    work_dir = subdir
-  )
+  # obsolete, doen in prepare_db.mod
+ # pcr_script(
+ #   script = "prepare_buffer_features.mod",
+ #   script_dir = "sources/pcr_scripts",
+ #   work_dir = subdir
+ # )
   
   if (run_type == "cal") {
   # add runfiles for selected events
