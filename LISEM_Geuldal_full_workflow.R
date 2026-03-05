@@ -375,7 +375,7 @@ for (i in seq_along(points_id)) {
 
 # standard runs on 10m
 # cut based on shapefile with subcatchments - DONE
-# assign outlet boudnary to whole lower section of catchment
+# assign outlet boudnary to whole lower section of catchment - DONE
 # add option to only run subset
 # add option to include a NBS
 #   which maps are influenced by NBS?

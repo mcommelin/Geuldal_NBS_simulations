@@ -155,6 +155,10 @@ report roadwidth = if(boolean(catchment), roadwidth);
 #chanclean = if(boolean(catchment), chanclean);
 #report lddchan= lddcreate(dem*chanclean-out1,1e20,1e20,1e20,1e20); 
 #report chanmask=chanclean;
+
+# ^^^ section moved to other scripts
+
+
 chanclean = chanmask;
 
 # channel gradient

@@ -20,14 +20,13 @@ if (!require("sensobol")) install.packages("sensobol")
 if (!require("foreach")) install.packages("foreach")
 if (!require("doParallel")) install.packages("doParallel")
 if (!require("reticulate")) install.packages("reticulate")
+  install_python()
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
 # install known working version of rosetta-soil
 py_install("rosetta-soil==0.1.2", pip = TRUE)
 } else {
   print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
   Sys.sleep(1)
-
-
 library(hydroGOF)
 library(gdalUtilities)
 library(terra)
@@ -40,9 +39,6 @@ library(sensobol)
 library(foreach)
 library(doParallel)
 library(reticulate)
-  # set python etc before loading rosettaPTF
-  conda_path <- paste0(config$miniconda_path, "/envs/", config$conda_env)
-  use_condaenv(condaenv = conda_path, required = T)
 library(rosettaPTF)
 
 }
