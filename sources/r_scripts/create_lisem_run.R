@@ -337,8 +337,7 @@ create_lisem_run <- function(
       work_dir = subdir
     )
   } else {
-    # no specific outlet is needed for the hpc runs. the lowest cell on
-    # the flow boundary is used.
+    # channels are used to create outlets
     pcr_script(
       script = "prepare_hpc_db.mod",
       script_dir = "sources/pcr_scripts",
@@ -381,6 +380,15 @@ create_lisem_run <- function(
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
+  
+  #set swatre directories
+  if (do_hpc == TRUE) {
+    infil_dir <- "LISEM_runs/hpc_runs/swatre/tables/"  
+    inp_file <- "LISEM_runs/hpc_runs/swatre/profile.inp"
+  } else {
+    infil_dir <- paste0(run_dir, "swatre/tables/")  
+    inp_file <- paste0(run_dir, "swatre/profile.inp")
+  }
   
   if (run_type == "cal") {
     # add runfiles for selected events
@@ -438,8 +446,8 @@ create_lisem_run <- function(
         message("Making run file")
         make_runfile_lisem(
           work_dir = run_dir,
-          infil_dir = paste0(run_dir, "swatre/tables/"),  
-          inp_file = paste0(run_dir, "swatre/profile.inp"),
+          infil_dir = infil_dir,  
+          inp_file = inp_file,
           evdate = date(events$ts_start[i]),
           start_time = events$str_start[i],
           end_time = events$str_end[i],
@@ -476,8 +484,8 @@ create_lisem_run <- function(
       for (i in seq_along(standard_ev)) {
         make_runfile_lisem(
           work_dir = run_dir,
-          infil_dir = paste0(run_dir, "swatre/tables/"),  
-          inp_file = paste0(run_dir, "swatre/profile.inp"),
+          infil_dir = infil_dir,  
+          inp_file = inp_file,
           evdate = standard_ev[i],
           start_time = "000:0000", #fixed for all standard events
           end_time = "000:1440", #fixed for all standard events
@@ -489,15 +497,17 @@ create_lisem_run <- function(
       }
     }
   }
-  #delete intermediate files
   
+  # make swatre files for each run,
+  # in case of hpc run, make once outside this function
+  if (do_hpc == FALSE) {
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
                      swatre_dir = paste0(run_dir, "swatre/"),
                      do_NBS = do_NBS)
   
   message("finished run data creation.")
-  
+  }
 } # end create_lisem_run
 
 
