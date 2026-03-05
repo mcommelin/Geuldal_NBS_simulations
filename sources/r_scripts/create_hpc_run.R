@@ -38,7 +38,7 @@ create_hpc_run <- function(subset = NULL,
   #make the swatre tables only ones
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
-                     swatre_dir = "LISEM_runs/hpc_runs/swatre",
+                     swatre_dir = "LISEM_runs/hpc_runs/swatre/",
                      do_NBS = do_NBS)
   
 }

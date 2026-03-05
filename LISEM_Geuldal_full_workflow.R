@@ -241,7 +241,7 @@ create_lisem_run(resolution = 20, catch_num = 4, swatre_file = swatre_file, run_
 
 # example code below for the Gulp:
 # make the subcatch data:
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 4, calc_ldd = F, 
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 54, calc_ldd = F, 
                        run_type = "base")
 
 # create the run:
@@ -397,5 +397,6 @@ for (i in seq_along(subnums)) {
 
 # make the actual run databases for the hpc
 source("sources/r_scripts/create_hpc_run.R")
-create_hpc_runs(subset = subnums)
+create_hpc_run(subset = subnums,
+                swatre_file = swatre_file, NBS_num = 0)
 
