@@ -30,6 +30,7 @@ bua = bua.map; 		          # map with build up area.
 profile0 = profile.map;	    # map with ubc soil codes for swatre
 buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 maxq = maxq.map;            # maximum discharge at buffer outlets
+bufvol=buffermask.map;      # buffer volumes, only used to make buffers.map cosmetic
 
 ### INPUT TABLES ### 
 # calibration for standard maps moved to R code,
@@ -79,7 +80,7 @@ chandiam = chandiameter.map;
 changrad = changrad.map; 
 chanman = chanman.map; 
 chanculvert = chanculvert.map;
-
+buffers = buffers.map; # cosmetic, value -0.01 so that buffers can be shown in lisem
 
 initial 
 
@@ -93,6 +94,7 @@ lu = if(lu eq 0, 5, lu); # adjust 0 values to urban area
 lu = if(lu eq 5 and cover(bua,0) eq 0, 3,lu); # all builtup that is not bua is assumed to be roads and become grass (3)
 report lu *= area; # apply catchment mask
 forest = boolean(lu == 2 or lu == 7);
+report buffers=cover(if(bufvol ne 0, -0.01,0),0)*area;
 
 ################
 ### PROFILE  ### 
@@ -179,8 +181,7 @@ chandiam = if(culvert eq 1, chanwidth); # hoezo channel width, is er geen user d
 
 # all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
 report buf_outlet = if(cover(maxq,0) > 0, 1,0)*chanclean;
-bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0))*chanclean;
-report chanmaxq.map=cover(maxq,0)*chanclean;
+#report chanmaxq.map=cover(maxq,0)*chanclean;
 
 # all underground culverts are type 5, free flow but no surface connection
 chanculvert = scalar(if(cover(culvert, 0) eq 1, 5, 0))*chanclean; 
