@@ -1,8 +1,8 @@
 landuse,rr_cal,n_cal,ksat_cal,cal_comment
-1,1,1,1,0.8,akker
-2,2,1,1.1,loofbos-rr omhoog
-3,1,1,0.8,prod. gras meer runoff
+1,1,1,1,0,akker
+2,2,1,1,loofbos-rr omhoog
+3,1,1,0,prod. gras meer runoff
 4,1.5,1,1,nat gras-rr omhoog
-5,1,1,0.5,bebouwd
+5,1,1,0.8,bebouwd
 6,1,1,1,water
 7,1.5,1,1,naaldbos-rr omhoog
