@@ -137,6 +137,9 @@ soil_landuse_to_swatre <- function(file = "",
         select(landuse, ksat_cal) %>%
         rename("ksat_lu" = "ksat_cal")
       
+      # only calibrate horizons O and A
+      cal_horizons <- c("A", "O")
+      
     soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file), show_col_types = FALSE) %>%
       filter(!is.na(clay)) %>%
       mutate(CODE = str_replace(CODE, "-", "_"),
@@ -156,7 +159,8 @@ soil_landuse_to_swatre <- function(file = "",
              ksat_cal = ksat_cal * ksat_lu,  #multiply is easier to understand
         alpha_mean = alpha_mean * alpha_cal,
              npar_mean = npar_mean * n_cal,
-             Ksat_mean = Ksat_mean * ksat_cal)
+             Ksat_mean = if_else(horizon %in% cal_horizons, 
+                                 Ksat_mean * ksat_cal, Ksat_mean))
     
     if (do_NBS == TRUE) {
       soil_NBS <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
