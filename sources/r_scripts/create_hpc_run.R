@@ -1,18 +1,38 @@
-# remove swatre building for every sub catch
-# make one main function, include option to subset
-# use ID csv file to identify subcatch numbers
+
+
+
+#' Wrapper around [create_lisem_run()] to make an input dataset which can be 
+#' send to an hpc
+#'
+#'@description This function can only for subcatchments that are already prepared
+#' with [create_subcatch_db()].
+#'
+#' @param subset if NULL then the whole Geuldal will be prepared. Otherwise a 
+#' subset of subcatchment number in the Geuldal.
+#' @param swatre_file  character string with the name of the used swatre input file.
+#' Should be stored in ./sources/setup/calibration
+#' @param NBS_num Number of the NBS you want to add to the simulation. 0 = no nbs simulated. 
+#' The number corresponds to the landuse number in ./sources/setup/tables/lu_NBS_tbl.csv
+#' @param resolution Number indicating the resolution of the dataset. Currently 
+#' 5, 10 and 20 meter are available
+#' @param do_runfile Boolean. Do you want to make all runfile again? Default = TRUE
+#' @param cpu_cores Number of cores which are assigned to the OpenLISEM run.
+#' @param dir_name Character. Additional folder name to place the produced data.
+#' Will be placed at ./LISEM_runs/hpc_runs/**dir_name** Should end with a "/"! 
+#'
+#' @returns creates a map and runfile dataset to run OpenLISEM for (a subset of)
+#' the Geulcatchment
+#'
 
 create_hpc_run <- function(subset = NULL,
                            swatre_file = "",
-                           NBS_num = 0
+                           NBS_num = 0,    
+                           resolution = NULL,
+                           dir_name = "",
+                           run_type = "",
+                           do_runfile = TRUE,
+                           cpu_cores = 0
                            ) {
-  # check if it is a base run, or simulation a NBS
-  if (NBS_num != 0) {
-    do_NBS = TRUE
-  } else {
-    do_NBS = FALSE
-  }
-  
   
   # check if a subset is done of the Geul, otherwise make everything
   if (is.null(subset)) {
@@ -28,8 +48,16 @@ create_hpc_run <- function(subset = NULL,
   source("sources/r_scripts/create_lisem_run.R")
   
   for (i in seq_along(subnums)) {
-    create_lisem_run(resolution = 10, catch_num = subnums[i], swatre_file = swatre_file,
-                     run_type = "base", do_hpc = TRUE, cpu_cores = ncpu, NBS_num = NBS_num)
+    create_lisem_run(resolution = resolution, catch_num = subnums[i], swatre_file = swatre_file,
+                     run_type = run_type, do_hpc = TRUE, cpu_cores = cpu_cores, NBS_num = NBS_num,
+                     dir_name = dir_name)
+  }
+  
+  # check if it is a base run, or simulation a NBS
+  if (NBS_num != 0) {
+    do_NBS = TRUE
+  } else {
+    do_NBS = FALSE
   }
   
   #make the swatre tables only ones

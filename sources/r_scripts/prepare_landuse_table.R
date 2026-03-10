@@ -1,3 +1,5 @@
+
+landuse_table_cal <- function() {
 # note field OM for forests is too high, now a correction done in the csv file
 #TODO move OM adjustment to code?
 pars_lu <- read_csv("sources/setup/tables/fieldwork_to_classes.csv", show_col_types = FALSE) %>%
@@ -63,3 +65,33 @@ write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
 # 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 7 = cover; 8 = n
 #note: here only cols 1,2, 3, 5 and 7 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
 #the other columns are used in SWATRE creation, swatre_input.R
+}
+
+landuse_table_nbs <- function() {
+  # update landuse table, this works for all NBS solutions.
+  # load lu table including the parameters for the NBS
+  lu_tbl <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", show_col_types = FALSE) %>%
+    select(-description, - notes) %>%
+    mutate(rr = rr * 10) # same adjustment as during calibration
+  nms <- as.character(seq(0, ncol(lu_tbl) - 1))
+  names(lu_tbl) <- nms
+  
+  lu_tbl <- lu_tbl[-(1:7), ]
+  # cols in lu table should be:
+  # 0 = lu_nr, 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 
+  # 7 = cover; 8 = n;
+  
+  #note: columns 4 and 6 are used in SWATRE creation, swatre_input.R
+  
+  # the first 7 rows in lu nbs are adapted to reflect the result of the
+  # calibration, but give different output when feeded into the workflow
+  # so for original landuse (1-7) always use the lu.tbl!!!
+  lu_in <- read.table(paste0("sources/setup/calibration/lu.tbl"))[-1, ] 
+  names(lu_in) <- nms
+  lu_tbl <- bind_rows(lu_in, lu_tbl)
+  
+  # save the landuse parameters as table for PCRaster
+  write.table(lu_tbl, file = "sources/setup/calibration/lu_nbs.tbl",
+              sep = " ", row.names = FALSE,
+              quote = FALSE)
+}

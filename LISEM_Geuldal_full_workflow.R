@@ -89,8 +89,8 @@ ldd_subcatch(force_ldd = FALSE, res = c(5, 10, 20))
 #' these are stored in /sources/setup/calibration/calibration_landuse.csv
 #' The factors in this table are used for all subcatchments and dates.
 
-# code inside this script is directly executed
 source("sources/r_scripts/prepare_landuse_table.R")
+landuse_table_cal()
 
 # the resulting lu.tbl has the following columns:
 # 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 7 = cover; 8 = n
@@ -277,31 +277,8 @@ source("sources/r_scripts/source_to_base_maps.R")
 spatial_data_to_pcr(only_NBS = TRUE) # assuming section 1.1 was already run. 
 
 # update landuse table, this works for all NBS solutions.
-# load lu table including the parameters for the NBS
-lu_tbl <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", show_col_types = FALSE) %>%
-  select(-description, - notes) %>%
-  mutate(rr = rr * 10) # same adjustment as during calibration
-nms <- as.character(seq(0, ncol(lu_tbl) - 1))
-names(lu_tbl) <- nms
-
-lu_tbl <- lu_tbl[-(1:7), ]
-# cols in lu table should be:
-# 0 = lu_nr, 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 
-# 7 = cover; 8 = n;
-
-#note: columns 4 and 6 are used in SWATRE creation, swatre_input.R
-
-# the first 7 rows in lu nbs are adapted to reflect the result of the
-# calibration, but give different output when feeded into the workflow
-# so for original landuse (1-7) always use the lu.tbl!!!
-lu_in <- read.table(paste0("sources/setup/calibration/lu.tbl"))[-1, ] 
-names(lu_in) <- nms
-lu_tbl <- bind_rows(lu_in, lu_tbl)
-
-# save the landuse parameters as table for PCRaster
-write.table(lu_tbl, file = "sources/setup/calibration/lu_nbs.tbl",
-            sep = " ", row.names = FALSE,
-            quote = FALSE)
+source("sources/r_scripts/prepare_landuse_table.R")
+landuse_table_nbs()
 
 # make a new swatre file, this works for all NBS solutions.
 source("sources/r_scripts/swatre_input.R")
@@ -374,37 +351,62 @@ for (i in seq_along(points_id)) {
 #' this section shows the workflow for the HPC simulations of the whole Geul
 #' catchment on a HPC. 
 #' Steps:
-#' 1. from ./spatial_data to subcatchments (hpc_sub) with lateraal knopen
-#' 2. make a database for each hpc_sub, reuse the functions from section 2.
-#' 3. make a runfile for each hpc_sub
-#' 4. run all the hpc_sub on the hpc
-#' 5. collect results and make a discharge file for d-hydro (HKV)
+#' 1. Make sure to run all code from chapter 1, which gives a base dataset for
+#' the whole Geul catchment.
+#' 2. Make the basic subcatchment data (4.1). Define a subset if needed. Creating 
+#' data for the whole Geul takes some time ~ xx minutes.
+#' 3. Make the actual OpenLISEM simulation runs.
+#' 
 
 ## 4.1 HPC subcatchments ------------------------------------------------------
-
-# standard runs on 10m
-# cut based on shapefile with subcatchments - DONE
-# assign outlet boudnary to whole lower section of catchment - DONE
-# add option to only run subset
-# add option to include a NBS
-#   which maps are influenced by NBS?
 
 #load the csv file to identify all sub catch numbers
 hpc_ids <- read_csv("sources/setup/hpc/subcatch_id_link.csv")
 
-#produce all subcatchments base maps
+# produce all subcatchments base maps
 #subnums <- hpc_ids$LISEM_ID
-source("sources/r_scripts/create_subcatch_db.R")
+
 # or use a subset (now Belgian part of the Gulp)
 subnums <- c(120, 125, 128, 130, 131, 140)
 
+# cut all the subcatchments from the Geul
+source("sources/r_scripts/create_subcatch_db.R")
 for (i in seq_along(subnums)) {
   base_maps_subcatchment(cell_size = 10, sub_catch_number = subnums[i],
                          run_type = "base", do_hpc = TRUE)
 }
 
+
+## 4.2 Make HPC simulation set ------------------------------------------------
+
+# make the swatre base file to produce inputs for the model runs
+# when a NBS is added, or settings are changed, repeat this step!
+# update landuse table, this works for all NBS solutions.
+source("sources/r_scripts/prepare_landuse_table.R")
+landuse_table_nbs()
+
+# make a new swatre file, this works for all NBS solutions.
+source("sources/r_scripts/swatre_input.R")
+swatre_file <- "swatre_NBS.csv"
+soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
+                       swatre_out = paste0("sources/setup/calibration/", swatre_file),
+                       do_NBS = TRUE
+)
+
+
+
 # make the actual run databases for the hpc
+# choices are:
+# include NBS: set a number, 0 = no nbs
+# whole Geul or subset?
 source("sources/r_scripts/create_hpc_run.R")
 create_hpc_run(subset = subnums,
-                swatre_file = swatre_file, NBS_num = 14)
+               swatre_file = swatre_file,
+               NBS_num = 0,    
+               resolution = 10,
+               dir_name = "",
+               run_type = "base",
+               do_runfile = TRUE,
+               cpu_cores = 6)
+
 

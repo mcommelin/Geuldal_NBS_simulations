@@ -168,7 +168,30 @@ make_runfile_lisem <- function(work_dir = NULL,
 #2. Make LISEM run ----------------------------------------------------
 
 
-# function create_lisem_run
+
+#' Create an OpenLISEM run
+#'
+#' @param resolution Number indicating the resolution of the dataset. Currently 
+#' 5, 10 and 20 meter are available
+#' @param catch_num The number identifier to select a subcatchment. 
+#' See ./sources/setup/outpoints_description.csv for subcatchment names and numbers
+#' @param swatre_file character string with the name of the used swatre input file.
+#' Should be stored in ./sources/setup/calibration
+#' @param run_type Either "cal" or "base". cal = calibration run with date specific 
+#' maps and rainfall events. base = standard conditions for scenario testing
+#' @param do_runfile Boolean. Do you want to make all runfile again? Default = TRUE
+#' @param NBS_num Number of the NBS you want to add to the simulation. 0 = no nbs simulated. 
+#' The number corresponds to the landuse number in ./sources/setup/tables/lu_NBS_tbl.csv
+#' @param cpu_cores Number of cores which are assigned to the OpenLISEM run.
+#' @param do_hpc Boolean. Create single runs for manual modelling or make a database
+#' to send to an hpc. Default = FALSE
+#' @param dir_name Character. Additional folder name to place the produced data.
+#' Will be placed at ./LISEM_runs/hpc_runs/**dir_name** Should end with a "/"!. 
+#' Only works if do_hpc = TRUE
+#' 
+#' @returns creates a map and runfile dataset to run OpenLISEM
+#'
+
 create_lisem_run <- function(
     resolution = NULL,
     catch_num = NULL,
@@ -177,7 +200,8 @@ create_lisem_run <- function(
     do_runfile = TRUE,
     NBS_num = 0,
     cpu_cores = 0,
-    do_hpc = FALSE) 
+    do_hpc = FALSE,
+    dir_name = "") 
 {
   
   # set some triggers
@@ -209,13 +233,8 @@ create_lisem_run <- function(
     
     # copy basemaps to a lisem_runs folder
     catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m/")
-    base_dir <- paste0("LISEM_data/", catch_dir)
+    base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
     
-    
-    # if catch_num > 1 add subcatchments after LISEM_data/
-    if (catch_num > 1) {
-      base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
-    }
     
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
@@ -227,6 +246,7 @@ create_lisem_run <- function(
     } 
     
     run_dir <- paste0("LISEM_runs/", catch_dir)
+    
   } else if (do_hpc == TRUE) {
     # copy basemaps to a lisem_runs folder
     catch_dir <- paste0(catch_num, "_", resolution, "m/")
@@ -239,7 +259,7 @@ create_lisem_run <- function(
       NBS_name <- NBS_desc$description
       catch_dir <- paste0(catch_num, "_", resolution, "m_", NBS_name, "/")
     } 
-    run_dir <- paste0("LISEM_runs/hpc_runs/", catch_dir)
+    run_dir <- paste0("LISEM_runs/hpc_runs/", dir_name, catch_dir)
     
   } else {
     print("ERROR: set do_hpc to TRUE or FALSE")
@@ -501,12 +521,12 @@ create_lisem_run <- function(
   # make swatre files for each run,
   # in case of hpc run, make once outside this function
   if (do_hpc == FALSE) {
-  source("sources/r_scripts/swatre_input.R")
-  make_swatre_tables(cal_file = swatre_file,
-                     swatre_dir = paste0(run_dir, "swatre/"),
-                     do_NBS = do_NBS)
-  
-  message("finished run data creation.")
+    source("sources/r_scripts/swatre_input.R")
+    make_swatre_tables(cal_file = swatre_file,
+                       swatre_dir = paste0(run_dir, "swatre/"),
+                       do_NBS = do_NBS)
+    
+    message("finished run data creation.")
   }
 } # end create_lisem_run
 
