@@ -7,8 +7,8 @@ soil,ksat_O,ksat_A,ksat_BC,n_O,n_A,n_BC,alpha_O,alpha_A,alpha_BC,description
 143,0.6,0.7,0.7,0.79,0.79,0.79,7.5,7.5,7.5,"Loess op glauconiet,kalksteen, vuursteen,"
 144,0.6,0.7,0.7,0.79,0.79,0.79,7.5,7.5,7.5,"Loess, Colluvium, ooivaaggrond, A-C profiel"
 145,0.6,0.7,0.7,0.79,0.79,0.79,7.5,7.5,7.5,"Loess, Zavel in ondergrond"
-150,1,1,1,1,1,1,1,1,1,Lichte Zavel homogene ondergrond
-151,1,1,1,1,1,1,1,1,1,"Zavel en lichte klei, homogene ondergrond"
+150,0.6,0.5,0.5,1,1,1,1,1,1,Lichte Zavel homogene ondergrond
+151,0.6,0.5,0.5,1,1,1,1,1,1,"Zavel en lichte klei, homogene ondergrond"
 210,1,1,1,1,1,1,1,1,1,Sableux/Sable limoneux
 220,0.8,0.6,0.12,1,1,1,1,1,1,Limoneux (G)
 230,0.8,0.6,0.12,1,1,1,1,1,1,"Limoneux, Mix (tourbeux), omgeven met G = 330"
