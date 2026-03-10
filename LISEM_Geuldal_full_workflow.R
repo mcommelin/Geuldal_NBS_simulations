@@ -95,7 +95,7 @@ source("sources/r_scripts/prepare_landuse_table.R")
 
 ## 2.2 make SWATRE soil tables -------------------------------------------------
 
-# for the simulations of infiltration we use the SWATRE mobel inside OpenLISEM
+# for the simulations of infiltration we use the SWATRE model inside OpenLISEM
 # this requires the van Genuchten parameters for different soil layers for
 # each identified soil and landuse combination. 
 # To estimate these parameters from variables we know a modelling / equation
@@ -197,7 +197,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, run_type = "cal", F)
+create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, run_type = "cal", do_runfile = T)
 
 ## 2.5 Calibration settings and figures ----------------------------------------
 

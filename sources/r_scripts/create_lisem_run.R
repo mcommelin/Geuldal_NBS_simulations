@@ -21,9 +21,9 @@ make_runfile_lisem <- function(work_dir = NULL,
   
   # select run type
   if (run_type == "cal") {
-    do_ndvi = TRUE
+    do_ndvi_run = TRUE
   } else if (run_type == "base") {
-    do_ndvi = FALSE
+    do_ndvi_run = FALSE
   } else {
     print("ERROR: wrong run_type. Choose from: cal OR base")
     return()
@@ -194,9 +194,9 @@ create_lisem_run <- function(
   base_dir <- paste0("LISEM_data/", catch_dir)
   
   # if catch_num > 1 add subcatchments after LISEM_data/
-  if (catch_num > 1) {
+  #if (catch_num > 1) {
     base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
-  }
+ # }
   
   #adjust folder name when simulating NBS
   if (NBS_num != 0) {
