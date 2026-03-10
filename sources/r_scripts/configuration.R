@@ -21,7 +21,8 @@ if (!require("foreach")) install.packages("foreach")
 if (!require("doParallel")) install.packages("doParallel")
 if (!require("reticulate")) install.packages("reticulate")
   #install_python()
-if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
+if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF@8e81f4e98d6e1e0758e5b076a1c7321ea26ea676
+")
 # install known working version of rosetta-soil
 py_install("rosetta-soil==0.1.2", pip = TRUE)
 } else {
