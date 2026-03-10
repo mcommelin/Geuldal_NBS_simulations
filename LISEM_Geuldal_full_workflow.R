@@ -394,12 +394,11 @@ hpc_ids <- read_csv("sources/setup/hpc/subcatch_id_link.csv")
 
 #produce all subcatchments base maps
 #subnums <- hpc_ids$LISEM_ID
-
+source("sources/r_scripts/create_subcatch_db.R")
 # or use a subset (now Belgian part of the Gulp)
 subnums <- c(120, 125, 128, 130, 131, 140)
 
 for (i in seq_along(subnums)) {
-  source("sources/r_scripts/create_subcatch_db.R")
   base_maps_subcatchment(cell_size = 10, sub_catch_number = subnums[i],
                          run_type = "base", do_hpc = TRUE)
 }
@@ -407,5 +406,5 @@ for (i in seq_along(subnums)) {
 # make the actual run databases for the hpc
 source("sources/r_scripts/create_hpc_run.R")
 create_hpc_run(subset = subnums,
-                swatre_file = swatre_file, NBS_num = 0)
+                swatre_file = swatre_file, NBS_num = 14)
 

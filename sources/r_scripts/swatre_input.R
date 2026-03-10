@@ -172,7 +172,7 @@ make_swatre_tables <- function(cal_file = "",
   if (dir.exists(tbl_dir)) {
     unlink(tbl_dir, recursive = TRUE)
   }
-  dir.create(tbl_dir)
+  dir.create(tbl_dir, recursive = T)
   # for loop making all tables
   for (i in seq_along(soil_params$CODE)) {
     ubc_tbl_n <- soil_params$CODE[i]

@@ -25,20 +25,19 @@ create_hpc_run <- function(subset = NULL,
     subnums <- subset
   }
   
-  
-  
-  
   source("sources/r_scripts/create_lisem_run.R")
   
   for (i in seq_along(subnums)) {
     create_lisem_run(resolution = 10, catch_num = subnums[i], swatre_file = swatre_file,
-                     run_type = "base", do_hpc = TRUE, cpu_cores = ncpu)
+                     run_type = "base", do_hpc = TRUE, cpu_cores = ncpu, NBS_num = NBS_num)
   }
   
   #make the swatre tables only ones
+  dir_swatre <- "LISEM_runs/hpc_runs/swatre/"
+
   source("sources/r_scripts/swatre_input.R")
   make_swatre_tables(cal_file = swatre_file,
-                     swatre_dir = "LISEM_runs/hpc_runs/swatre/",
+                     swatre_dir = dir_swatre,
                      do_NBS = do_NBS)
   
 }
