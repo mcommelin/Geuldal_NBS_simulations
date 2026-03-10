@@ -24,8 +24,15 @@ noLdd = ldd.map;
 
 initial
 
-o2 = if(bound eq 1 and chanmask eq 1, 1);
-o3 = cover(o2, 0) * 10;
+# make an outlet, independent of existing channels
+o1 = if(bound eq 1, dem);
+o2 = mapminimum(o1);
+
+report outlet = nominal(cover(if(o1 eq o2, 1, 0), 0) * catch);
+
+
+o4 = if(bound eq 1 and chanmask eq 1, 1);
+o3 = cover(o4, 0) * 10;
 
 # when channel feature are too close to each other on the map, small side channels of length = 1 cell
 # are created, we remove these first 
@@ -36,7 +43,7 @@ chanclean = if(boolean(catch), chanclean);
 report lddchan= lddcreate(dem*chanclean-o3,1e20,1e20,1e20,1e20); 
 
 report outpoints = cover(pit(lddchan),0);
-report outlet = outpoints;
+#report outlet = outpoints;
 
 report chanmask=chanclean;
 
