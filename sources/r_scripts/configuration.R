@@ -4,7 +4,9 @@ library(yaml)
 config <- yaml.load_file("config.yaml")
 
 ins <- config$install_packages
-#if (ins == "Y") {
+
+# load all packages
+if (ins == "Y") {
 if (!require("hydroGOF")) install.packages("hydroGOF")
 if (!require("gdalUtilities")) install.packages("gdalUtilities")
 if (!require("terra")) install.packages("terra")
@@ -18,15 +20,15 @@ if (!require("sensobol")) install.packages("sensobol")
 if (!require("foreach")) install.packages("foreach")
 if (!require("doParallel")) install.packages("doParallel")
 if (!require("reticulate")) install.packages("reticulate")
-if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
-#} else {
- # print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
-#  Sys.sleep(2)
-#}
-# load all packages
-
+  #install_python()
+if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF@8e81f4e98d6e1e0758e5b076a1c7321ea26ea676
+")
+# install known working version of rosetta-soil
+py_install("rosetta-soil==0.1.2", pip = TRUE)
+} else {
+  print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
+  Sys.sleep(1)
 library(hydroGOF)
-library(rosettaPTF)
 library(gdalUtilities)
 library(terra)
 library(raster)
@@ -38,9 +40,11 @@ library(sensobol)
 library(foreach)
 library(doParallel)
 library(reticulate)
+library(rosettaPTF)
 
+}
 # load configuration
-DEBUGm = TRUE #<- if (config$debug_messages == "Y") {TRUE} else {FALSE}
+DEBUGm = if (config$debug_messages == "Y") {TRUE} else {FALSE}
 
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
@@ -72,3 +76,7 @@ if (ncpu == -1) {
   ncpu <- floor(num_cores() / 2)
 }
  
+# CODE PROBABLY NOT NEEDED FOR rosetta
+# set python etc before loading rosettaPTF
+#conda_path <- paste0(config$miniconda_path, "/envs/", config$conda_env)
+#use_condaenv(condaenv = conda_path, required = T)

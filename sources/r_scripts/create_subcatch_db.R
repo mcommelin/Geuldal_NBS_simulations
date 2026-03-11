@@ -6,11 +6,12 @@ base_maps_subcatchment <- function(
     cell_size = NULL,
     sub_catch_number = NULL, # adjust the number to select the subcatchment you want
     calc_ldd = FALSE,
-    run_type = ""
-    )
+    run_type = "",
+    do_hpc = FALSE
+)
 {
   
- # select run type
+  # select run type
   if (run_type == "cal") {
     do_NDVI = TRUE
   } else if (run_type == "base") {
@@ -21,36 +22,44 @@ base_maps_subcatchment <- function(
   }
   
   
-   # general settings
+  # general settings
   res = cell_size
   srs = "EPSG:28992"
   resample_method = "near"
   
-  # load subcatchment points csv file
-  points <- read_csv("sources/setup/outpoints_description.csv")
+  if (do_hpc == FALSE) {
+    # load subcatchment points csv file
+    points <- read_csv("sources/setup/outpoints_description.csv")
+    
+    # select subcatchment
+    subcatch <- points %>%
+      filter(point == sub_catch_number) %>% 
+      filter(cell_size == res)
+    subcatch_name <- subcatch$subcatch_name # give best describing name for the subcatchment
+    
+    # create dir for subcatch
+    sub_catch_dir <- paste0("LISEM_data/subcatchments/", subcatch_name, "_", res, "m/maps/")
+  } else if (do_hpc == TRUE) {
+    sub_catch_dir <- paste0("LISEM_data/hpc_subcatchments/", sub_catch_number, "_", res, "m/maps/")
+  } else {
+    print("ERROR: set do_hpc to TRUE or FALSE")
+    return()
+  }
   
-  # select subcatchment
-  subcatch <- points %>%
-    filter(point == sub_catch_number) %>% 
-    filter(cell_size == res)
-  subcatch_name <- subcatch$subcatch_name # give best describing name for the subcatchment
-
-  # create dir for subcatch
-  sub_catch_dir <- paste0("LISEM_data/subcatchments/", subcatch_name, "_", res, "m/maps/")
   main_dir <- paste0("LISEM_data/Geul_", res, "m/maps/")
-
+  
   if (!dir.exists(sub_catch_dir)) {
     dir.create(sub_catch_dir, recursive = TRUE)
   }
-
+  
   # copy base maps from main_dir to new subcatch dir
   base_maps <- readLines("sources/base_maps.txt")
- 
-  if(run_type == "base") {
-  #find maps with NBS measures and add these to the base maps list
-  NBS_maps <- dir(main_dir, "^\\d\\d_.*.map$")
   
-  base_maps <- c(base_maps, NBS_maps)
+  if(run_type == "base") {
+    #find maps with NBS measures and add these to the base maps list
+    NBS_maps <- dir(main_dir, "^\\d\\d_.*.map$")
+    
+    base_maps <- c(base_maps, NBS_maps)
   }
   
   # add "base" suffix to the base maps names in the subcatch dir
@@ -65,94 +74,107 @@ base_maps_subcatchment <- function(
   if (DEBUGm) message(sub_catch_dir)
   
   # delineate the subcatchment
+  if (do_hpc == FALSE) {
+    # pcraster create map with selected outpoint
+    pcrcalc(
+      work_dir = sub_catch_dir,
+      options = paste0("sub_point.map=boolean(if(base_outpoints.map eq ", subcatch$point, ", 1))")
+    )
+    # delineate the subcatchment, results in sub.map with catchment(ldd, point) 
+    pcr_script(
+      script = "delineate_catchment.mod",
+      script_dir = "sources/pcr_scripts",
+      work_dir = sub_catch_dir
+    )
+  } else {
+    
+    # in case of hpc use the subcatchments map for delineation
+    pcrcalc(
+      work_dir = sub_catch_dir,
+      options = paste0("sub.map=boolean(if(base_hpc_sub.map eq ", sub_catch_number, ", 1))")
+    )
+    
+    # for the hpc we dont need (real) ldd map so we never calculate it
+    #if(!file.exists(paste0(sub_catch_dir,"ldd.map"))){
+    calc_ldd <- FALSE
+    #}
+  }
   
-  # pcraster create map with selected outpoint
-  pcrcalc(
-    work_dir = sub_catch_dir,
-    options = paste0("sub_point.map=boolean(if(base_outpoints.map eq ", subcatch$point, ", 1))")
+  map_clone = paste0(sub_catch_dir, "sub.map")
+  map_clone_tif = paste0(sub_catch_dir, "sub.tif")
+  map_clone_cut_tif = paste0(sub_catch_dir, "subc.tif")
+  
+  #make sub.map into a tif to read the header
+  gdal_translate(
+    src_dataset = map_clone,
+    dst_dataset = map_clone_tif,
+    of = "GTiff"
   )
-  # delineate the subcatchment, results in sub.map with catchment(ldd, point) 
-  pcr_script(
-    script = "delineate_catchment.mod",
-    script_dir = "sources/pcr_scripts",
-    work_dir = sub_catch_dir
+  
+  #use raster library to crop MVs
+  r <- rast(map_clone_tif)
+  cropped_r <- trim(r)
+  writeRaster(cropped_r, map_clone_cut_tif, overwrite = TRUE)
+  
+  # use gdaltranslate to create a PCRaster map  
+  gdal_translate(
+    src_dataset = map_clone_cut_tif,
+    dst_dataset = paste0(sub_catch_dir, "catchment.map"),
+    ot = "Float32",
+    of = "PCRaster",
+    mo = "PCRASTER_VALUESCALE=VS_SCALAR"
   )
-
-   map_clone = paste0(sub_catch_dir, "sub.map")
-   map_clone_tif = paste0(sub_catch_dir, "sub.tif")
-   map_clone_cut_tif = paste0(sub_catch_dir, "subc.tif")
-
-   #make sub.map into a tif to read the header
-   gdal_translate(
-     src_dataset = map_clone,
-     dst_dataset = map_clone_tif,
-     of = "GTiff"
-   )
-   
-   #use raster library to crop MVs
-   r <- rast(map_clone_tif)
-   cropped_r <- trim(r)
-   writeRaster(cropped_r, map_clone_cut_tif, overwrite = TRUE)
-   
-   # use gdaltranslate to create a PCRaster map  
-   gdal_translate(
-     src_dataset = map_clone_cut_tif,
-     dst_dataset = paste0(sub_catch_dir, "catchment.map"),
-     ot = "Float32",
-     of = "PCRaster",
-     mo = "PCRASTER_VALUESCALE=VS_SCALAR"
-   )
-   
-   # Extract extent, resolution, etc. from the reference raster
-   ref <- raster(map_clone_cut_tif)
-   xmin <- xmin(ref)
-   ymin <- ymin(ref)
-   xmax <- xmax(ref)
-   ymax <- ymax(ref)
-   ncol <- ncol(ref)
-   nrow <- nrow(ref)
-   #if (DEBUGm) message(ref)
-   
-   # #remove ldd map because cannot be resampled.
-   base_maps <- gsub("^ldd\\.map$", "", base_maps)
-   # # remove catchment because it is already correct size
-   base_maps <- gsub("^catchment\\.map$", "", base_maps)
-   base_maps <- base_maps[base_maps != ""]  # Remove empty lines  
-   #base_maps[24] <- "sub_point.map"
-   base_maps[[length(base_maps) + 1]] <- "sub_point.map"
-   
-   for (i in seq_along(base_maps)) {
-     map_in = paste0(sub_catch_dir,"base_", base_maps[i])
-     if (base_maps[i] == "sub_point.map") {
-       map_in = paste0(sub_catch_dir, base_maps[i])
-     }
-     map_out_name = paste0(sub_catch_dir, base_maps[i])
-     tmp_tif = paste0(sub_catch_dir, "tmp.tif")
-     #if (DEBUGm) message("in ",map_in)
-     
-     #  cut all the maps to catchment size base on sub_point.map
-     # gdalwarp makes a temp tif
-     gdalwarp(
-       srcfile = map_in,
-       dstfile = tmp_tif,
-       t_srs   = srs,         
-       te      = c(xmin, ymin, xmax, ymax),
-       ts      = c(ncol, nrow),         
-       r       = resample_method,    
-       overwrite = TRUE
-     )
-     print(map_out_name)
-     # use gdaltranslate to create a PCRaster map  
-     gdal_translate(
-       src_dataset = tmp_tif,
-       dst_dataset = map_out_name,
-       ot = "Float32",
-       of = "PCRaster",
-       mo = "PCRASTER_VALUESCALE=VS_SCALAR"
-     )
-     if (DEBUGm) message("out ",map_out_name)
-     
-   }
+  
+  # Extract extent, resolution, etc. from the reference raster
+  ref <- raster(map_clone_cut_tif)
+  xmin <- xmin(ref)
+  ymin <- ymin(ref)
+  xmax <- xmax(ref)
+  ymax <- ymax(ref)
+  ncol <- ncol(ref)
+  nrow <- nrow(ref)
+  #if (DEBUGm) message(ref)
+  
+  # remove ldd map because cannot be resampled.
+  base_maps <- gsub("^ldd\\.map$", "", base_maps)
+  # remove catchment because it is already correct size
+  base_maps <- gsub("^catchment\\.map$", "", base_maps)
+  base_maps <- base_maps[base_maps != ""]  # Remove empty lines  
+  if (do_hpc == FALSE) {
+    base_maps[[length(base_maps) + 1]] <- "sub_point.map"}
+  
+  for (i in seq_along(base_maps)) {
+    map_in = paste0(sub_catch_dir,"base_", base_maps[i])
+    if (base_maps[i] == "sub_point.map") {
+      map_in = paste0(sub_catch_dir, base_maps[i])
+    }
+    map_out_name = paste0(sub_catch_dir, base_maps[i])
+    tmp_tif = paste0(sub_catch_dir, "tmp.tif")
+    #if (DEBUGm) message("in ",map_in)
+    
+    #  cut all the maps to catchment size base on sub_point.map
+    # gdalwarp makes a temp tif
+    gdalwarp(
+      srcfile = map_in,
+      dstfile = tmp_tif,
+      t_srs   = srs,         
+      te      = c(xmin, ymin, xmax, ymax),
+      ts      = c(ncol, nrow),         
+      r       = resample_method,    
+      overwrite = TRUE
+    )
+    print(map_out_name)
+    # use gdaltranslate to create a PCRaster map  
+    gdal_translate(
+      src_dataset = tmp_tif,
+      dst_dataset = map_out_name,
+      ot = "Float32",
+      of = "PCRaster",
+      mo = "PCRASTER_VALUESCALE=VS_SCALAR"
+    )
+    if (DEBUGm) message("out ",map_out_name)
+    
+  }
   
   # # run pcraster script to create base maps for subcatch
   if (calc_ldd == TRUE) {
@@ -170,52 +192,52 @@ base_maps_subcatchment <- function(
   )
   
   if(run_type == "cal") {
-  # initial head per subcatch
-  # initial head maps
-  # if resolution = 20, copy from base to Geul
-  # if different, copy and resample
-  cal_events <- read_csv("sources/selected_events.csv") %>%
-    filter(use == "cal")
-  events <- str_extract(cal_events$event_start, "\\d*")
-  ih_ev <- str_remove(events, "^\\d\\d")
-  ih_dir <- paste0("spatial_data/inithead/inith_", events, "_20m/")
-  ih_maps <- dir(ih_dir[1], pattern = "\\d$")
-  ih_end <- str_extract(ih_maps, "\\d*$")
-
-  # per event
-  for (j in seq_along(events)) {
-  for (i in seq_along(ih_maps)) {
-    map_in = paste0(ih_dir[j], ih_maps[i])
-    map_out_name = paste0(sub_catch_dir, "ih", ih_ev[j],".", ih_end[i]) #"h.", 
-    tmp_tif = paste0(sub_catch_dir, "tmp.tif")
-    #if (DEBUGm) message("IH in ",map_in)
-    # gdalwarp makes a temp tif
-    gdalwarp(
-      srcfile = map_in,
-      dstfile = tmp_tif,
-      t_srs   = srs,         
-      te      = c(xmin, ymin, xmax, ymax),
-      ts      = c(ncol, nrow),         
-      r       = resample_method,    
-      overwrite = TRUE
-    )
-    # use gdaltranslate to create a PCRaster map  
-    gdal_translate(
-      src_dataset = tmp_tif,
-      dst_dataset = map_out_name,
-      ot = "Float32",
-      of = "PCRaster",
-      mo = "PCRASTER_VALUESCALE=VS_SCALAR"
-    )
-    if (DEBUGm) message("out ",map_out_name)
+    # initial head per subcatch
+    # initial head maps
+    # if resolution = 20, copy from base to Geul
+    # if different, copy and resample
+    cal_events <- read_csv("sources/selected_events.csv") %>%
+      filter(use == "cal")
+    events <- str_extract(cal_events$event_start, "\\d*")
+    ih_ev <- str_remove(events, "^\\d\\d")
+    ih_dir <- paste0("spatial_data/inithead/inith_", events, "_20m/")
+    ih_maps <- dir(ih_dir[1], pattern = "\\d$")
+    ih_end <- str_extract(ih_maps, "\\d*$")
     
-  } # end init head files loop
-  } # end event loop
+    # per event
+    for (j in seq_along(events)) {
+      for (i in seq_along(ih_maps)) {
+        map_in = paste0(ih_dir[j], ih_maps[i])
+        map_out_name = paste0(sub_catch_dir, "ih", ih_ev[j],".", ih_end[i]) #"h.", 
+        tmp_tif = paste0(sub_catch_dir, "tmp.tif")
+        #if (DEBUGm) message("IH in ",map_in)
+        # gdalwarp makes a temp tif
+        gdalwarp(
+          srcfile = map_in,
+          dstfile = tmp_tif,
+          t_srs   = srs,         
+          te      = c(xmin, ymin, xmax, ymax),
+          ts      = c(ncol, nrow),         
+          r       = resample_method,    
+          overwrite = TRUE
+        )
+        # use gdaltranslate to create a PCRaster map  
+        gdal_translate(
+          src_dataset = tmp_tif,
+          dst_dataset = map_out_name,
+          ot = "Float32",
+          of = "PCRaster",
+          mo = "PCRASTER_VALUESCALE=VS_SCALAR"
+        )
+        if (DEBUGm) message("out ",map_out_name)
+        
+      } # end init head files loop
+    } # end event loop
   } # end run_type = "cal"
   
   if (do_NDVI == TRUE) {
-  # 10m NDVI maps, called NDVI.tif in a dir with an event date
-  ndvi_dir <- paste0("spatial_data/NDVI/ndvi_", events, "_10m/")
+    # 10m NDVI maps, called NDVI.tif in a dir with an event date
+    ndvi_dir <- paste0("spatial_data/NDVI/ndvi_", events, "_10m/")
     # per event
     for (j in seq_along(events)) {
       map_in = paste0(ndvi_dir[j], "NDVI.tif")
@@ -245,7 +267,7 @@ base_maps_subcatchment <- function(
       
     } # end event loop
   } # NDVI
-
+  
   # clean up
   file.remove(
     list.files(
