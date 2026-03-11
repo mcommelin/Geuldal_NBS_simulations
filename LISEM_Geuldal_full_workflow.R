@@ -345,6 +345,18 @@ for (i in seq_along(points_id)) {
 # on linux use parallel to run all the simulations.
 # find ~/Werk/Geuldal_NBS/LISEM_runs/ -name "*.run" | parallel --dry-run -j 3 /home/mc/lisem-bin/Lisem -ni -r {}
 
+## 3.4 NBS with landscape elements --------------------------------------------
+
+# load NBS map,
+# set trigger, do landscape element
+# from csvfile with lu_NBS_tbl.csv
+# add colums with do_LE (boolean)
+# update function, if do_LE == TRUE, don't update landuse - but wait.
+# separate script for each NBS
+# if lu_map == 2, place landscape element. read lu params from table and
+# update input maps accordingly.
+
+
 
 # 4. HPC runs full Geuldal -----------------------------------------------------
 
