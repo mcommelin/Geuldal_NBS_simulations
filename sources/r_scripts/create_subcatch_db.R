@@ -227,24 +227,6 @@ base_maps_subcatchment <- function(
       writeRaster(map_res, map_out_name , filetype = "PCRaster", NAflag = -9999,
                   overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
       
-      # # gdalwarp makes a temp tif
-      # gdalwarp(
-      #   srcfile = map_in,
-      #   dstfile = tmp_tif,
-      #   t_srs   = srs,         
-      #   te      = c(xmin, ymin, xmax, ymax),
-      #   ts      = c(ncol, nrow),         
-      #   r       = resample_method,    
-      #   overwrite = TRUE
-      # )
-      # # use gdaltranslate to create a PCRaster map  
-      # gdal_translate(
-      #   src_dataset = tmp_tif,
-      #   dst_dataset = map_out_name,
-      #   ot = "Float32",
-      #   of = "PCRaster",
-      #   mo = "PCRASTER_VALUESCALE=VS_SCALAR"
-      # )
       if (DEBUGm) message("out ",map_out_name)
       
     } # end event loop
