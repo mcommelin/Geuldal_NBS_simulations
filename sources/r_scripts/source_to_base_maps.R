@@ -192,6 +192,25 @@ for(i in seq_along(cell_size)) {
 
 }
 
+
+copy_spatial_data <- function() {
+  # make folder structure
+  if(!dir.exists(./"LISEM_data")) {
+    dir.create("./LISEM_data")
+  }
+  if(!dir.exists(./"LISEM_runs")) {
+    dir.create("./LISEM_runs")
+  }
+  
+  # copy files
+file.copy(list.files("./spatial_data/prepared/LISEM_data", full.names = T),
+          "./LISEM_data", recursive = T)
+    # 2. move the folder ./spatial_data/prepared/LISEM_data to ./LISEM_data #
+  # 3. move the folder ./spatial_data/prepared/rain to ./LISEM_runs/rain 
+}
+
+
+
 # OLD FUNCTIONS NOT USED ANYMORE 2025-12-03 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

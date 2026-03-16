@@ -5,12 +5,16 @@
 
 args = commandArgs(TRUE)
 
+# set boolean for choices in functions which are shared with manual wrokflow
+do_hpc = TRUE
+
+# load or install yaml library
+if (!require("yaml")) install.packages("yaml")
+library(yaml)
+
+# load all settings
 ini_file <- args[1]
-
-# Read ini file ----------------------------------------------------------------
-
-# -- resolution data preparation
-
+ini <- read_yaml(ini_file)
 
 # Initialization ---------------------------------------------------------------
 
@@ -19,20 +23,21 @@ source("sources/r_scripts/configuration.R")
 
 
 # Data preparation -------------------------------------------------------------
-if (prepare_data == TRUE) {
+if (ini$do_data_preparation == TRUE) {
 source("sources/r_scripts/source_to_base_maps.R")
 
 #TODO function to copy maps etc from spatial data folder!
 
+res_dp <- ini$res_data_prep
 
 # maps dem etc
 catch_maps_res()
 
 # the function below makes PCRaster maps for all resolutions from the data
 # in ./spatial_data/
-spatial_data_to_pcr(res = c(5, 10, 20)) # you can also select only 1 resolution -> faster
+spatial_data_to_pcr(res = res_dp) # you can also select only 1 resolution -> faster
 # some processing and make ldd
-ldd_subcatch(force_ldd = FALSE, res = c(5, 10, 20))
+ldd_subcatch(force_ldd = FALSE, res = res_dp)
 
 }
 
