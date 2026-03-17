@@ -1,9 +1,11 @@
 # functions to convert the base data from ./spatial_data to Geul input
 
 ## spatial_data to Geul_xm 
-spatial_data_to_pcr <- function(only_NBS = FALSE) {
-  
+spatial_data_to_pcr <- function(only_NBS = FALSE,
+                                res = NULL) {
+  if (is.null(res)) {
   res <- c(5, 10, 20)
+  } 
   maps_list <- read_csv("sources/transformations_maps.csv")
   dir_sd <- "spatial_data/"
   
@@ -135,15 +137,20 @@ for(i in seq_along(cell_size)) {
 ## make map with subcatchments and ldd
 #based on csv file with outpoint coordinates
 
-ldd_subcatch <- function(force_ldd = FALSE) {
+ldd_subcatch <- function(force_ldd = FALSE,
+                         res = NULL) {
 # load the outpoints csv file
 # if more subcatchment or outpoints are required, these can manually be added
 # to this file
 
   points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
 # loop over resolutions
+  if (is.null(res)) {
 cell_size <- unique(points$cell_size)
-
+  } else {
+  cell_size <- res
+  }
+  
 for(i in seq_along(cell_size)) {
   subdir <- paste0("LISEM_data/Geul_", cell_size[i], "m/maps/")
   res <- cell_size[i]
@@ -183,4 +190,21 @@ for(i in seq_along(cell_size)) {
   }
 }
 
+}
+
+
+copy_spatial_data <- function() {
+  # make folder structure
+  if(!dir.exists("./LISEM_data")) {
+    dir.create("./LISEM_data")
+  }
+  if(!dir.exists("./LISEM_runs")) {
+    dir.create("./LISEM_runs/rain", recursive = TRUE)
+  }
+  
+  # copy files
+file.copy(list.files("./spatial_data/prepared/LISEM_data", full.names = T),
+          "./LISEM_data", recursive = T)
+file.copy(list.files("./spatial_data/prepared/rain", full.names = T),
+          "./LISEM_runs/rain", recursive = T)
 }

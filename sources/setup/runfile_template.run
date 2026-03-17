@@ -229,7 +229,7 @@ OutSedSS=0
 OutSedBL=0
 
 [Advanced]
-Nr user Cores=12
+Nr user Cores=0
 Flooding SWOF Reconstruction=3
 Flooding SWOF flux limiter=1
 Correct MB with WH=1

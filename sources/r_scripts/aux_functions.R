@@ -308,3 +308,18 @@ theta_genuchten <- function(theta_r = NULL,
   t = theta_r + (theta_s - theta_r)/(1 + abs(alpha * h)^ n)^m
   return(t)
 }
+
+
+num_cores <- function() {
+  sys_type <- Sys.info()['sysname']
+  
+  if (sys_type == "Linux") {
+    n_cpu <- as.numeric(system("nproc --all", intern = TRUE))
+  } else if (sys_type == "Windows") {
+    n_cpu <- as.numeric(system("wmic cpu get NumberOfLogicalProcessors", intern = T))
+  } else {
+    return(print("Error: function does not work on this OS"))
+  }
+  
+  return(n_cpu)
+}

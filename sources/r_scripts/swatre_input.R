@@ -5,22 +5,31 @@
 # loaded already.
 soil_landuse_to_swatre <- function(file = "",
                                    swatre_out = "",
-                                   do_NBS = FALSE) 
+                                   do_NBS = FALSE,
+                                   do_hpc = FALSE) 
 {
   # 1. Calculate params -------------------------------------------------------------
   
-  if (do_NBS == TRUE) {
-    lutbl <- "lu_nbs.tbl"
-  } else {
-    lutbl <- "lu.tbl"
-  }
   #load the UBC codes including texture, gravel
   ubc_in <- read_csv(file, show_col_types = FALSE)
   # load landuse classes with OM and O depth
+  lutbl <- "lu.tbl"
   lu_in <- read.table(paste0("sources/setup/calibration/", lutbl))[-1, ] %>%
     select(1, 5, 7) %>%
     rename_with(~ c("lu", "om", "od")) %>%
     mutate(lu = if_else(lu < 10, lu * 100, lu))
+  
+  # the first 7 rows in lu nbs are adapted to reflect the result of the
+  # calibration, but give different output when feeded into the workflow
+  # so for original landuse (1-7) always use the lu.tbl!!!
+  if (do_NBS == TRUE) {
+    lutbl <- "lu_nbs.tbl"
+    lu_nbs <- read.table(paste0("sources/setup/calibration/", lutbl))[-(1:8), ] %>%
+      select(1, 5, 7) %>%
+      rename_with(~ c("lu", "om", "od")) %>%
+      mutate(lu = if_else(lu < 10, lu * 100, lu))
+    lu_in <- bind_rows(lu_in, lu_nbs)
+  } 
   # NBS value go to digit 5 and 6, original landuse to digit 4.
   
   if (DEBUGm) message("Making all soil horizon codes")
@@ -59,9 +68,12 @@ soil_landuse_to_swatre <- function(file = "",
   # https://github.com/ldemaz/rcropmod
   # Containing an Apache 2.0 license
   if (DEBUGm) message("pedotransfer.R")
+  if (do_hpc == TRUE) {
+    source("Geuldal_NBS/modules/rcropmod/pedotransfer.R")
+  } else {
   source("modules/rcropmod/pedotransfer.R")
-  
-  DF = 1.1;#1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
+  }
+  DF = 1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
   # this decreases the Ksat mainly, assuming a higher bulk density
   
   sr_params <- ubc_all %>%
@@ -89,101 +101,85 @@ soil_landuse_to_swatre <- function(file = "",
   
   # these results also contain uncertainty, which we can use for calibration later.  
   rosetta_params <- run_rosetta(soildat)
-
+  
   soil_params <- bind_cols(sr_params, rosetta_params) %>%
     mutate_at(vars(matches("^log10")), ~ 10^.) %>% # recalculate all log10 values
     rename_with(~ str_remove(., "^log10_")) # update names
-    # folder LISEM_data/calibration must exist
-    # write the soil_params to LISEM_data/calibration
-    # here we can adjust many parameters for each variable during testing
-    write_csv(soil_params, swatre_out)
+  # folder LISEM_data/calibration must exist
+  # write the soil_params to LISEM_data/calibration
+  # here we can adjust many parameters for each variable during testing
+  write_csv(soil_params, swatre_out)
+}
+
+## 1.3b MERGE FIELD MEASUREMENTS KSAT AND PORE ----------------------------------
+
+
+## 1.4 theta - h - k table ------------------------------------------------
+# here we can add code to include observed porosity and ksat before making the swatre tables
+
+make_swatre_tables <- function(cal_file = "",
+                               swatre_dir = NULL,
+                               do_NBS = FALSE) 
+{
+  # 2. SWATRE tables LISEM-----------------------------------
+  if (DEBUGm) message("make_swatre_tables")    
+  ## 2.1 theta - h - k table ------------------------------------------------
+  #calibration
+  
+  soil_cal <- read_csv("sources/setup/calibration/calibration_soil.csv", 
+                       show_col_types = F) %>%
+    select(-description, -cal_comment) %>% 
+    pivot_longer(
+      cols = -soil,
+      names_to = "parameter",
+      values_to = "value"
+    ) %>%
+    separate(parameter, into = c("param", "horizon"), sep = "_") %>%
+    mutate(horizon = ifelse(horizon == "BC", "C", horizon)) %>%
+    mutate(soil = paste0(soil, "_", horizon),
+           param = paste0(param, "_cal")) %>%
+    select(-horizon) %>%
+    pivot_wider(
+      names_from = param,
+      values_from = value
+    )
+  
+  #load landuse related ksat calibration
+  lu_cal <- read_csv("sources/setup/calibration/calibration_landuse.csv") %>%
+    select(landuse, ksat_cal) %>%
+    rename("ksat_lu" = "ksat_cal")
+  
+  soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file), show_col_types = FALSE) %>%
+    filter(!is.na(clay)) %>%
+    mutate(CODE = str_replace(CODE, "-", "_"),
+           horizon = str_extract(CODE, ".$"),
+           horizon = ifelse(horizon == "E", "C", horizon),
+           horizon = ifelse(horizon == "t", "C", horizon),
+           horizon = ifelse(horizon == "B", "C", horizon),
+           soil = floor(UBC/ 1000),
+           soil = paste0(soil, "_", horizon),
+           soil = ifelse(soil == "0_0", "0_O", soil),
+           landuse = str_remove(as.character(UBC), "^\\d\\d\\d"),
+           landuse = as.numeric(landuse),
+           landuse = if_else(landuse > 99, landuse / 100, landuse)) %>%
+    left_join(soil_cal, by = "soil") %>%
+    left_join(lu_cal, by = "landuse") %>%
+    mutate(ksat_lu = if_else(is.na(ksat_lu), 1.0, ksat_lu),
+           ksat_cal = ksat_cal * ksat_lu,  #multiply is easier to understand
+           alpha_mean = alpha_mean * alpha_cal,
+           npar_mean = npar_mean * n_cal,
+           Ksat_mean = Ksat_mean * ksat_cal)
+  
+  tbl_dir <- paste0(swatre_dir, "tables/")
+  
+  # cleanup /swatre/tables.
+  if (dir.exists(tbl_dir)) {
+    unlink(tbl_dir, recursive = TRUE)
   }
-  
-  ## 1.3b MERGE FIELD MEASUREMENTS KSAT AND PORE ----------------------------------
-  
-
-  ## 1.4 theta - h - k table ------------------------------------------------
-  # here we can add code to include observed porosity and ksat before making the swatre tables
-  
-  make_swatre_tables <- function(cal_file = "",
-                                 swatre_dir = NULL,
-                                 do_NBS = FALSE) 
-  {
-    # 2. SWATRE tables LISEM-----------------------------------
-    if (DEBUGm) message("make_swatre_tables")    
-      ## 2.1 theta - h - k table ------------------------------------------------
-    #calibration
-  
-      soil_cal <- read_csv("sources/setup/calibration/calibration_soil.csv", 
-                         show_col_types = F) %>%
-      select(-description) %>% 
-        pivot_longer(
-          cols = -soil,
-          names_to = "parameter",
-          values_to = "value"
-        ) %>%
-        separate(parameter, into = c("param", "horizon"), sep = "_") %>%
-        mutate(horizon = ifelse(horizon == "BC", "C", horizon)) %>%
-        mutate(soil = paste0(soil, "_", horizon),
-               param = paste0(param, "_cal")) %>%
-        select(-horizon) %>%
-        pivot_wider(
-          names_from = param,
-          values_from = value
-        )
-      
-    #load landuse related ksat calibration
-      lu_cal <- read_csv("sources/setup/calibration/calibration_landuse.csv") %>%
-        select(landuse, ksat_cal) %>%
-        rename("ksat_lu" = "ksat_cal")
-      
-      # only calibrate horizons O and A
-      cal_horizons <- c("A", "O")
-      
-    soil_params <- read_csv(paste0("sources/setup/calibration/", cal_file), show_col_types = FALSE) %>%
-      filter(!is.na(clay)) %>%
-      mutate(CODE = str_replace(CODE, "-", "_"),
-             horizon = str_extract(CODE, ".$"),
-             horizon = ifelse(horizon == "E", "C", horizon),
-             horizon = ifelse(horizon == "t", "C", horizon),
-             horizon = ifelse(horizon == "B", "C", horizon),
-             soil = floor(UBC/ 1000),
-             soil = paste0(soil, "_", horizon),
-             soil = ifelse(soil == "0_0", "0_O", soil),
-             landuse = str_remove(as.character(UBC), "^\\d\\d\\d"),
-             landuse = as.numeric(landuse),
-             landuse = if_else(landuse > 99, landuse / 100, landuse)) %>%
-      left_join(soil_cal, by = "soil") %>%
-      left_join(lu_cal, by = "landuse") %>%
-      mutate(ksat_lu = if_else(is.na(ksat_lu), 1.0, ksat_lu),
-             ksat_cal = ksat_cal * ksat_lu,  #multiply is easier to understand
-        alpha_mean = alpha_mean * alpha_cal,
-             npar_mean = npar_mean * n_cal,
-             Ksat_mean = if_else(horizon %in% cal_horizons, 
-                                 Ksat_mean * ksat_cal, Ksat_mean))
-    
-    if (do_NBS == TRUE) {
-      soil_NBS <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
-        select(lu_nr, ksat_factor) %>%
-        rename(landuse = lu_nr)
-      
-      soil_params <- soil_params %>%
-        left_join(soil_NBS, by = "landuse") %>%
-        mutate(ksat_factor = if_else(is.na(ksat_factor), 1.0, ksat_factor),
-               Ksat_mean = Ksat_mean * ksat_factor)
-    }
-    
-
-    tbl_dir <- paste0(swatre_dir, "tables/")
-    
-    # cleanup /swatre/tables.
-    if (dir.exists(tbl_dir)) {
-      unlink(tbl_dir, recursive = TRUE)
-    }
-    dir.create(tbl_dir)
-    # for loop making all tables
-    for (i in seq_along(soil_params$CODE)) {
-      ubc_tbl_n <- soil_params$CODE[i]
+  dir.create(tbl_dir, recursive = T)
+  # for loop making all tables
+  for (i in seq_along(soil_params$CODE)) {
+    ubc_tbl_n <- soil_params$CODE[i]
     
     # get profile specific params
     alpha <- soil_params$alpha_mean[i]
@@ -198,11 +194,11 @@ soil_landuse_to_swatre <- function(file = "",
     #message(silt, " ",alpha,"| ", n)
     m <- 1 - (1/n)
     ks <- soil_params$Ksat_mean[i]
-
+    
     # theta values between theta_r and theta_s
     ubc_tbl <- tibble(
       theta = seq(from = theta_r + 0.001, to = theta_s,
-        length.out = 30)) %>%
+                  length.out = 30)) %>%
       mutate(S = signif((theta - theta_r) / (theta_s - theta_r), digits = 6),
              h = -1/ alpha * (S^(-1/m)-1)^(1/n),
              h = formatC(h, format = "e", digits = 2),
@@ -212,17 +208,17 @@ soil_landuse_to_swatre <- function(file = "",
       select(theta, h, k)
     
     # write the profile tables
-
+    
     ubc_file <- paste0(tbl_dir, ubc_tbl_n, ".tbl")
     write.table(ubc_tbl, file = ubc_file, col.names = F,
                 row.names = F, sep = " ", quote = F)
     
     # copy the table for impermeable lower soils 97.tbl to the tables folder
     file.copy("sources/setup/swatre/97.tbl", tbl_dir, overwrite = T)
-
+    
   }
-
-
+  
+  
   ## 2.2 update profile.inp ------------------------------------------------------
   
   # load template .inp
@@ -241,7 +237,7 @@ soil_landuse_to_swatre <- function(file = "",
     anti_join(o_soils, by = "UBC")
   
   ubc <- unique(o_soils$UBC)
-
+  
   for (i in seq_along(ubc)) {
     # write horizon data
     ubc_n <- ubc[i]
@@ -255,7 +251,7 @@ soil_landuse_to_swatre <- function(file = "",
     ubc_pars <- o_soils %>%
       filter(UBC == ubc_n) %>%
       bind_rows(low)
-   
+    
     for (j in seq_along(ubc_pars$CODE)) {
       ubc_tbl_n <- ubc_pars$CODE[j]
       depth <- ubc_pars$depth[j]
@@ -280,7 +276,7 @@ soil_landuse_to_swatre <- function(file = "",
       )
       write(string, file = file, append = T) 
     }
-  
+    
   }
   message("Created SWATRE tables with calibration.")
 } # end function make_swatre_tables()
