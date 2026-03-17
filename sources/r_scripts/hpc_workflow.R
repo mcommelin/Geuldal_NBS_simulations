@@ -104,7 +104,8 @@ swatre_file <- "swatre_NBS.csv"
 soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        swatre_out = paste0("sources/setup/calibration/", swatre_file),
                        do_NBS = TRUE,
-                       do_hpc = TRUE
+                       do_hpc = TRUE,
+                       repo_dir = ini$repository_dir
 )
 
 # make the actual run databases for the hpc

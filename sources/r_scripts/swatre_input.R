@@ -6,7 +6,8 @@
 soil_landuse_to_swatre <- function(file = "",
                                    swatre_out = "",
                                    do_NBS = FALSE,
-                                   do_hpc = FALSE) 
+                                   do_hpc = FALSE,
+                                   repo_dir = "") 
 {
   # 1. Calculate params -------------------------------------------------------------
   
@@ -68,8 +69,9 @@ soil_landuse_to_swatre <- function(file = "",
   # https://github.com/ldemaz/rcropmod
   # Containing an Apache 2.0 license
   if (DEBUGm) message("pedotransfer.R")
+  # change directory when running for hpc
   if (do_hpc == TRUE) {
-    source("Geuldal_NBS/modules/rcropmod/pedotransfer.R")
+    source(paste0(repo_dir, "modules/rcropmod/pedotransfer.R"))
   } else {
   source("modules/rcropmod/pedotransfer.R")
   }

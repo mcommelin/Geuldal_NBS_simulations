@@ -9,6 +9,8 @@ debug_messages: "Y"     # choose Y on N
 miniconda_path: "~/ProgramFiles/miniconda3"
 # Name of the conda environment where pcraster is installed
 conda_env: "lisem"
+# Name of the folder containing the git repository, default = "Geuldal_NBS_simulations"
+repository_dir: "Geuldal_NBS_simulations"
 
 #1. Data preparation
 do_data_preparation: TRUE # boolean TRUE or FALSE
