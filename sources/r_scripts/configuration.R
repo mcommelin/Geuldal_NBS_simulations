@@ -16,7 +16,7 @@ if (ins == "Y") {
 if (!require("gdalUtilities")) install.packages("gdalUtilities")
 if (!require("terra")) install.packages("terra")
 if (!require("remotes")) install.packages("remotes")
-if (!require("raster")) install.packages("raster")
+#if (!require("raster")) install.packages("raster")
 #if (!require("cowplot")) install.packages("cowplot")
 if (!require("sf")) install.packages("sf")
 if (!require("conflicted")) install.packages("conflicted")
