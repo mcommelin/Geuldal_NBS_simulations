@@ -188,6 +188,8 @@ make_runfile_lisem <- function(work_dir = NULL,
 #' @param dir_name Character. Additional folder name to place the produced data.
 #' Will be placed at ./LISEM_runs/hpc_runs/**dir_name** Should end with a "/"!. 
 #' Only works if do_hpc = TRUE
+#' @param inith_cal Calibration factor multiplying inithead for the whole 
+#' catchment. Only used in hpc setup.
 #' 
 #' @returns creates a map and runfile dataset to run OpenLISEM
 #'
@@ -201,7 +203,8 @@ create_lisem_run <- function(
     NBS_num = 0,
     cpu_cores = 0,
     do_hpc = FALSE,
-    dir_name = "") 
+    dir_name = "",
+    inith_cal = NULL) 
 {
   
   # set some triggers
@@ -394,14 +397,6 @@ create_lisem_run <- function(
     work_dir = subdir
   )
   
-  # run pcraster script to make buffer features.
-  # obsolete, doen in prepare_db.mod
- # pcr_script(
- #   script = "prepare_buffer_features.mod",
- #   script_dir = "sources/pcr_scripts",
- #   work_dir = subdir
- # )
-  
   #set swatre directories
   if (do_hpc == TRUE) {
     infil_dir <- "LISEM_runs/hpc_runs/swatre/tables/"  
@@ -426,10 +421,11 @@ create_lisem_run <- function(
                               str_pad(as.character(hour(ts_end) * 60 + minute(ts_end)), width = 4,
                                       side = "left", pad = "0")))
     # load theta_cal file
+    if (do_hpc == FALSE) {
     cn = catch_num
     theta_factors <- read_csv("sources/setup/calibration/calibration_theta.csv") %>%
       filter(catch_num == cn)
-    
+    }
     for (i in seq_along(events$event_start)) {
       #make baseflow
       date_event <- str_remove_all(as.character(date(events$ts_start[i])), "-")
@@ -453,6 +449,9 @@ create_lisem_run <- function(
                   paste0(subdir, "baseflow_", date_event, ".map"))
       
       # get theta_cal
+      if (do_hpc == TRUE) {
+        theta_cal <- inith_cal
+      } else {
       if (nrow(theta_factors) == 0) {
         theta_cal <-  1.00
       } else {
@@ -460,7 +459,7 @@ create_lisem_run <- function(
           filter(date == date_event)
         
         theta_cal <- theta_cal$theta_cal}
-      
+      }
       # make runfile  
       if (do_runfile == TRUE) {
         
