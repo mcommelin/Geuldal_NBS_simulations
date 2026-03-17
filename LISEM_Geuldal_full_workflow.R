@@ -130,7 +130,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
 
-points_id <- c(4, 10, 14, 18) # use if you want to change catchment
+points_id <- c(4, 14, 18) # use if you want to change catchment
 reso <- c(10, 20) # select different resolution
 
 # load the function for subcatchment preparation
@@ -143,7 +143,7 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       run_type = "cal",  # run_type: choose from "cal" or "base"
-      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
@@ -178,7 +178,7 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 4, run_type = "cal", c
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
 
-points_id <- c(4, 10, 14, 18) # use if you want to change catchment
+points_id <- c(4, 14, 18) # use if you want to change catchment
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go#
 reso = c(10, 20) # 5, 10 or 20
 
