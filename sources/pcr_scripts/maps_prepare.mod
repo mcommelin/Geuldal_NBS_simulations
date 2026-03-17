@@ -21,7 +21,7 @@ burn = demburns.map;
 hpc_sub = hpc_sub.map;
 catch = catchment.map;
 
-bound = flow_boudary.map;
+bound = flowboundary.map;
 
 initial 
 

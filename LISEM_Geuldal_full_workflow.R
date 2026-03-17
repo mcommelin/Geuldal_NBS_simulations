@@ -192,7 +192,7 @@ for (i in seq_along(points_id)) {
       catch_num = points_id[i],
       swatre_file = swatre_file,
       run_type = "cal",
-      do_runfile = F
+      do_runfile = T
     )
   }
 }
