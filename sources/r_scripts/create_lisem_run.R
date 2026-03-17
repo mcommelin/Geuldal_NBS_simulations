@@ -90,20 +90,19 @@ make_runfile_lisem <- function(work_dir = NULL,
   }
   
   # flow solution
-  if (resolution > 10) {
+#  if (resolution > 10) {
+  # muscl at all resoutions
     run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
-  }
+#  }
   
   # set timestep
-  if (resolution < 20)
-    dt = 5 # makkelijker voor grafieken en berekeningen
-  else    
-    dt = 10 # makkelijker voor grafieken en berekeningen
+#  if (resolution < 20)
+#    dt = 5 # makkelijker voor grafieken en berekeningen
+#  else    
+    dt = 10 # altijd 10 ook voor 10m
   
-  ts <- str_pad(as.character(dt), width = 3,
-                side = "left", pad = "0")
-  run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model
-  
+ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
+  run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0"))
   # set start time
   run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0(start_time)) # 
   
