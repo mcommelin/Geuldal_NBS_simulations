@@ -65,7 +65,8 @@ ldd_subcatch(force_ldd = FALSE, res = res_dp)
 hpc_ids <- read_csv("sources/setup/hpc/subcatch_id_link.csv")
 
 # produce all subcatchments base maps
-if (ini$subset == -1) {
+subcheck <- ini$subset[1]
+if (subcheck == -1) {
   subnums <- hpc_ids$LISEM_ID
 } else {
   # or use a subset (now Belgian part of the Gulp)
@@ -101,7 +102,8 @@ source("sources/r_scripts/swatre_input.R")
 swatre_file <- "swatre_NBS.csv"
 soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        swatre_out = paste0("sources/setup/calibration/", swatre_file),
-                       do_NBS = TRUE
+                       do_NBS = TRUE,
+                       do_hpc = TRUE
 )
 
 # make the actual run databases for the hpc
