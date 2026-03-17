@@ -16,6 +16,25 @@ library(yaml)
 ini_file <- args[1]
 ini <- read_yaml(ini_file)
 
+
+# Update folder structure -----------------------------------------------------
+#' on the hpc we want the folder structure to differ from a manual setup. In the 
+#' manual setup all folders are placed within the git repository. For the hpc
+#' we move the folder 1 level up 'beside' the git repository for easier
+#' tunneling. To manage this well we copy ./sources 1 level up AFTER cloning 
+#' the repo
+
+if(!dir.exists("../sources")) {
+  dir.create("../sources")
+}
+
+# copy files
+file.copy(list.files("./sources", full.names = T),
+          "../sources", recursive = T)
+# change the working directory 1 level up
+projwd <- getwd()
+setwd("../")
+
 # Initialization ---------------------------------------------------------------
 
 # load and set configured settings from config.yaml
