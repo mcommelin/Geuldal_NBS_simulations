@@ -6,8 +6,6 @@
 #=======================================================================#
 #First download all maps from Sharepoint - Geuldal spatial data         #  
 # 1. place the content inside this cloned repository in ./spatial_data  #
-# 2. move the folder ./spatial_data/prepared/LISEM_data to ./LISEM_data #
-# 3. move the folder ./spatial_data/prepared/rain to ./LISEM_runs/rain  #
 #=======================================================================#
 
 # Initialization ---------------------------------------------------------------
@@ -22,6 +20,7 @@ source("sources/r_scripts/configuration.R")
 # !! All datetime data in the project is in GMT+1 !!
 
 source("sources/r_scripts/source_to_base_maps.R")
+copy_spatial_data()
 ## 1.1 make base maps ----------------------------------------------------------
 # based on manual work, and preparation code in 'create_base_maps_lisem.R' 
 # base raster and vector layers are made

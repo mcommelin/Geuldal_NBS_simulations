@@ -1,6 +1,6 @@
 # read the arguments from the command line
 # run with:
-# Rscript --vanilla ./hpc_workflow.R args1 args2 args3 args4
+# Rscript --vanilla ./hpc_workflow.R args1
 # example: Rscript --vanilla ./sources/r_scripts/hpc_workflow.R example.ini
 
 args = commandArgs(TRUE)
@@ -25,8 +25,8 @@ source("sources/r_scripts/configuration.R")
 # Data preparation -------------------------------------------------------------
 if (ini$do_data_preparation == TRUE) {
 source("sources/r_scripts/source_to_base_maps.R")
-
-#TODO function to copy maps etc from spatial data folder!
+# make folders and copy to right location
+copy_spatial_data()
 
 res_dp <- ini$res_data_prep
 
@@ -41,27 +41,35 @@ ldd_subcatch(force_ldd = FALSE, res = res_dp)
 
 }
 
-# Make base databases ----------------------------------------------------------
-
-
+# load config chices for lisem simulations
 #load the csv file to identify all sub catch numbers
 hpc_ids <- read_csv("sources/setup/hpc/subcatch_id_link.csv")
 
 # produce all subcatchments base maps
-#subnums <- hpc_ids$LISEM_ID
+if (ini$subset == -1) {
+  subnums <- hpc_ids$LISEM_ID
+} else {
+  # or use a subset (now Belgian part of the Gulp)
+  subnums <- ini$subset
+}
 
-# or use a subset (now Belgian part of the Gulp)
-subnums <- c(120, 125, 128, 130, 131, 140)
+#load choices from config file
+reso <- ini$resolution
+runtype <- ini$run_type
+
+# Make base databases ----------------------------------------------------------
+if (ini$do_base_db == TRUE) {
 
 # cut all the subcatchments from the Geul
 source("sources/r_scripts/create_subcatch_db.R")
 for (i in seq_along(subnums)) {
-  base_maps_subcatchment(cell_size = 10, sub_catch_number = subnums[i],
-                         run_type = "base", do_hpc = TRUE)
+  base_maps_subcatchment(cell_size = reso, sub_catch_number = subnums[i],
+                         run_type = runtype, do_hpc = TRUE)
 }
 
-
+}
 # make lisem runs ------------------------------------------------
+if (ini$do_lisem_run == TRUE) {
 
 # make the swatre base file to produce inputs for the model runs
 # when a NBS is added, or settings are changed, repeat this step!
@@ -77,8 +85,6 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        do_NBS = TRUE
 )
 
-
-
 # make the actual run databases for the hpc
 # choices are:
 # include NBS: set a number, 0 = no nbs
@@ -86,11 +92,11 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 source("sources/r_scripts/create_hpc_run.R")
 create_hpc_run(subset = subnums,
                swatre_file = swatre_file,
-               NBS_num = 0,    
-               resolution = 10,
-               dir_name = "",
-               run_type = "base",
+               NBS_num = ini$NBS_num,    
+               resolution = reso,
+               dir_name = ini$dir_name,
+               run_type = runtype,
                do_runfile = TRUE,
-               cpu_cores = 6)
+               cpu_cores = ini$cpu_cores)
 
-
+}
