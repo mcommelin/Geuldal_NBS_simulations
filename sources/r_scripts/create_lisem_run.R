@@ -22,9 +22,9 @@ make_runfile_lisem <- function(work_dir = NULL,
   
   # select run type
   if (run_type == "cal") {
-    do_ndvi = TRUE
+    do_ndvi_run = TRUE
   } else if (run_type == "base") {
-    do_ndvi = FALSE
+    do_ndvi_run = FALSE
   } else {
     print("ERROR: wrong run_type. Choose from: cal OR base")
     return()
@@ -395,11 +395,12 @@ create_lisem_run <- function(
   )
   
   # run pcraster script to make buffer features.
-  pcr_script(
-    script = "prepare_buffer_features.mod",
-    script_dir = "sources/pcr_scripts",
-    work_dir = subdir
-  )
+  # obsolete, doen in prepare_db.mod
+ # pcr_script(
+ #   script = "prepare_buffer_features.mod",
+ #   script_dir = "sources/pcr_scripts",
+ #   work_dir = subdir
+ # )
   
   #set swatre directories
   if (do_hpc == TRUE) {

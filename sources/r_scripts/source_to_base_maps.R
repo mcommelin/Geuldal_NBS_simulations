@@ -66,6 +66,7 @@ spatial_data_to_pcr <- function(only_NBS = FALSE,
   # 1: remove ponds from dhydro domain
   # 2: fill nodata values in soil UBC profile.map
   # 3: burn dem corrections sections into dem
+  # 4: calculate flowboundarys for hpc subcatchments
   for (r in seq_along(res)) {
     pcr_script("maps_prepare.mod", script_dir = "sources/pcr_scripts",
                work_dir = res_dir[r])

@@ -1,9 +1,9 @@
 # configuration
 
-
+if (exists("do_hpc")) {
 if (do_hpc == TRUE) {
   config <- ini
-} else {
+}} else {
   if (!require("yaml")) install.packages("yaml")
   library(yaml)
 config <- yaml.load_file("config.yaml")

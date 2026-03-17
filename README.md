@@ -17,11 +17,19 @@ This work is licensed under a
 # Preparing and running OpenLISEM
 The repository only contains code and some tables with parameters and settings. The timeseries and map data are not yet public available. 
 
-Set basic settings in the config_template.yaml and save it as config.yaml. 
+To run the code properly the ./spatial_data/ folder is required. Besides that a conda environment with PCRaster and Python installed is needed.
+
+Two options exist: 
+- manual simulation, preparing a few subcatchments and exploring simulations on a PC.
+- command line / HPC simulation, with a config file and Rscript the simulations are made automatically.
+
+For manual simulations set basic settings in the config_template.yaml and save it as config.yaml. 
 The main workflow can be followed with the R script: LISEM_Geuldal_full_workflow.R  
 
-At the moment the workflow is finished until the setup and evaluation of sub catchments for calibration.
-To run the code properly the ./LISEM_data/ and ./spatial_data/ folders are required.
+For the command line setup, set basic settings in the hpc_template.yaml and save under a different name.
+The OpenLISEM dataset and simulations can be made with the following command:  
+`Rscript --vanilla ./sources/r_scripts/hpc_workflow.R [name_hpc_config].yaml`
+
 
 # Required Software
 
