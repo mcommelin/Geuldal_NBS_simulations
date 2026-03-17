@@ -29,7 +29,7 @@ O_depth <- c(10, 20, 10, 10, 7, 1, 20)
 # Alternatively we also have data from the fieldwork for per.
 per <- c(0.7,0.9,0.7,0.8,0.05,0,0.9)
 #per <- c(0.356,0.616,0.502,0.587,0.317,0.381,0.488)  
-# ter vergelijking areaaverage june 2023! niet goed door veel mixels
+# ter verglijking areaaverage june 2023! 
 
 lu_pars <- bind_rows(pars_lu, lu_add) %>%
   left_join(s_eq, by = "lu_nr")%>%
@@ -47,9 +47,10 @@ cal_lu <- read_csv("sources/setup/calibration/calibration_landuse.csv") %>%
 lu_pars <- lu_pars %>%
   left_join(cal_lu, by = "lu_nr") %>%
   mutate(rr = rr * rr_cal * 10, # the field data were not very conclusive, at least multiply by 10 or more!
+         #n = (0.02 + rr/100 + 0.104*(per^1.2)) * n_cal) %>%
          n = (rr/100 + n_res + n_veg * per) * n_cal) %>%
   select(-ksat_cal, -n_cal, -rr_cal)
-
+  
 nms <- as.character(seq(0, ncol(lu_pars) - 1))
 names(lu_pars) <- nms
 
@@ -57,6 +58,8 @@ names(lu_pars) <- nms
 write.table(lu_pars, file = "sources/setup/calibration/lu.tbl",
             sep = " ", row.names = FALSE,
             quote = FALSE)
+
+
 # 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 7 = cover; 8 = n
 #note: here only cols 1,2, 3, 5 and 7 are used 1=RR; 2=n_res; 3 = n_veg; 5=SMAX, 7=cover
 #the other columns are used in SWATRE creation, swatre_input.R

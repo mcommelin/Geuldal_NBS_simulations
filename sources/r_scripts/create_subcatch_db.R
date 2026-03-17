@@ -186,7 +186,7 @@ base_maps_subcatchment <- function(
   for (j in seq_along(events)) {
   for (i in seq_along(ih_maps)) {
     map_in = paste0(ih_dir[j], ih_maps[i])
-    map_out_name = paste0(sub_catch_dir, "i", ih_ev[j], "head.", ih_end[i])
+    map_out_name = paste0(sub_catch_dir, "ih", ih_ev[j],".", ih_end[i]) #"h.", 
     tmp_tif = paste0(sub_catch_dir, "tmp.tif")
     #if (DEBUGm) message("IH in ",map_in)
     # gdalwarp makes a temp tif
@@ -215,32 +215,18 @@ base_maps_subcatchment <- function(
   
   if (do_NDVI == TRUE) {
   # 10m NDVI maps, called NDVI.tif in a dir with an event date
-  ndvi_dir <- paste0("spatial_data/NDVI/ndvi_", events, "_10m/")
+  ndvi_dir <- paste0("spatial_data/NDVI/")
+  mask <- rast(paste0(sub_catch_dir, "mask.map"))
     # per event
     for (j in seq_along(events)) {
-      map_in = paste0(ndvi_dir[j], "NDVI.tif")
+      map_in = paste0(ndvi_dir, "ndvi", ih_ev[j], ".map")
       map_out_name = paste0(sub_catch_dir, "ndvi", ih_ev[j], ".map")
-      tmp_tif = paste0(sub_catch_dir, "tmp.tif")
-      #if (DEBUGm) message("NDVI in ",map_in)
+      map <- rast(map_in)
+      # resample
+      map_res <- terra::resample(map, mask, method = "near")
+      writeRaster(map_res, map_out_name , filetype = "PCRaster", NAflag = -9999,
+                  overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
       
-      # gdalwarp makes a temp tif
-      gdalwarp(
-        srcfile = map_in,
-        dstfile = tmp_tif,
-        t_srs   = srs,         
-        te      = c(xmin, ymin, xmax, ymax),
-        ts      = c(ncol, nrow),         
-        r       = resample_method,    
-        overwrite = TRUE
-      )
-      # use gdaltranslate to create a PCRaster map  
-      gdal_translate(
-        src_dataset = tmp_tif,
-        dst_dataset = map_out_name,
-        ot = "Float32",
-        of = "PCRaster",
-        mo = "PCRASTER_VALUESCALE=VS_SCALAR"
-      )
       if (DEBUGm) message("out ",map_out_name)
       
     } # end event loop

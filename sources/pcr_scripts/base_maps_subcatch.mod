@@ -18,6 +18,8 @@ hard = hard_surface.map;
 id = ID.map;
 idh = ID_hourly.map;
 Ldd = ldd.map;
+bufoutq = maxq.map;
+bufout = buffer_outlet.map;
 
 initial
 
@@ -31,4 +33,5 @@ report hard = if(boolean(catchment), cover(hard,0));
 report outpoint = if(boolean(catchment), cover(outpoint,0));
 report id = if(boolean(catchment), id);
 report idh = if(boolean(catchment), idh);
-
+# create buffer_outlet.map from maxq
+report bufout=if (boolean(catchment), cover(scalar(bufoutq > 0),0));

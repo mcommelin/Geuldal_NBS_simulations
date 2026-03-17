@@ -21,9 +21,9 @@ make_runfile_lisem <- function(work_dir = NULL,
   
   # select run type
   if (run_type == "cal") {
-    do_ndvi = TRUE
+    do_ndvi_run = TRUE
   } else if (run_type == "base") {
-    do_ndvi = FALSE
+    do_ndvi_run = FALSE
   } else {
     print("ERROR: wrong run_type. Choose from: cal OR base")
     return()
@@ -71,7 +71,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   ih_ev <- str_remove(runname, "^\\d\\d")
   
   run_temp <- str_replace_all(run_temp, "<<ih>>", 
-                              paste0("i", ih_ev, "head"))
+                              paste0("ih", ih_ev))
   } else {
     # run with standard rain
     
@@ -194,9 +194,9 @@ create_lisem_run <- function(
   base_dir <- paste0("LISEM_data/", catch_dir)
   
   # if catch_num > 1 add subcatchments after LISEM_data/
-  if (catch_num > 1) {
+  #if (catch_num > 1) {
     base_dir <- paste0("LISEM_data/subcatchments/", catch_dir)
-  }
+ # }
   
   #adjust folder name when simulating NBS
   if (NBS_num != 0) {
@@ -241,7 +241,7 @@ create_lisem_run <- function(
    # copy all inithead files
   # TODO adjust for cal or base run
   if (run_type == "cal") {
-  ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "i2")
+  ih_maps <- dir(paste0(base_dir, "maps/"), pattern = "ih2")
   for (map in ih_maps) {
     file.copy(paste0(base_dir, "maps/", map), paste0(subdir, map), 
               overwrite = TRUE)
@@ -320,11 +320,12 @@ create_lisem_run <- function(
   )
     
   # run pcraster script to make buffer features.
-  pcr_script(
-    script = "prepare_buffer_features.mod",
-    script_dir = "sources/pcr_scripts",
-    work_dir = subdir
-  )
+  # obsolete, doen in prepare_db.mod
+ # pcr_script(
+ #   script = "prepare_buffer_features.mod",
+ #   script_dir = "sources/pcr_scripts",
+ #   work_dir = subdir
+ # )
   
   if (run_type == "cal") {
   # add runfiles for selected events
@@ -419,10 +420,6 @@ create_lisem_run <- function(
       )
     }
     }
-    
-    
-    
-    
   }
   #delete intermediate files
 

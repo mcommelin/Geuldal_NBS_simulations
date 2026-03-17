@@ -18,7 +18,15 @@ if (!require("sensobol")) install.packages("sensobol")
 if (!require("foreach")) install.packages("foreach")
 if (!require("doParallel")) install.packages("doParallel")
 if (!require("reticulate")) install.packages("reticulate")
+#if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
+#py_install("rosetta-soil==0.1.2", pip = TRUE)
+if (!require("reticulate")) install.packages("reticulate")
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
+# install python
+#install_python()
+# install known working version of rosetta-soil
+#py_install("rosetta-soil==0.1.2", pip = TRUE)
+
 #} else {
  # print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
 #  Sys.sleep(2)
