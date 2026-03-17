@@ -29,3 +29,8 @@ subcatchments: [4, 18]
 
 # 6. resolution to work on, available are 5 , 10 and 20, both is also possible
 resolution: [10, 20]
+
+# 7. Number of cpu cores assigned to the lisem model.
+# -1 = 50% of available cores assigned (default)
+# 0 = all available cores assigned - with GUI can give instability!
+cpu_cores: [-1]

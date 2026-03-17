@@ -18,6 +18,11 @@ fill = fill.map;
 dem = dem.map;
 burn = demburns.map;
 
+hpc_sub = hpc_sub.map;
+catch = catchment.map;
+
+bound = flowboundary.map;
+
 initial 
 
 
@@ -33,3 +38,7 @@ report profile = cover(nominal(profile), fill);
 b1 = clump(nominal(burn));
 b2 = areaminimum(dem, b1);
 report dem = cover(b2, dem);
+
+# create a flow boudary map for the hpc runs.
+b3 = nominal(if(catch eq 1 and cover(hpc_sub, 0) eq 0, 1, 0));
+report bound = boolean(if(windowdiversity(b3, celllength()+1) eq 2, 1, 0));

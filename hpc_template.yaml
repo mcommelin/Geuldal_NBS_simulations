@@ -1,0 +1,28 @@
+# save with different name to use in hpc_workflow.R
+
+#0. R configuration
+# Do you want to automatically install packages that are required for this project?
+install_packages: "Y"   # choose Y or N
+# Do you want debug messages during the execution of functions?
+debug_messages: "Y"     # choose Y on N
+# Path to your local (Mini)conda installation.
+miniconda_path: "~/ProgramFiles/miniconda3"
+# Name of the conda environment where pcraster is installed
+conda_env: "lisem"
+# Name of the folder containing the git repository, default = "Geuldal_NBS_simulations/"
+repository_dir: "Geuldal_NBS_simulations/"
+
+#1. Data preparation
+do_data_preparation: TRUE # boolean TRUE or FALSE
+res_data_prep: [10] #resolution of datasets: 1 or more of [5, 10, 20]
+
+#2. Base dataset & OpenLisem simulations
+do_base_db: TRUE # boolean TRUE or FALSE - needs prepared_data!
+subset: [120, 125, 128, 130, 131, 140] # All subcatchmnets (= -1) of numbers of subset [xx, yy, zz, ..]
+resolution: 10 # 1 of 5, 10, 20 - only if prepared at #1!
+run_type: base # 'cal' = date specific simulations or 'base' = standard events for scenarios
+do_lisem_run: TRUE # boolean TRUE or FALSE - needs prepared data and base bd's!
+NBS_num: 0 # 0 = no nbs, 11 - x -> add NBS according to landuse code in  /sources/setup/tables/lu_NBS_tbl.csv 
+dir_name: "" # add additional name to folder structure - usefull when making multiple simulations in same setup
+cpu_cores: 8 # set number of cpu cores assigned to the produced OpenLISEM simulations
+

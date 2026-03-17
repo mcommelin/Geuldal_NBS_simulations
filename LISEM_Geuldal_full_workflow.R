@@ -6,8 +6,6 @@
 #=======================================================================#
 #First download all maps from Sharepoint - Geuldal spatial data         #  
 # 1. place the content inside this cloned repository in ./spatial_data  #
-# 2. move the folder ./spatial_data/prepared/LISEM_data to ./LISEM_data #
-# 3. move the folder ./spatial_data/prepared/rain to ./LISEM_runs/rain  #
 #=======================================================================#
 
 # Initialization ---------------------------------------------------------------
@@ -22,6 +20,7 @@ source("sources/r_scripts/configuration.R")
 # !! All datetime data in the project is in GMT+1 !!
 
 source("sources/r_scripts/source_to_base_maps.R")
+copy_spatial_data()
 ## 1.1 make base maps ----------------------------------------------------------
 # based on manual work, and preparation code in 'create_base_maps_lisem.R' 
 # base raster and vector layers are made
@@ -54,7 +53,9 @@ catch_maps_res()
 
 # the function below makes PCRaster maps for all resolutions from the data
 # in ./spatial_data/
-spatial_data_to_pcr()
+spatial_data_to_pcr(res = c(5, 10, 20)) # you can also select only 1 resolution -> faster
+
+# warning: if you only make 1 resolution here, this need to be applied in the whole workflow!
 
 ##NOTE, the volumes of rainwater retention buffers and the corresponding outflow
 # rate is calculated with ./sources/pcr_scripts/buffer_volumes.mod
@@ -66,7 +67,7 @@ spatial_data_to_pcr()
 # NOTE: ldd calculations for the whole Geul catchment take a lot of time
 # these maps are also provided in ./spatial_data/prepared/LISEM_data
 # set force_ldd = TRUE to recalculate the ldd
-ldd_subcatch(force_ldd = FALSE)
+ldd_subcatch(force_ldd = FALSE, res = c(5, 10, 20))
 
 # 2. Calibration on subcatchments ---------------------------------------
 # we use subcatchments to test the model setup and do the calibration
@@ -87,8 +88,8 @@ ldd_subcatch(force_ldd = FALSE)
 #' these are stored in /sources/setup/calibration/calibration_landuse.csv
 #' The factors in this table are used for all subcatchments and dates.
 
-# code inside this script is directly executed
 source("sources/r_scripts/prepare_landuse_table.R")
+landuse_table_cal()
 
 # the resulting lu.tbl has the following columns:
 # 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 7 = cover; 8 = n
@@ -149,7 +150,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 4, run_type = "cal", calc_ldd = F)
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 54, run_type = "cal", calc_ldd = F)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set after this stage.
@@ -191,7 +192,7 @@ for (i in seq_along(points_id)) {
       catch_num = points_id[i],
       swatre_file = swatre_file,
       run_type = "cal",
-      do_runfile = F
+      do_runfile = T
     )
   }
 }
@@ -201,6 +202,7 @@ create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, run_
 
 ## 2.5 Calibration settings and figures ----------------------------------------
 
+# TODO: update this section with calibrated events / subcatch
 # CURRENTLY NOT USED, CODE NOT FULLY FUNCTIONAL!!!
 
 # select a subcatchment and event from the LISEM_runs folder structure
@@ -240,12 +242,14 @@ create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, run_
 
 # example code below for the Gulp:
 # make the subcatch data:
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 4, calc_ldd = F, 
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 54, calc_ldd = F, 
                        run_type = "base")
 
 # create the run:
-create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, T, F,
-                 run_type = "base")
+source("sources/r_scripts/create_lisem_run.R")
+create_lisem_run(resolution = 10, catch_num = 54, swatre_file = swatre_file,
+                 run_type = "base", do_hpc = FALSE, cpu_cores = ncpu)
+
 
 # TODO add meaningfull visualisation and reporting.
 
@@ -274,23 +278,8 @@ source("sources/r_scripts/source_to_base_maps.R")
 spatial_data_to_pcr(only_NBS = TRUE) # assuming section 1.1 was already run. 
 
 # update landuse table, this works for all NBS solutions.
-# load lu table including the parameters for the NBS
-lu_tbl <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", show_col_types = FALSE) %>%
-  select(-description, - notes) 
-nms <- as.character(seq(0, ncol(lu_tbl) - 1))
-names(lu_tbl) <- nms
-
-# cols in lu table should be:
-# 0 = lu_nr, 1 = RR, 2 = n_res; 3 = n_veg; 4 = om; 5 = smax; 6 = o depth; 
-# 7 = cover; 8 = n; 9 = ksat_factor
-#TODO remove ksat_factor and switch to bulkdensity
-
-#note: columns 4 and 6 are used in SWATRE creation, swatre_input.R
-
-# save the landuse parameters as table for PCRaster
-write.table(lu_tbl, file = "sources/setup/calibration/lu_nbs.tbl",
-            sep = " ", row.names = FALSE,
-            quote = FALSE)
+source("sources/r_scripts/prepare_landuse_table.R")
+landuse_table_nbs()
 
 # make a new swatre file, this works for all NBS solutions.
 source("sources/r_scripts/swatre_input.R")
@@ -330,12 +319,13 @@ for (i in seq_along(points_id)) {
 source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
-NBS_number <- 14 # see /sources/setup/tables/lu_NBS_tbl.csv for the number 
+# see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
+nbs_ids <- c(0, 16)#11, 12, 13, 14, 15, 16) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
 reso <- c(10)
-
+for(k in seq_along(nbs_ids)) {
 for (i in seq_along(points_id)) {
   for (j in seq_along(reso)) {
     create_lisem_run(
@@ -344,10 +334,92 @@ for (i in seq_along(points_id)) {
       swatre_file = swatre_nbs_file,
       run_type = "base",
       do_runfile = T,
-      NBS_num = NBS_number # number corresponding to NBS in landuse table 0 = base simulation
+      NBS_num = nbs_ids[k], # number corresponding to NBS in landuse table 0 = base simulation
+      cpu_cores = ncpu # number of cpu cores used by lisem (defaults to 50%)
     )
   }
 }
+}
 
+## 3.3 Explore 6 NBS in batch --------------------------------------------------
+
+# on linux use parallel to run all the simulations.
+# find ~/Werk/Geuldal_NBS/LISEM_runs/ -name "*.run" | parallel --dry-run -j 3 /home/mc/lisem-bin/Lisem -ni -r {}
+
+## 3.4 NBS with landscape elements --------------------------------------------
+
+# load NBS map,
+# set trigger, do landscape element
+# from csvfile with lu_NBS_tbl.csv
+# add colums with do_LE (boolean)
+# update function, if do_LE == TRUE, don't update landuse - but wait.
+# separate script for each NBS
+# if lu_map == 2, place landscape element. read lu params from table and
+# update input maps accordingly.
+
+
+
+# 4. HPC runs full Geuldal -----------------------------------------------------
+
+#' this section shows the workflow for the HPC simulations of the whole Geul
+#' catchment on a HPC. 
+#' Steps:
+#' 1. Make sure to run all code from chapter 1, which gives a base dataset for
+#' the whole Geul catchment.
+#' 2. Make the basic subcatchment data (4.1). Define a subset if needed. Creating 
+#' data for the whole Geul takes some time ~ xx minutes.
+#' 3. Make the actual OpenLISEM simulation runs.
+#' 
+
+## 4.1 HPC subcatchments ------------------------------------------------------
+
+#load the csv file to identify all sub catch numbers
+hpc_ids <- read_csv("sources/setup/hpc/subcatch_id_link.csv")
+
+# produce all subcatchments base maps
+#subnums <- hpc_ids$LISEM_ID
+
+# or use a subset (now Belgian part of the Gulp)
+subnums <- c(120, 125, 128, 130, 131, 140)
+
+# cut all the subcatchments from the Geul
+source("sources/r_scripts/create_subcatch_db.R")
+for (i in seq_along(subnums)) {
+  base_maps_subcatchment(cell_size = 10, sub_catch_number = subnums[i],
+                         run_type = "base", do_hpc = TRUE)
+}
+
+
+## 4.2 Make HPC simulation set ------------------------------------------------
+
+# make the swatre base file to produce inputs for the model runs
+# when a NBS is added, or settings are changed, repeat this step!
+# update landuse table, this works for all NBS solutions.
+source("sources/r_scripts/prepare_landuse_table.R")
+landuse_table_nbs()
+
+# make a new swatre file, this works for all NBS solutions.
+source("sources/r_scripts/swatre_input.R")
+swatre_file <- "swatre_NBS.csv"
+soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
+                       swatre_out = paste0("sources/setup/calibration/", swatre_file),
+                       do_NBS = TRUE
+)
+
+
+
+# make the actual run databases for the hpc
+# choices are:
+# include NBS: set a number, 0 = no nbs
+# whole Geul or subset?
+source("sources/r_scripts/create_hpc_run.R")
+create_hpc_run(subset = subnums,
+               swatre_file = swatre_file,
+               NBS_num = 0,    
+               resolution = 10,
+               dir_name = "",
+               run_type = "base",
+               do_runfile = TRUE,
+               cpu_cores = 6)
 
 

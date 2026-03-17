@@ -1,54 +1,58 @@
 # configuration
-if (!require("yaml")) install.packages("yaml")
-library(yaml)
-config <- yaml.load_file("config.yaml")
 
+if (exists("do_hpc")) {
+if (do_hpc == TRUE) {
+  config <- ini
+}} else {
+  if (!require("yaml")) install.packages("yaml")
+  library(yaml)
+config <- yaml.load_file("config.yaml")
+}
 ins <- config$install_packages
-#if (ins == "Y") {
-if (!require("hydroGOF")) install.packages("hydroGOF")
+
+# load all packages
+if (ins == "Y") {
+#if (!require("hydroGOF")) install.packages("hydroGOF")
 if (!require("gdalUtilities")) install.packages("gdalUtilities")
 if (!require("terra")) install.packages("terra")
 if (!require("remotes")) install.packages("remotes")
-if (!require("raster")) install.packages("raster")
-if (!require("cowplot")) install.packages("cowplot")
+#if (!require("raster")) install.packages("raster")
+#if (!require("cowplot")) install.packages("cowplot")
 if (!require("sf")) install.packages("sf")
 if (!require("conflicted")) install.packages("conflicted")
 if (!require("tidyverse")) install.packages("tidyverse")
-if (!require("sensobol")) install.packages("sensobol")
-if (!require("foreach")) install.packages("foreach")
-if (!require("doParallel")) install.packages("doParallel")
+#if (!require("sensobol")) install.packages("sensobol")
+#if (!require("foreach")) install.packages("foreach")
+#if (!require("doParallel")) install.packages("doParallel")
 if (!require("reticulate")) install.packages("reticulate")
-#if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
-#py_install("rosetta-soil==0.1.2", pip = TRUE)
-if (!require("reticulate")) install.packages("reticulate")
-if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
-# install python
-#install_python()
+  # set python etc before loading rosettaPTF
+  conda_path <- paste0(config$miniconda_path, "/envs/", config$conda_env)
+  use_condaenv(condaenv = conda_path, required = T)
+if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF@8e81f4e98d6e1e0758e5b076a1c7321ea26ea676")
 # install known working version of rosetta-soil
-#py_install("rosetta-soil==0.1.2", pip = TRUE)
+py_install("rosetta-soil==0.1.2", pip = TRUE)
+} else {
+  print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
+  Sys.sleep(1)
+}
 
-#} else {
- # print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
-#  Sys.sleep(2)
-#}
-# load all packages
-
-library(hydroGOF)
-library(rosettaPTF)
+#library(hydroGOF)
 library(gdalUtilities)
 library(terra)
 library(raster)
-library(cowplot)
+#library(cowplot)
 library(sf)
 library(conflicted)
 library(tidyverse)
-library(sensobol)
-library(foreach)
-library(doParallel)
+#library(sensobol)
+#library(foreach)
+#library(doParallel)
 library(reticulate)
+library(rosettaPTF)
+
 
 # load configuration
-DEBUGm = TRUE #<- if (config$debug_messages == "Y") {TRUE} else {FALSE}
+DEBUGm = if (config$debug_messages == "Y") {TRUE} else {FALSE}
 
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
@@ -65,7 +69,7 @@ options(digits = 10)
 source("sources/r_scripts/aux_functions.R")
 
 #! Always load the following data - adjust if needed for custom settings
-points_id <- config$subcatchments #, 18, 4, 12, 90)
+points_id <- config$subcatchments 
 reso <- config$resolution
 
 # load subcatchment points csv file
@@ -73,3 +77,13 @@ points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = F
 
 # swatre file
 swatre_file <- "cal_OM_swatre.csv"
+
+# cpu cores
+#TODO this doesn't work well - solve
+ncpu <- config$cpu_cores
+if (ncpu == -1) {
+  ncpu <- floor(num_cores() / 2)
+}
+ 
+
+
