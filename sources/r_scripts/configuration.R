@@ -23,9 +23,9 @@ if (!require("reticulate")) install.packages("reticulate")
 if (!require("reticulate")) install.packages("reticulate")
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF")
 # install python
-install_python()
+#install_python()
 # install known working version of rosetta-soil
-py_install("rosetta-soil==0.1.2", pip = TRUE)
+#py_install("rosetta-soil==0.1.2", pip = TRUE)
 
 #} else {
  # print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")

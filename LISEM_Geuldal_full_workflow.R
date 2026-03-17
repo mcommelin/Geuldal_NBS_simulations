@@ -95,7 +95,7 @@ source("sources/r_scripts/prepare_landuse_table.R")
 
 ## 2.2 make SWATRE soil tables -------------------------------------------------
 
-# for the simulations of infiltration we use the SWATRE mobel inside OpenLISEM
+# for the simulations of infiltration we use the SWATRE model inside OpenLISEM
 # this requires the van Genuchten parameters for different soil layers for
 # each identified soil and landuse combination. 
 # To estimate these parameters from variables we know a modelling / equation
@@ -130,7 +130,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
 
-points_id <- c(4, 10, 14, 18) # use if you want to change catchment
+points_id <- c(4, 14, 18) # use if you want to change catchment
 reso <- c(10, 20) # select different resolution
 
 # load the function for subcatchment preparation
@@ -143,13 +143,13 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       run_type = "cal",  # run_type: choose from "cal" or "base"
-      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, run_type = "cal", calc_ldd = F)
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 4, run_type = "cal", calc_ldd = F)
 
 # this databases can be used to create a LISEM run. Choices in settings or
 # calibration values can be set after this stage.
@@ -178,7 +178,7 @@ base_maps_subcatchment(cell_size = 20, sub_catch_number = 1, run_type = "cal", c
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
 
-points_id <- c(4, 10, 14, 18) # use if you want to change catchment
+points_id <- c(4, 14, 18) # use if you want to change catchment
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go#
 reso = c(10, 20) # 5, 10 or 20
 
@@ -197,7 +197,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, run_type = "cal", F)
+create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, run_type = "cal", do_runfile = T)
 
 ## 2.5 Calibration settings and figures ----------------------------------------
 
