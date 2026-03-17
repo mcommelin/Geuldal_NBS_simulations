@@ -95,6 +95,7 @@ if (ini$do_lisem_run == TRUE) {
 # when a NBS is added, or settings are changed, repeat this step!
 # update landuse table, this works for all NBS solutions.
 source("sources/r_scripts/prepare_landuse_table.R")
+  landuse_table_cal()
 landuse_table_nbs()
 
 # make a new swatre file, this works for all NBS solutions.
