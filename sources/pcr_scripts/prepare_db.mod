@@ -28,7 +28,6 @@ buildings = buildings.map;  # fraction of buildings in cell. (optional)
 id = ID.map;                # rainfall id grid
 bua = bua.map; 		          # map with build up area.
 profile0 = profile.map;	    # map with ubc soil codes for swatre
-buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 maxq = maxq.map;            # maximum discharge at buffer outlets
 bufvol=buffermask.map;      # buffer volumes, only used to make buffers.map cosmetic
 
@@ -81,6 +80,7 @@ changrad = changrad.map;
 chanman = chanman.map; 
 chanculvert = chanculvert.map;
 buffers = buffers.map; # cosmetic, value -0.01 so that buffers can be shown in lisem
+buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 
 initial 
 

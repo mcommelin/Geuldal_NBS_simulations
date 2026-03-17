@@ -236,7 +236,7 @@ base_maps_subcatchment <- function(
   } # end run_type = "cal"
   
   if (do_NDVI == TRUE) {
-  # 10m NDVI maps, called NDVI.tif in a dir with an event date
+  # 20m NDVI maps, called ndvi[date].map
   ndvi_dir <- paste0("spatial_data/NDVI/")
   mask <- rast(paste0(sub_catch_dir, "mask.map"))
     # per event
