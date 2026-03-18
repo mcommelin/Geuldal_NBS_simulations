@@ -199,7 +199,7 @@ copy_spatial_data <- function() {
   if(!dir.exists("./LISEM_data")) {
     dir.create("./LISEM_data")
   }
-  if(!dir.exists("./LISEM_runs")) {
+  if(!dir.exists("./LISEM_runs/rain")) {
     dir.create("./LISEM_runs/rain", recursive = TRUE)
   }
   

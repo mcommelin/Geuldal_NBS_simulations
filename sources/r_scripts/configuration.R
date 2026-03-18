@@ -26,8 +26,8 @@ if (!require("tidyverse")) install.packages("tidyverse")
 #if (!require("doParallel")) install.packages("doParallel")
 if (!require("reticulate")) install.packages("reticulate")
   # set python etc before loading rosettaPTF
-  conda_path <- paste0(config$miniconda_path, "/envs/", config$conda_env)
-  use_condaenv(condaenv = conda_path, required = T)
+#  conda_path <- paste0(config$miniconda_path, "/envs/", config$conda_env)
+#  use_condaenv(condaenv = conda_path, required = T)
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF@8e81f4e98d6e1e0758e5b076a1c7321ea26ea676")
 # install known working version of rosetta-soil
 py_install("rosetta-soil==0.1.2", pip = TRUE)
