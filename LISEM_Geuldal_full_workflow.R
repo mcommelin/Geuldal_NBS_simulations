@@ -197,7 +197,7 @@ for (i in seq_along(points_id)) {
 }
 
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, run_type = "cal", do_runfile = T)
+create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, run_type = "cal", do_runfile = F)
 
 ## 2.5 Calibration settings and figures ----------------------------------------
 
