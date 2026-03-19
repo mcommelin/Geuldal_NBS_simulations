@@ -4,7 +4,7 @@ if (exists("do_hpc")) {
 if (do_hpc == TRUE) {
   config <- ini
 }} else {
-  if (!require("yaml")) install.packages("yaml")
+  if (!require("yaml")) install.packages("yaml", repos='https://cloud.r-project.org')
   library(yaml)
 config <- yaml.load_file("config.yaml")
 }
@@ -12,25 +12,26 @@ ins <- config$install_packages
 
 # load all packages
 if (ins == "Y") {
-#if (!require("hydroGOF")) install.packages("hydroGOF")
-if (!require("gdalUtilities")) install.packages("gdalUtilities")
-if (!require("terra")) install.packages("terra")
-if (!require("remotes")) install.packages("remotes")
-#if (!require("raster")) install.packages("raster")
-#if (!require("cowplot")) install.packages("cowplot")
-if (!require("sf")) install.packages("sf")
-if (!require("conflicted")) install.packages("conflicted")
-if (!require("tidyverse")) install.packages("tidyverse")
-#if (!require("sensobol")) install.packages("sensobol")
-#if (!require("foreach")) install.packages("foreach")
-#if (!require("doParallel")) install.packages("doParallel")
-if (!require("reticulate")) install.packages("reticulate")
+#if (!require("hydroGOF")) install.packages("hydroGOF", repos='https://cloud.r-project.org')
+if (!require("gdalUtilities")) install.packages("gdalUtilities", repos='https://cloud.r-project.org')
+if (!require("terra")) install.packages("terra", repos='https://cloud.r-project.org')
+if (!require("remotes")) install.packages("remotes", repos='https://cloud.r-project.org')
+#if (!require("raster")) install.packages("raster", repos='https://cloud.r-project.org')
+#if (!require("cowplot")) install.packages("cowplot", repos='https://cloud.r-project.org')
+if (!require("sf")) install.packages("sf", repos='https://cloud.r-project.org')
+if (!require("conflicted")) install.packages("conflicted", repos='https://cloud.r-project.org')
+if (!require("tidyverse")) install.packages("tidyverse", repos='https://cloud.r-project.org')
+#if (!require("sensobol")) install.packages("sensobol", repos='https://cloud.r-project.org')
+#if (!require("foreach")) install.packages("foreach", repos='https://cloud.r-project.org')
+#if (!require("doParallel")) install.packages("doParallel", repos='https://cloud.r-project.org')
+if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.r-project.org')
+  library(reticulate)
   # set python etc before loading rosettaPTF
-#  conda_path <- paste0(config$miniconda_path, "/envs/", config$conda_env)
-#  use_condaenv(condaenv = conda_path, required = T)
+  conda_path <- paste0(config$miniconda_path, "/envs/", config$conda_env)
+  use_condaenv(condaenv = conda_path, required = T)
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF@8e81f4e98d6e1e0758e5b076a1c7321ea26ea676")
 # install known working version of rosetta-soil
-py_install("rosetta-soil==0.1.2", pip = TRUE)
+  py_install("rosetta-soil==0.1.2", pip = TRUE)
 } else {
   print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
   Sys.sleep(1)
