@@ -171,7 +171,8 @@ changrad = windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to 
 cw = windowmaximum(chanwidth,30); # make the first pixel of a side branch the size of the main branch
 report chanwidth = min(0.95*celllength(), windowaverage(cw,30)) * chanclean; # then average the result which smoothes the connections
 cd = windowmaximum(chandepth,30);
-report chandepth = windowaverage(cd,30) * chanclean;
+chandepth = windowaverage(cd,30) * chanclean;
+report chandepth = if(cover(bufvol,0)*chanclean gt 0, 0.1, chandepth);
 
 # calculate mannings for channel
 bua = cover(bua, 0);
