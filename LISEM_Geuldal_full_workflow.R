@@ -242,12 +242,12 @@ create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, run_
 
 # example code below for the Gulp:
 # make the subcatch data:
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 54, calc_ldd = F, 
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 52, calc_ldd = T, 
                        run_type = "base")
 
 # create the run:
 source("sources/r_scripts/create_lisem_run.R")
-create_lisem_run(resolution = 10, catch_num = 54, swatre_file = swatre_file,
+create_lisem_run(resolution = 10, catch_num = 52, swatre_file = swatre_file,
                  run_type = "base", do_hpc = FALSE, cpu_cores = ncpu)
 
 
@@ -308,7 +308,7 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       run_type = "base",  # for NBS use "base"
-      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
@@ -320,7 +320,7 @@ source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
 # see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
-nbs_ids <- c(0, 16)#11, 12, 13, 14, 15, 16) # 0 = base run without NBS
+nbs_ids <- c(17)#11, 12, 13, 14, 15, 16) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
@@ -354,7 +354,8 @@ for (i in seq_along(points_id)) {
 # add colums with do_LE (boolean)
 # update function, if do_LE == TRUE, don't update landuse - but wait.
 # separate script for each NBS
-# if lu_map == 2, place landscape element. read lu params from table and
+# adjust stroming maps to have 1 on location of LE
+# if lu_map == 1, place landscape element. read lu params from table and
 # update input maps accordingly.
 
 
