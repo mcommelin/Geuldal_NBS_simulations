@@ -15,37 +15,41 @@ swales = swales.map;
 # maps out
 flowbarriers = flowbarriers.map;
 
-# numbers in flow barriers
-# were are the walls in for the cell
-# 1 = north
-# 2 = east
-# 3 = south
-# 4 = west
-# 5 = north + east
-# 6 = east + south
-# 7 = south + west
-# 8 = west + north
+# we make a map for each direction, with the value being the height of 
+# the wall.
 
+wall_height = 10.0; # height of walls in meters.
+
+wall_north = FlowBarrierN.map;
+wall_east = FlowBarrierE.map;
+wall_south = FlowBarrierS.map;
+wall_west = FlowBarrierW.map;
 
 
 initial
 
 # make the maps which indicate if the neighbour is lower
-report wall_north.map = scalar(if(shift(dem, -1, 0) < dem and swales eq 1 and shift(swales, -1, 0) ne 1, 1,0));
-report wall_south.map = scalar(if(shift(dem, 1, 0) < dem and swales eq 1 and shift(swales, 1, 0) ne 1, 3,0));
-report wall_west.map = scalar(if(shift(dem, 0, -1) < dem and swales eq 1 and shift(swales, 0, -1) ne 1, 4,0));
-report wall_east.map = scalar(if(shift(dem, 0, 1) < dem and swales eq 1 and shift(swales, 0, 1) ne 1, 2,0));
+wall_north = scalar(if(shift(dem, -1, 0) < dem and swales eq 1 and shift(swales, -1, 0) ne 1, 1,0));
+wall_south = scalar(if(shift(dem, 1, 0) < dem and swales eq 1 and shift(swales, 1, 0) ne 1, 3,0));
+wall_west = scalar(if(shift(dem, 0, -1) < dem and swales eq 1 and shift(swales, 0, -1) ne 1, 4,0));
+wall_east = scalar(if(shift(dem, 0, 1) < dem and swales eq 1 and shift(swales, 0, 1) ne 1, 2,0));
 
 # combine into 1 map
-report ne.map = scalar(if(wall_north.map eq 1 and wall_east.map eq 2, 5,0));
-report es.map = scalar(if(wall_south.map eq 3 and wall_east.map eq 2, 6,0));
-report sw.map = scalar(if(wall_south.map eq 3 and wall_west.map eq 4, 7,0));
-report wn.map = scalar(if(wall_north.map eq 4 and wall_west.map eq 1, 8,0));
+en = scalar(if(wall_north eq 1 and wall_east eq 2, 5,0));
+es = scalar(if(wall_south eq 3 and wall_east eq 2, 6,0));
+sw = scalar(if(wall_south eq 3 and wall_west eq 4, 7,0));
+wn = scalar(if(wall_north eq 4 and wall_west eq 1, 8,0));
 
-report two_walls.map = ne.map + es.map + sw.map + wn.map;
-one_wall = wall_north.map + wall_south.map + wall_west.map + wall_east.map;
+two_walls = en + es + sw + wn;
+one_wall = wall_north + wall_south + wall_west + wall_east;
 
-report walls.map = if(two_walls.map eq 0, one_wall, two_walls.map);
+report walls = if(two_walls eq 0, one_wall, two_walls);
+
+# add wall height to maps
+report wall_north = if(wall_north ne 0, wall_height, 0);
+report wall_south = if(wall_south ne 0, wall_height, 0);
+report wall_west = if(wall_west ne 0, wall_height, 0);
+report wall_east = if(wall_east ne 0, wall_height, 0);
 
 
 # remove swales where buffers are applied
