@@ -120,6 +120,7 @@ create_hpc_run(subset = subnums,
                dir_name = ini$dir_name,
                run_type = runtype,
                do_runfile = TRUE,
-               cpu_cores = ini$cpu_cores)
+               cpu_cores = ini$cpu_cores,
+               inith_cal = ini$inithcal)
 
 }
