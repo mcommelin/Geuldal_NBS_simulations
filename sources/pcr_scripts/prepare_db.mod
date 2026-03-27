@@ -184,7 +184,7 @@ report chandepth = windowaverage(cd,30) * chanclean;
 bua = cover(bua, 0);
 chanclass = if(bua eq 1,chantype, chantype + 2);  
 chanman = lookupscalar(chantbl, 1, chanclass);
-chandiam = if(culvert eq 1, chanwidth); # hoezo channel width, is er geen user defined diameter for buffer outlets?
+chandiam = if(culvert eq 1, chanwidth); #channel width? is er geen user defined diameter for buffer outlets?
 
 # all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
 report buf_outlet = if(cover(maxq,0) > 0, 1,0)*chanclean;
@@ -197,12 +197,14 @@ report chanculvert = if(buf_outlet eq 1, 2, chanculvert)*chanclean;
 report chandiam = scalar(if(buf_outlet eq 1, 0.6, chandiam))*chanclean;
 report changrad = scalar(if(buf_outlet eq 1, 0.05, changrad))*chanclean;
 
-# calibration of Maniing for channel: all mannings n needs to be higher than the original tabel values:
+# calibration of Manning for channel: all mannings n needs to be higher than the original tabel values:
 # - forerst needs to be higher, assumed becaus of vegegation and dead wood in the channels
 # - Wallonia needs to be higher even branches, assumption that there is more meandering, less maintenance and therefor e more delay in flow
+# - Dutch channels a bit lower based on Gulp calibrations
 prf = profile;
 factor = if(prf > 219000 and prf < 360000, 2, 1.5)*chanclean;
 factor = if(prf > 424000 and prf < 426000, 2, factor)*chanclean;
+factor *= 0.9; # Gulp and Kelmis calibration 0.9!
 factor = if(forest, factor*2,factor)*chanclean;
 #report factor.map=factor;
 chanman = windowaverage(factor*chanman,50)*chanclean;
