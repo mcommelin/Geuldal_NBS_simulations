@@ -42,9 +42,9 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "^Map Directory=<<map_dir>>", 
                               paste0("Map Directory=", proj_wd, "/", work_dir, "maps"))
   # result directory
-  if (run_type == "base") {
+ # if (run_type == "base") {
     res <- paste0("res_", evdate)
-  } else {res <- "res"}
+ # } else {res <- "res"}
   run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
                               paste0("Result Directory=", proj_wd, "/", work_dir, res, "/"))
   # rain files
@@ -276,7 +276,7 @@ create_lisem_run <- function(
   
   # create the following folders in the run_dir: maps, rain, runfiles
   dirs <- c("maps", "swatre", "runfiles")
-  if (run_type == "cal") {dirs[4] <- "res"} # standard events more res folders are made!
+ # if (run_type == "cal") {dirs[4] <- "res"} # standard events more res folders are made!
   for (dir in dirs) {
     dir_path <- paste0(run_dir, dir)
     if (!dir.exists(dir_path)) {
@@ -461,6 +461,15 @@ create_lisem_run <- function(
         
         theta_cal <- theta_cal$theta_cal}
       }
+      
+      #make an additional results directory for each standard event
+      dirs <- paste0("res_", date_event)
+        dir_path <- paste0(run_dir, dir)
+        if (!dir.exists(dir_path)) {
+          dir.create(dir_path)
+        }
+
+      
       # make runfile  
       if (do_runfile == TRUE) {
         
