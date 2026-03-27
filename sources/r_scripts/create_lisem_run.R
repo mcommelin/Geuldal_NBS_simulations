@@ -120,10 +120,6 @@ ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
   run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
   
   if (run_type == "cal") {
-    # set baseflowmap
-    run_temp <- str_replace(run_temp, "<<baseflow_map>>",
-                            paste0("baseflow_", runname, ".map"))
-    
     datestr <- substr(runname, 3, 8)
     # set ndvi related maps
     if (do_ndvi_run == TRUE) {
@@ -136,10 +132,15 @@ ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
       run_temp <- str_replace_all(run_temp, "manning=n.map",
                                   paste0("manning=n", datestr, ".map"))
     }
-    
+  }
+  
+  if (run_type == "cal" && do_hpc == FALSE) {
+    # set baseflowmap
+    run_temp <- str_replace(run_temp, "<<baseflow_map>>",
+                            paste0("baseflow_", runname, ".map"))
     
   } else {
-    # no baseflow
+    # no baseflow: standard runs AND cal runs on hpc
     # set dummy value
     run_temp <- str_replace(run_temp, "<<baseflow_map>>",
                             paste0("nobaseflow.map"))
@@ -425,6 +426,7 @@ create_lisem_run <- function(
     theta_factors <- read_csv("sources/setup/calibration/calibration_theta.csv") %>%
       filter(catch_num == cn)
     }
+    
     for (i in seq_along(events$event_start)) {
       #make baseflow
       date_event <- str_remove_all(as.character(date(events$ts_start[i])), "-")
@@ -443,7 +445,7 @@ create_lisem_run <- function(
         script_dir = "sources/pcr_scripts",
         work_dir = subdir
       )
-      
+    
       file.rename(paste0(subdir, "baseflow.map"),
                   paste0(subdir, "baseflow_", date_event, ".map"))
       
