@@ -42,14 +42,18 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "^Map Directory=<<map_dir>>", 
                               paste0("Map Directory=", proj_wd, "/", work_dir, "maps"))
   # result directory
- # if (run_type == "base") {
-    res <- paste0("res_", evdate)
- # } else {res <- "res"}
+  if (run_type == "cal") {
+    # set correct inithead for event
+    evdate <- str_remove_all(as.character(evdate), "-")
+  }
+
+  res <- paste0("res_", evdate)
+
   run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
                               paste0("Result Directory=", proj_wd, "/", work_dir, res, "/"))
   # rain files
   if (run_type == "cal") {
-    rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
+    rain_file <- paste0("rain_5min_", evdate, ".txt")
   } else {
     rain_file <- paste0("rain_",str_remove_all(evdate, "_(w|d).*"), ".txt")
     # set ID map to 1 zone
@@ -74,9 +78,9 @@ make_runfile_lisem <- function(work_dir = NULL,
                               paste0(proj_wd, "/", infil_dir))
   
   # initial head
+  runname <- evdate
   if (run_type == "cal") {
     # set correct inithead for event
-    runname <- str_remove_all(as.character(evdate), "-")
     ih_ev <- str_remove(runname, "^\\d\\d")
     
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
@@ -86,7 +90,6 @@ make_runfile_lisem <- function(work_dir = NULL,
     
     # in the standard runs we use a homogeneous inithead:
     # -50 = wet and -100 = dry
-    runname <- evdate
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
                                 paste0("ih"))
     #set homogeneous init head
@@ -276,7 +279,6 @@ create_lisem_run <- function(
   
   # create the following folders in the run_dir: maps, rain, runfiles
   dirs <- c("maps", "swatre", "runfiles")
- # if (run_type == "cal") {dirs[4] <- "res"} # standard events more res folders are made!
   for (dir in dirs) {
     dir_path <- paste0(run_dir, dir)
     if (!dir.exists(dir_path)) {
@@ -463,7 +465,7 @@ create_lisem_run <- function(
       }
       
       #make an additional results directory for each standard event
-      dirs <- paste0("res_", date_event)
+      dir <- paste0("res_", date_event)
         dir_path <- paste0(run_dir, dir)
         if (!dir.exists(dir_path)) {
           dir.create(dir_path)
