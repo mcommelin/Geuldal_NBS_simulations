@@ -162,6 +162,9 @@ chanclean = if(boolean(catchment), chanclean);
 report lddchan= lddcreate(dem*chanclean-out1,1e20,1e20,1e20,1e20); 
 report chanmask=chanclean;
 
+#DHydro domain estimate
+dhydro = accuflux(lddchan,cellarea()) gt 120000; 
+
 # channel gradient
 # reduce the slope of channels when they are close to a road
 # often roads cause errors in the change grad due to DEM elevation
@@ -175,6 +178,7 @@ changrad = windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to 
 # avoid abrupt changes in channel width and depth
 # gives better stability and lower MB error 
 cw = windowmaximum(chanwidth,30); # make the first pixel of a side branch the size of the main branch
+cw = if(dhydro, 1.5*cw, cw);
 report chanwidth = min(0.95*celllength(), windowaverage(cw,30)) * chanclean; # then average the result which smoothes the connections
 cd = windowmaximum(chandepth,30);
 chandepth = windowaverage(cd,30) * chanclean;
@@ -207,8 +211,7 @@ factor = if(prf > 424000 and prf < 426000, 2, factor)*chanclean;
 factor = if(forest, factor*2,factor)*chanclean;
 #report factor.map=factor;
 # calib. from de Geul as a whole, the n needed to be lower. crude asumption that DHydro starts when area more than 0.16 km2;
-factor = if(accuflux(lddchan,cellarea()) gt 160000, 0.7, 1.0)*chanclean; 
+chanman = if(dhydro, 0.7*chanman,chanman);
 chanman = windowaverage(factor*chanman,50)*chanclean;
-
 report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
 

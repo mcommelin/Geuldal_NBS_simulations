@@ -274,9 +274,9 @@ smax=smax.map
 [Surface]
 rr=rr.map
 manning=n.map
-stonefrc=stonefrc.map
-crustfrc=crustfrc.map
-compfrc=compfrc.map
+stonefrc=zero.map
+crustfrc=zero.map
+compfrc=zero.map
 
 [Infiltration]
 [Swatre]
@@ -336,7 +336,7 @@ road=roadwidth.map
 housecover=buildings.map
 roofstore=zero.map
 drumstore=zero.map
-hardsurf=hard_surface.map
+hardsurf=hardsurf.map
 
 [Erosion]
 coh=coh.map

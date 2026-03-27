@@ -27,7 +27,7 @@ report ponds = if(cover(dhydro, 0) eq 0, ponds);
 # fill nodata values profile.map
 profile = nominal(pmv);
 fill = windowmajority(nominal(profile), 120);
-report profile = cover(nominal(profile), fill);
+report profile = scalar(cover(nominal(profile), fill));
 
 #burn corrections around (rail)roads into dem
 b1 = clump(nominal(burn));
