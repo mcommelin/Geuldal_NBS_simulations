@@ -150,7 +150,7 @@ base_maps_subcatchment <- function(
        of = "PCRaster",
        mo = "PCRASTER_VALUESCALE=VS_SCALAR"
      )
-     if (DEBUGm) message("out ",map_out_name)
+   #  if (DEBUGm) message("out ",map_out_name)
      
    }
   

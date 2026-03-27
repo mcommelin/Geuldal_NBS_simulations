@@ -31,6 +31,7 @@ profile0 = profile.map;	    # map with ubc soil codes for swatre
 buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 maxq = maxq.map;            # maximum discharge at buffer outlets
 bufvol=buffermask.map;      # buffer volumes, only used to make buffers.map cosmetic
+NDBI = ndbi.map; # normalized Build-up 
 
 ### INPUT TABLES ### 
 # calibration for standard maps moved to R code,
@@ -70,7 +71,7 @@ mann = n.map;          # Manning's n
 stone = stonefrc.map;  # stone fraction 
 # crust= crustfrc.map; # crusted fraction of surface (optional)
 # comp = compfrc.map;  # compacted fraction of surface (optional)
-# hard = hardsurf.map; # impermeable surface (optional)
+hard = hardsurf.map; # impermeable surface (optional)
 lai = lai.map;		     # map with lai 
 per = per.map; 		     # input map with cover based on lu.tbl
 
@@ -144,6 +145,11 @@ report smax = if(smax_eq eq 8, 0.59*(lai**0.88), smax);
 roadwidth = roads * celllength();
 report roadwidth = if(boolean(catchment), roadwidth);
 
+#hard surface from NDBI
+hs = if(NDBI gt -0.1,NDBI*10,0)*cover(bua,0);
+report hard = abs(if(hs gt 0,1,hs))*area;
+
+
 #################### 
 ### CHANNEL MAPS ###
 ####################
@@ -198,11 +204,11 @@ report changrad = scalar(if(buf_outlet eq 1, 0.05, changrad))*chanclean;
 prf = profile;
 factor = if(prf > 219000 and prf < 360000, 2, 1.5)*chanclean;
 factor = if(prf > 424000 and prf < 426000, 2, factor)*chanclean;
-factor *= 0.9; # Gulp and Kelmis calibration 0.9!
 factor = if(forest, factor*2,factor)*chanclean;
 #report factor.map=factor;
+# calib. from de Geul as a whole, the n needed to be lower. crude asumption that DHydro starts when area more than 0.16 km2;
+factor = if(accuflux(lddchan,cellarea()) gt 160000, 0.7, 1.0)*chanclean; 
 chanman = windowaverage(factor*chanman,50)*chanclean;
+
 report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
-
-
 
