@@ -255,7 +255,8 @@ rain_in <- read_csv("data/data_wl/Buien_LISEM.csv")
 rain <- rain_in %>%
   mutate(mins = (min10 - 1) * 10) %>%
   select(-min10) %>%
-  pivot_longer(cols = starts_with("T"), names_to = "type", values_to = "P")
+  pivot_longer(cols = starts_with("T"), names_to = "type", values_to = "P") %>%
+  mutate(P = P * 6) # from mm/10 min to mm/h
 
 # save to 4 separate files
 types <- unique(rain$type)
