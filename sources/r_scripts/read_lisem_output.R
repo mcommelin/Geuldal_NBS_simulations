@@ -5,12 +5,12 @@ require(tidyverse)
 args <- commandArgs(trailingOnly = TRUE)
 
 if(length(args)==0){
-  basepath <- 'Z:/PR/5611_10/_CAL_RUN_20230622/LISEM_runs/hpc_runs'
+  basepath <- 'Z:/PR/5611_10/_CAL_RUN_20230622_v2/LISEM_runs/hpc_runs'
   src_path <- 'Z:/PR/5611_10/Geuldal_NBS_simulations/sources'
   refdate <-'2023-06-22'
-  scenario <- 'res'
+  scenario <- 'res_20230622'
   resolution <- 10
-  dhydro_path <- 'Z:/PR/5611_10/_CAL_RUN_20230622/DHYDRO'
+  dhydro_path <- 'Z:/PR/5611_10/_CAL_RUN_20230622_v2/DHYDRO'
 }else{
   basepath <- args[1]
   src_path <- args[2]
@@ -73,6 +73,7 @@ for(i in seq(7,length(bc))){
  
 output_list <- vector("list", length = length(subdirs))
 i <- 1
+# subdirs <- c("81_10m")
 for(folder in subdirs){
   if (substr(folder,nchar(folder)-3,nchar(folder)) != paste0('_',resolution,'m')){
     next 
@@ -86,7 +87,11 @@ for(folder in subdirs){
     lateral_name <- lateral_names[which(lateral_names['LISEM_ID'] == catchment_point),'latknoop_ID']
     
     hydromap <- file.path(basepath, folder, scenario, 'res')
-    hydrofile <- list.files(hydromap, full.names=T, pattern='hydrographs-_1')
+    hydrofile <- list.files(hydromap, full.names=T, pattern='hydrographs-_')
+    if (length(hydrofile)>1){
+      print('Multiple Hydrographs files found. Taking the first one.')
+      hydrofile <- hydrofile[1]
+    }
     if (!any(file.exists(hydrofile))){
       print(paste('For subcatchment',subcatchment,'no output file exists yet.'))
       next
@@ -106,7 +111,7 @@ for(folder in subdirs){
            timestamp = ymd_hm(datestring)) %>%
       distinct() %>%
       select(timestamp, all_of(hy_names))#
-    
+
       png(file.path(dhydro_path,paste0(subcatchment, '.png')), width=1200,height=500)
       plot(output$timestamp, output$Qall, col='blue', type="l", main=subcatchment, ylab="Discharge [l/s]", xlab="")
       abline(h=seq(0,3,0.25), col='lightgrey', lty=3, lwd=0.5)
