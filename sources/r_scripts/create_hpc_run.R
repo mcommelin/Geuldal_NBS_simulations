@@ -19,6 +19,10 @@
 #' @param cpu_cores Number of cores which are assigned to the OpenLISEM run.
 #' @param dir_name Character. Additional folder name to place the produced data.
 #' Will be placed at ./LISEM_runs/hpc_runs/**dir_name** Should end with a "/"! 
+#' @param run_type Either "cal" or "base". cal = calibration run with date specific 
+#' maps and rainfall events. base = standard conditions for scenario testing
+#' @param inith_cal Calibration factor multiplying inithead for the whole 
+#' catchment. Only used in hpc setup.
 #'
 #' @returns creates a map and runfile dataset to run OpenLISEM for (a subset of)
 #' the Geulcatchment
@@ -31,7 +35,8 @@ create_hpc_run <- function(subset = NULL,
                            dir_name = "",
                            run_type = "",
                            do_runfile = TRUE,
-                           cpu_cores = 0
+                           cpu_cores = 0,
+                           inith_cal = 1
                            ) {
   
   # check if a subset is done of the Geul, otherwise make everything
@@ -50,7 +55,7 @@ create_hpc_run <- function(subset = NULL,
   for (i in seq_along(subnums)) {
     create_lisem_run(resolution = resolution, catch_num = subnums[i], swatre_file = swatre_file,
                      run_type = run_type, do_hpc = TRUE, cpu_cores = cpu_cores, NBS_num = NBS_num,
-                     dir_name = dir_name)
+                     dir_name = dir_name, inith_cal = inith_cal)
   }
   
   # check if it is a base run, or simulation a NBS

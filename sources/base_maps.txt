@@ -24,3 +24,4 @@ tilestorage.map
 hard_surface.map
 hpc_sub.map
 flowboundary.map
+ndbi.map
