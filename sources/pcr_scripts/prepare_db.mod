@@ -30,6 +30,7 @@ bua = bua.map; 		          # map with build up area.
 profile0 = profile.map;	    # map with ubc soil codes for swatre
 maxq = maxq.map;            # maximum discharge at buffer outlets
 bufvol=buffermask.map;      # buffer volumes, only used to make buffers.map cosmetic
+NDBI = ndbi.map; # normalized Build-up 
 
 ### INPUT TABLES ### 
 # calibration for standard maps moved to R code,
@@ -69,7 +70,7 @@ mann = n.map;          # Manning's n
 stone = stonefrc.map;  # stone fraction 
 # crust= crustfrc.map; # crusted fraction of surface (optional)
 # comp = compfrc.map;  # compacted fraction of surface (optional)
-# hard = hardsurf.map; # impermeable surface (optional)
+hard = hardsurf.map; # impermeable surface (optional)
 lai = lai.map;		     # map with lai 
 per = per.map; 		     # input map with cover based on lu.tbl
 
@@ -142,6 +143,11 @@ report smax = if(smax_eq eq 8, 0.59*(lai**0.88), smax);
 roadwidth = roads * celllength();
 report roadwidth = if(boolean(catchment), roadwidth);
 
+#hard surface from NDBI
+hs = if(NDBI gt -0.1,NDBI*10,0)*cover(bua,0);
+report hard = abs(if(hs gt 0,1,hs))*area;
+
+
 #################### 
 ### CHANNEL MAPS ###
 ####################
@@ -163,6 +169,9 @@ report roadwidth = if(boolean(catchment), roadwidth);
 
 chanclean = chanmask;
 
+#DHydro domain estimate
+dhydro = accuflux(lddchan,cellarea()) gt 120000; 
+
 # channel gradient
 # reduce the slope of channels when they are close to a road
 # often roads cause errors in the change grad due to DEM elevation
@@ -176,9 +185,11 @@ changrad = windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to 
 # avoid abrupt changes in channel width and depth
 # gives better stability and lower MB error 
 cw = windowmaximum(chanwidth,30); # make the first pixel of a side branch the size of the main branch
+cw = if(dhydro, 1.5*cw, cw);
 report chanwidth = min(0.95*celllength(), windowaverage(cw,30)) * chanclean; # then average the result which smoothes the connections
 cd = windowmaximum(chandepth,30);
-report chandepth = windowaverage(cd,30) * chanclean;
+chandepth = windowaverage(cd,30) * chanclean;
+report chandepth = if(cover(bufvol,0)*chanclean gt 0, 0.1, chandepth);
 
 # calculate mannings for channel
 bua = cover(bua, 0);
@@ -204,11 +215,10 @@ report changrad = scalar(if(buf_outlet eq 1, 0.05, changrad))*chanclean;
 prf = profile;
 factor = if(prf > 219000 and prf < 360000, 2, 1.5)*chanclean;
 factor = if(prf > 424000 and prf < 426000, 2, factor)*chanclean;
-factor *= 0.9; # Gulp and Kelmis calibration 0.9!
 factor = if(forest, factor*2,factor)*chanclean;
 #report factor.map=factor;
+# calib. from de Geul as a whole, the n needed to be lower. crude asumption that DHydro starts when area more than 0.16 km2;
+chanman = if(dhydro, 0.7*chanman,chanman);
 chanman = windowaverage(factor*chanman,50)*chanclean;
 report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
-
-
 
