@@ -16,7 +16,8 @@ make_runfile_lisem <- function(work_dir = NULL,
                                do_ndvi_run = TRUE,
                                run_type = "",
                                theta_cal = NULL,
-                               cpu_cores = 0
+                               cpu_cores = 0,
+                               do_hpc = FALSE
 ) 
 {
   
@@ -103,16 +104,14 @@ make_runfile_lisem <- function(work_dir = NULL,
   }
   
   # flow solution
-#  if (resolution > 10) {
-  # muscl at all resoutions
-    run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
-#  }
-  
+  # use MUSCL at all resoutions
+    run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1")
+    
   # set timestep
-#  if (resolution < 20)
-#    dt = 5 # makkelijker voor grafieken en berekeningen
-#  else    
-    dt = 10 # altijd 10 ook voor 10m
+  if (resolution < 10)
+    dt = 5 
+  else    
+    dt = 10 # same timestep for 10 and 20 meter resolution. why?- MC
   
 ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
   run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0"))
@@ -487,7 +486,8 @@ create_lisem_run <- function(
           do_ndvi_run = do_ndvi,
           run_type = run_type,
           theta_cal = theta_cal,
-          cpu_cores = cpu_cores
+          cpu_cores = cpu_cores,
+          do_hpc = do_hpc
         )
       }
     } # end date specific loop
@@ -524,7 +524,8 @@ create_lisem_run <- function(
           resolution = resolution,
           do_ndvi_run = do_ndvi,
           run_type = run_type,
-          cpu_cores = cpu_cores
+          cpu_cores = cpu_cores,
+          do_hpc = do_hpc
         )
       }
     }
