@@ -16,7 +16,8 @@ make_runfile_lisem <- function(work_dir = NULL,
                                do_ndvi_run = TRUE,
                                run_type = "",
                                theta_cal = NULL,
-                               cpu_cores = 0
+                               cpu_cores = 0,
+                               do_hpc = FALSE
 ) 
 {
   
@@ -42,14 +43,18 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "^Map Directory=<<map_dir>>", 
                               paste0("Map Directory=", proj_wd, "/", work_dir, "maps"))
   # result directory
-  if (run_type == "base") {
-    res <- paste0("res_", evdate)
-  } else {res <- "res"}
+  if (run_type == "cal") {
+    # set correct inithead for event
+    evdate <- str_remove_all(as.character(evdate), "-")
+  }
+
+  res <- paste0("res_", evdate)
+
   run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
                               paste0("Result Directory=", proj_wd, "/", work_dir, res, "/"))
   # rain files
   if (run_type == "cal") {
-    rain_file <- paste0("rain_5min_",str_remove_all(as.character(evdate), "-"), ".txt")
+    rain_file <- paste0("rain_5min_", evdate, ".txt")
   } else {
     rain_file <- paste0("rain_",str_remove_all(evdate, "_(w|d).*"), ".txt")
     # set ID map to 1 zone
@@ -74,9 +79,9 @@ make_runfile_lisem <- function(work_dir = NULL,
                               paste0(proj_wd, "/", infil_dir))
   
   # initial head
+  runname <- evdate
   if (run_type == "cal") {
     # set correct inithead for event
-    runname <- str_remove_all(as.character(evdate), "-")
     ih_ev <- str_remove(runname, "^\\d\\d")
     
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
@@ -86,7 +91,6 @@ make_runfile_lisem <- function(work_dir = NULL,
     
     # in the standard runs we use a homogeneous inithead:
     # -50 = wet and -100 = dry
-    runname <- evdate
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
                                 paste0("ih"))
     #set homogeneous init head
@@ -100,20 +104,17 @@ make_runfile_lisem <- function(work_dir = NULL,
   }
   
   # flow solution
-  if (resolution > 10) {
-    run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1") # MUSCL on at 20 m
-  }
-  
+  # use MUSCL at all resoutions
+    run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1")
+    
   # set timestep
-  if (resolution < 20)
-    dt = 5 # makkelijker voor grafieken en berekeningen
+  if (resolution < 10)
+    dt = 5 
   else    
-    dt = 10 # makkelijker voor grafieken en berekeningen
+    dt = 10 # same timestep for 10 and 20 meter resolution. why?- MC
   
-  ts <- str_pad(as.character(dt), width = 3,
-                side = "left", pad = "0")
-  run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0")) # Timestep model
-  
+ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
+  run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0"))
   # set start time
   run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0(start_time)) # 
   
@@ -121,10 +122,6 @@ make_runfile_lisem <- function(work_dir = NULL,
   run_temp <- str_replace_all(run_temp, "<<end_time>>", paste0(end_time)) #  
   
   if (run_type == "cal") {
-    # set baseflowmap
-    run_temp <- str_replace(run_temp, "<<baseflow_map>>",
-                            paste0("baseflow_", runname, ".map"))
-    
     datestr <- substr(runname, 3, 8)
     # set ndvi related maps
     if (do_ndvi_run == TRUE) {
@@ -137,10 +134,15 @@ make_runfile_lisem <- function(work_dir = NULL,
       run_temp <- str_replace_all(run_temp, "manning=n.map",
                                   paste0("manning=n", datestr, ".map"))
     }
-    
+  }
+  
+  if (run_type == "cal" && do_hpc == FALSE) {
+    # set baseflowmap
+    run_temp <- str_replace(run_temp, "<<baseflow_map>>",
+                            paste0("baseflow_", runname, ".map"))
     
   } else {
-    # no baseflow
+    # no baseflow: standard runs AND cal runs on hpc
     # set dummy value
     run_temp <- str_replace(run_temp, "<<baseflow_map>>",
                             paste0("nobaseflow.map"))
@@ -188,6 +190,8 @@ make_runfile_lisem <- function(work_dir = NULL,
 #' @param dir_name Character. Additional folder name to place the produced data.
 #' Will be placed at ./LISEM_runs/hpc_runs/**dir_name** Should end with a "/"!. 
 #' Only works if do_hpc = TRUE
+#' @param inith_cal Calibration factor multiplying inithead for the whole 
+#' catchment. Only used in hpc setup.
 #' 
 #' @returns creates a map and runfile dataset to run OpenLISEM
 #'
@@ -201,7 +205,8 @@ create_lisem_run <- function(
     NBS_num = 0,
     cpu_cores = 0,
     do_hpc = FALSE,
-    dir_name = "") 
+    dir_name = "",
+    inith_cal = NULL) 
 {
   
   # set some triggers
@@ -273,7 +278,6 @@ create_lisem_run <- function(
   
   # create the following folders in the run_dir: maps, rain, runfiles
   dirs <- c("maps", "swatre", "runfiles")
-  if (run_type == "cal") {dirs[4] <- "res"} # standard events more res folders are made!
   for (dir in dirs) {
     dir_path <- paste0(run_dir, dir)
     if (!dir.exists(dir_path)) {
@@ -394,14 +398,6 @@ create_lisem_run <- function(
     work_dir = subdir
   )
   
-  # run pcraster script to make buffer features.
-  # obsolete, doen in prepare_db.mod
- # pcr_script(
- #   script = "prepare_buffer_features.mod",
- #   script_dir = "sources/pcr_scripts",
- #   work_dir = subdir
- # )
-  
   #set swatre directories
   if (do_hpc == TRUE) {
     infil_dir <- "LISEM_runs/hpc_runs/swatre/tables/"  
@@ -426,9 +422,11 @@ create_lisem_run <- function(
                               str_pad(as.character(hour(ts_end) * 60 + minute(ts_end)), width = 4,
                                       side = "left", pad = "0")))
     # load theta_cal file
+    if (do_hpc == FALSE) {
     cn = catch_num
     theta_factors <- read_csv("sources/setup/calibration/calibration_theta.csv") %>%
       filter(catch_num == cn)
+    }
     
     for (i in seq_along(events$event_start)) {
       #make baseflow
@@ -448,11 +446,14 @@ create_lisem_run <- function(
         script_dir = "sources/pcr_scripts",
         work_dir = subdir
       )
-      
+    
       file.rename(paste0(subdir, "baseflow.map"),
                   paste0(subdir, "baseflow_", date_event, ".map"))
       
       # get theta_cal
+      if (do_hpc == TRUE) {
+        theta_cal <- inith_cal
+      } else {
       if (nrow(theta_factors) == 0) {
         theta_cal <-  1.00
       } else {
@@ -460,6 +461,15 @@ create_lisem_run <- function(
           filter(date == date_event)
         
         theta_cal <- theta_cal$theta_cal}
+      }
+      
+      #make an additional results directory for each standard event
+      dir <- paste0("res_", date_event)
+        dir_path <- paste0(run_dir, dir)
+        if (!dir.exists(dir_path)) {
+          dir.create(dir_path)
+        }
+
       
       # make runfile  
       if (do_runfile == TRUE) {
@@ -476,7 +486,8 @@ create_lisem_run <- function(
           do_ndvi_run = do_ndvi,
           run_type = run_type,
           theta_cal = theta_cal,
-          cpu_cores = cpu_cores
+          cpu_cores = cpu_cores,
+          do_hpc = do_hpc
         )
       }
     } # end date specific loop
@@ -513,7 +524,8 @@ create_lisem_run <- function(
           resolution = resolution,
           do_ndvi_run = do_ndvi,
           run_type = run_type,
-          cpu_cores = cpu_cores
+          cpu_cores = cpu_cores,
+          do_hpc = do_hpc
         )
       }
     }

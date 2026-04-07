@@ -24,5 +24,6 @@ run_type: base # 'cal' = date specific simulations or 'base' = standard events f
 do_lisem_run: TRUE # boolean TRUE or FALSE - needs prepared data and base bd's!
 NBS_num: 0 # 0 = no nbs, 11 - x -> add NBS according to landuse code in  /sources/setup/tables/lu_NBS_tbl.csv 
 dir_name: "" # add additional name to folder structure - usefull when making multiple simulations in same setup
+inithcal: 1.0 # only in combination with run_type = 'cal'. Factor applied over the initial head of the whole catchment.
 cpu_cores: 8 # set number of cpu cores assigned to the produced OpenLISEM simulations
 
