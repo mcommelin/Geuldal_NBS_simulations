@@ -104,8 +104,9 @@ make_runfile_lisem <- function(work_dir = NULL,
   }
   
   # flow solution
-  # use MUSCL at all resoutions
-    run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1")
+  # based on testing currently we don't use MUSCL flow solutions - 20260408
+  # line below switches MUSCL on:
+  #  run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1")
     
   # set timestep
   if (resolution < 10)
