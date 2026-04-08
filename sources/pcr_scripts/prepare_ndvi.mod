@@ -50,4 +50,3 @@ smax = if(smax_eq eq 7, 0.317*lai, smax);
 smax = if(smax_eq eq 0, 0, smax); 
 report smax = if(smax_eq eq 8, 0.59*(lai**0.88), smax);
 
-
