@@ -10,6 +10,7 @@ binding
 
 # load some mape
 dem = dem.map;
+loc_slope = slope.map;
 terrace = terrace.map; #map with:
 				# 1 = field with terraces
 				# 2 = location of terraces on field
@@ -17,51 +18,32 @@ terrace = terrace.map; #map with:
 
 buffers = buffers.map; # remove - should be done earlier
 
-# the difference between the top of the dike and deepest
-# point of the ditch
-swale_dep = 1.0; # [m]
-# the width of the ditch
-swale_width = 1.0; #[m]
+# the contour elevation spacing of the designed terraces
+# this should correspond to the input map
+terrace_spacing = 5.0; # [m]
+# the desired slope of the 'flat' sections 
+desired_slope = 5.0; #[%]
 
 #adjusted dem
-sw_dem = sw_dem.map; # set to dem.map in final code
+ter_dem = ter_dem.map; 
 
 initial
 # some aux maps
 area = dem * 0 + 1;
 
-# swale volume
-# we assume a triangle ditch so vol = (w*d) / 2
-swale_vol = (swale_dep * swale_width) / 2; 
+#slope to fraction
+desired_slope = desired_slope / 100;
 
-# the ditch in the DEM will be lowered to obtain the same
-# volume as the designed swale
-ditch_dep = swale_vol / celllength();
+# mean slope around terrace
+av_slope = windowaverage(loc_slope, 50);
 
-# remove swales where buffers are applied
-swales = if(buffers ne 0, 0, swales);
+# estimate distance to next upstream terrace
+est_dist = terrace_spacing / av_slope;
 
-# identify all swale features and give uniform height
-sw_clump = clump(nominal(swales * area));
-sw_mean_h = areaaverage(dem, sw_clump);
+#required terrace height to reduce upstream slope
+ter_height = terrace_spacing - (est_dist * desired_slope);
 
-# the swale lines get a different landuse - so these represent the 'dike'
-# one cell upstream will be the 'ditch'
+# add terrace height to dem
+report ter_dem = if(terrace eq 2, dem + ter_height, dem);
 
-# find the 'ditch' cells
-# make the maps if a cell is a ditch
-ditch_north = scalar(if(shift(dem, -1, 0) < dem and swales eq 0 and shift(swales, -1, 0) eq 1, shift(sw_mean_h, -1, 0),0));
-ditch_south = scalar(if(shift(dem, 1, 0) < dem and swales eq 0 and shift(swales, 1, 0) eq 1, shift(sw_mean_h, 1, 0),0));
-ditch_west = scalar(if(shift(dem, 0, -1) < dem and swales eq 0 and shift(swales, 0, -1) eq 1, shift(sw_mean_h, 0, -1),0));
-ditch_east = scalar(if(shift(dem, 0, 1) < dem and swales eq 0 and shift(swales, 0, 1) eq 1, shift(sw_mean_h, 0, 1),0));
-
-# combine to 1 
-sw_ditch = boolean(if(ditch_north + ditch_south + ditch_west + ditch_east > 0, 1, 0) * area);
-
-# make swale ditch height
-sw_ditch_h = max(ditch_north, ditch_south, ditch_west, ditch_east);
-
-#make adjusted dem with dike = mean swale dike height
-sw_dem = if(swales eq 1, sw_mean_h, dem);
-# and ditch = mean dike height - swale depth
-report sw_dem = if(sw_ditch eq 1, sw_ditch_h - ditch_dep, sw_dem);
+# use SAGA GIS fill_sinks (wang & liu) to smooth the terraces!
