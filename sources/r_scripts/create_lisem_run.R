@@ -340,13 +340,20 @@ create_lisem_run <- function(
   }
   
   ### start running scripts
-  # update the landuse map, to include the NBS
+  # update the landuse map and DEM, to include the NBS
+  # TODO extend code to allow for multiple NBS in the same simulation
+  
   if (NBS_num != 0) {
     # rename the map
     file.rename(paste0(subdir, nbs_map), paste0(subdir, "nbs.map"))
     file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"))
+    
+    do_LE <- if(NBS_desc$do_LE == TRUE) 1 else 0
+    
+    
+    
     pcr_script(
-      script = paste0("prepare_nbs.mod ", NBS_num),
+      script = paste0("prepare_nbs.mod ", NBS_num, " ", do_LE),
       script_dir = "sources/pcr_scripts",
       work_dir = subdir
     )
@@ -369,7 +376,6 @@ create_lisem_run <- function(
       work_dir = subdir
     )
   }
-  
   
   pcr_script(
     script = "prepare_db.mod",
