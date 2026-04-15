@@ -320,7 +320,7 @@ source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
 # see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
-nbs_ids <- c(17)#11, 12, 13, 14, 15, 16) # 0 = base run without NBS
+nbs_ids <- c(19)#11, 12, 13, 14, 15, 16) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment

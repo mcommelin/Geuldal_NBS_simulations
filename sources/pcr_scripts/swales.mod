@@ -10,14 +10,14 @@ binding
 
 # load some mape
 dem = dem.map;
-swales = swales.map;
+swales = nbs.map;
 buffers = buffers.map;
 
 # the difference between the top of the dike and deepest
 # point of the ditch
-swale_dep = 1.0; # [m]
+swale_dep = ${1}; # [m]
 # the width of the ditch
-swale_width = 1.0; #[m]
+swale_width = ${2}; #[m]
 
 #adjusted dem
 sw_dem = sw_dem.map; # set to dem.map in final code
@@ -25,6 +25,9 @@ sw_dem = sw_dem.map; # set to dem.map in final code
 initial
 # some aux maps
 area = dem * 0 + 1;
+
+# change swale map to 1 and 0
+swales = boolean(if(swales eq 2, 1, 0));
 
 # swale volume
 # we assume a triangle ditch so vol = (w*d) / 2
@@ -60,4 +63,4 @@ sw_ditch_h = max(ditch_north, ditch_south, ditch_west, ditch_east);
 #make adjusted dem with dike = mean swale dike height
 sw_dem = if(swales eq 1, sw_mean_h, dem);
 # and ditch = mean dike height - swale depth
-report sw_dem = if(sw_ditch eq 1, sw_ditch_h - ditch_dep, sw_dem);
+report dem = if(sw_ditch eq 1, sw_ditch_h - ditch_dep, sw_dem);

@@ -16,6 +16,7 @@ if (ins == "Y") {
 if (!require("gdalUtilities")) install.packages("gdalUtilities", repos='https://cloud.r-project.org')
 if (!require("terra")) install.packages("terra", repos='https://cloud.r-project.org')
 if (!require("remotes")) install.packages("remotes", repos='https://cloud.r-project.org')
+if (!require("RSAGA")) install.packages("RSAGA", repos='https://cloud.r-project.org')
 #if (!require("raster")) install.packages("raster", repos='https://cloud.r-project.org')
 #if (!require("cowplot")) install.packages("cowplot", repos='https://cloud.r-project.org')
 if (!require("sf")) install.packages("sf", repos='https://cloud.r-project.org')
