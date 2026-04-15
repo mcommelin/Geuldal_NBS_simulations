@@ -28,8 +28,9 @@ buildings = buildings.map;  # fraction of buildings in cell. (optional)
 id = ID.map;                # rainfall id grid
 bua = bua.map; 		          # map with build up area.
 profile0 = profile.map;	    # map with ubc soil codes for swatre
-buf_outlet = maxq.map; # location and maximum Q of buffer outlets
-village = bua.map;
+maxq = maxq.map;            # maximum discharge at buffer outlets
+bufvol=buffermask.map;      # buffer volumes, only used to make buffers.map cosmetic
+NDBI = ndbi.map; # normalized Build-up 
 
 ### INPUT TABLES ### 
 # calibration for standard maps moved to R code,
@@ -69,7 +70,7 @@ mann = n.map;          # Manning's n
 stone = stonefrc.map;  # stone fraction 
 # crust= crustfrc.map; # crusted fraction of surface (optional)
 # comp = compfrc.map;  # compacted fraction of surface (optional)
-# hard = hardsurf.map; # impermeable surface (optional)
+hard = hardsurf.map; # impermeable surface (optional)
 lai = lai.map;		     # map with lai 
 per = per.map; 		     # input map with cover based on lu.tbl
 
@@ -79,7 +80,8 @@ chandiam = chandiameter.map;
 changrad = changrad.map; 
 chanman = chanman.map; 
 chanculvert = chanculvert.map;
-
+buffers = buffers.map; # cosmetic, value -0.01 so that buffers can be shown in lisem
+buf_outlet = buffer_outlet.map; # location and diameter of culvert outlets from buffers
 
 initial 
 
@@ -93,6 +95,7 @@ lu = if(lu eq 0, 5, lu); # adjust 0 values to urban area
 lu = if(lu eq 5 and cover(bua,0) eq 0, 3,lu); # all builtup that is not bua is assumed to be roads and become grass (3)
 report lu *= area; # apply catchment mask
 forest = boolean(lu == 2 or lu == 7);
+report buffers=cover(if(bufvol ne 0, -0.01,0),0)*area;
 
 ################
 ### PROFILE  ### 
@@ -140,6 +143,11 @@ report smax = if(smax_eq eq 8, 0.59*(lai**0.88), smax);
 roadwidth = roads * celllength();
 report roadwidth = if(boolean(catchment), roadwidth);
 
+#hard surface from NDBI
+hs = if(NDBI gt -0.1,NDBI*10,0)*cover(bua,0);
+report hard = abs(if(hs gt 0,1,hs))*area;
+
+
 #################### 
 ### CHANNEL MAPS ###
 ####################
@@ -161,48 +169,56 @@ report roadwidth = if(boolean(catchment), roadwidth);
 
 chanclean = chanmask;
 
+#DHydro domain estimate
+dhydro = accuflux(lddchan,cellarea()) gt 120000; 
+
 # channel gradient
 # reduce the slope of channels when they are close to a road
 # often roads cause errors in the change grad due to DEM elevation
 changrad=max(0.005,sin(atan(slope(chanclean*dem)))); 
+
+# adjust channel gradient for crossing a highway or railway dike
 rbuf = windowmaximum(cover(roads_bool, 0), 60);
 changrad = if(rbuf eq 1, 0.02, changrad)*chanclean;
-report changrad=windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
+changrad = windowaverage(changrad,60)*chanclean; # smooth the slope over 60m to avoid instabilities in kin wave (Gulp)
 
 # avoid abrupt changes in channel width and depth
 # gives better stability and lower MB error 
 cw = windowmaximum(chanwidth,30); # make the first pixel of a side branch the size of the main branch
+cw = if(dhydro, 1.5*cw, cw);
 report chanwidth = min(0.95*celllength(), windowaverage(cw,30)) * chanclean; # then average the result which smoothes the connections
 cd = windowmaximum(chandepth,30);
-report chandepth = windowaverage(cd,30) * chanclean;
+chandepth = windowaverage(cd,30) * chanclean;
+report chandepth = if(cover(bufvol,0)*chanclean gt 0, 0.1, chandepth);
 
 # calculate mannings for channel
 bua = cover(bua, 0);
 chanclass = if(bua eq 1,chantype, chantype + 2);  
 chanman = lookupscalar(chantbl, 1, chanclass);
-chandiam = if(culvert eq 1, chanwidth); # hoezo channel width, is er geen user defined diameter for buffer outlets?
+chandiam = if(culvert eq 1, chanwidth); #channel width? is er geen user defined diameter for buffer outlets?
 
 # all general culverts have type 5, all buffer outlets have type 2, only culverts in buffer wall, not on buffer floor.
-bufculvert = scalar(if(cover(buf_outlet, 0) > 0, 2, 0));
+report buf_outlet = if(cover(maxq,0) > 0, 1,0)*chanclean;
+#report chanmaxq.map=cover(maxq,0)*chanclean;
 
-# recalc culvert mask with OSM village
-report culvert = if(cover(village, 0) eq 1 or cover(bufculvert,0) gt 0, 1, 0)*chanclean;  # village are bigger villages in OSM, bua is every hamlet, too much
-# chan culvert type 5 under villages
+# all underground culverts are type 5, free flow but no surface connection
 chanculvert = scalar(if(cover(culvert, 0) eq 1, 5, 0))*chanclean; 
 # chan culvert type 2 (cilindrical) for buffer outlets
-report chanculvert = if(bufculvert eq 2, bufculvert, chanculvert)*chanclean;
-report chandiam = scalar(if(bufculvert eq 2, buf_outlet, chandiam))*chanclean;
+report chanculvert = if(buf_outlet eq 1, 2, chanculvert)*chanclean;
+report chandiam = scalar(if(buf_outlet eq 1, 0.6, chandiam))*chanclean;
+report changrad = scalar(if(buf_outlet eq 1, 0.05, changrad))*chanclean;
 
-prf = profile;#roundoff(profile/100);
+# calibration of Manning for channel: all mannings n needs to be higher than the original tabel values:
+# - forerst needs to be higher, assumed becaus of vegegation and dead wood in the channels
+# - Wallonia needs to be higher even branches, assumption that there is more meandering, less maintenance and therefor e more delay in flow
+# - Dutch channels a bit lower based on Gulp calibrations
+prf = profile;
 factor = if(prf > 219000 and prf < 360000, 2, 1.5)*chanclean;
 factor = if(prf > 424000 and prf < 426000, 2, factor)*chanclean;
 factor = if(forest, factor*2,factor)*chanclean;
 #report factor.map=factor;
+# calib. from de Geul as a whole, the n needed to be lower. crude asumption that DHydro starts when area more than 0.16 km2;
+chanman = if(dhydro, 0.7*chanman,chanman);
 chanman = windowaverage(factor*chanman,50)*chanclean;
-#chanman = windowaverage(if(forest,2*chanman, chanman),50)*chanclean;
 report chanman = if(cover(chanculvert, 0) eq 2, 0.013, chanman)*chanclean; 
-#chosen channel manning is too low for LISEM kin wave, more in forest because of branches etc, and multiplied by 2
-
-
-
 

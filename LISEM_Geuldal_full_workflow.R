@@ -6,8 +6,6 @@
 #=======================================================================#
 #First download all maps from Sharepoint - Geuldal spatial data         #  
 # 1. place the content inside this cloned repository in ./spatial_data  #
-# 2. move the folder ./spatial_data/prepared/LISEM_data to ./LISEM_data #
-# 3. move the folder ./spatial_data/prepared/rain to ./LISEM_runs/rain  #
 #=======================================================================#
 
 # Initialization ---------------------------------------------------------------
@@ -22,6 +20,7 @@ source("sources/r_scripts/configuration.R")
 # !! All datetime data in the project is in GMT+1 !!
 
 source("sources/r_scripts/source_to_base_maps.R")
+copy_spatial_data()
 ## 1.1 make base maps ----------------------------------------------------------
 # based on manual work, and preparation code in 'create_base_maps_lisem.R' 
 # base raster and vector layers are made
@@ -97,7 +96,7 @@ landuse_table_cal()
 
 ## 2.2 make SWATRE soil tables -------------------------------------------------
 
-# for the simulations of infiltration we use the SWATRE mobel inside OpenLISEM
+# for the simulations of infiltration we use the SWATRE model inside OpenLISEM
 # this requires the van Genuchten parameters for different soil layers for
 # each identified soil and landuse combination. 
 # To estimate these parameters from variables we know a modelling / equation
@@ -127,10 +126,12 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # important settings for calibration etc, these all should be part of the next
 # function.
 
+# data from this function is stored in LISEM_data/subcatchments/
+
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
 
-points_id <- c(4, 10, 14, 18) # use if you want to change catchment
+points_id <- c(1, 4, 14, 18) # use if you want to change catchment
 reso <- c(10, 20) # select different resolution
 
 # load the function for subcatchment preparation
@@ -178,7 +179,7 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 54, run_type = "cal", 
 # the runfile template file should be updated manually if the model has new options
 # stored in : 'sources/setup/runfile_template.run'
 
-points_id <- c(4, 10, 14, 18) # use if you want to change catchment
+points_id <- c(1, 4, 14, 18) # use if you want to change catchment
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go#
 reso = c(10, 20) # 5, 10 or 20
 
@@ -191,13 +192,13 @@ for (i in seq_along(points_id)) {
       catch_num = points_id[i],
       swatre_file = swatre_file,
       run_type = "cal",
-      do_runfile = F
+      do_runfile = T
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 20, catch_num = 4, swatre_file = swatre_file, run_type = "cal", F)
+create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, run_type = "cal", do_runfile = F)
 
 ## 2.5 Calibration settings and figures ----------------------------------------
 
@@ -241,12 +242,12 @@ create_lisem_run(resolution = 20, catch_num = 4, swatre_file = swatre_file, run_
 
 # example code below for the Gulp:
 # make the subcatch data:
-base_maps_subcatchment(cell_size = 10, sub_catch_number = 54, calc_ldd = F, 
+base_maps_subcatchment(cell_size = 10, sub_catch_number = 52, calc_ldd = T, 
                        run_type = "base")
 
 # create the run:
 source("sources/r_scripts/create_lisem_run.R")
-create_lisem_run(resolution = 10, catch_num = 54, swatre_file = swatre_file,
+create_lisem_run(resolution = 10, catch_num = 52, swatre_file = swatre_file,
                  run_type = "base", do_hpc = FALSE, cpu_cores = ncpu)
 
 
@@ -307,7 +308,7 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       run_type = "base",  # for NBS use "base"
-      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
@@ -319,7 +320,7 @@ source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
 # see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
-nbs_ids <- c(0, 16)#11, 12, 13, 14, 15, 16) # 0 = base run without NBS
+nbs_ids <- c(17)#11, 12, 13, 14, 15, 16) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
@@ -353,7 +354,8 @@ for (i in seq_along(points_id)) {
 # add colums with do_LE (boolean)
 # update function, if do_LE == TRUE, don't update landuse - but wait.
 # separate script for each NBS
-# if lu_map == 2, place landscape element. read lu params from table and
+# adjust stroming maps to have 1 on location of LE
+# if lu_map == 1, place landscape element. read lu params from table and
 # update input maps accordingly.
 
 

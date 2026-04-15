@@ -60,7 +60,7 @@ report buffers1 = if (cover(ponds,0) eq 1, floor_down, buffers1); # also add the
 a = clump(nominal(bufwall eq 0));
 
 # fill the original dem
-report demf = lddcreatedem(dem, 10, 1e20, 1e20, 1e20);
+report demf = lddcreatedem(dem, 20, 1e20, 1e20, 1e20);
 # based on the difference between filled and original dem, we can estimate volume for each buffer.
 dif = demf - dem;
 
@@ -82,7 +82,8 @@ bufvol_comb = if(bufwall eq 0, if(bufvol > 1, bufvol, bufvolest));
 bufvol_comb = if(bufvol_comb / areaarea(a) < 1, areaarea(a), bufvol_comb);
 
 # find channel cells that leave a buffer
-report buffer_out = scalar(if(bufwall eq 2 and downstream(Ldd, bufwall) eq 1, 1, 0)) * chanmask;
-
+#report buffer_out = scalar(if(bufwall eq 2 and downstream(Ldd, bufwall) eq 1, 1, 0)) * chanmask;
+bbb = cover(bufvol_comb, 0);
+report buffer_out = if(bbb ne 0 and downstream(Ldd,bbb) eq 0, scalar(1),0)*chanmask; 
 # calculate maxQ for buffer outlets
 report maxq = cover(if(buffer_out eq 1, upstream(Ldd, cover(bufvol_comb, 0)) / empty_hours, 0) / 3600, 0) * catchment; # m3 /sec

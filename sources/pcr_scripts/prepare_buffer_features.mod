@@ -34,7 +34,8 @@ bufwall = if(spread(nominal(buf),0,1) eq min(10, celllength()),2,buf);
 # 0 is depression, wall is 2, rest is 1
 
 #adjust channel in buffers
-report chandepth = if(bufwall eq 0, 0.1, chandepth)*chanmask;
+#report chandepth = if(bufwall eq 0, 0.1, chandepth)*chanmask; # doesn't sseem to work? 
+report chandepth = if(cover(bufvol,0) gt 0, 0.1, chandepth)*chanmask;
 chanman = if(bufwall eq 0, 0.1, chanman)*chanmask;
 report chanside = if(bufwall eq 0, 1, 0)*chanmask; #trapezium shaped
 

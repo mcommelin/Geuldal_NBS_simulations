@@ -5,7 +5,9 @@
 # loaded already.
 soil_landuse_to_swatre <- function(file = "",
                                    swatre_out = "",
-                                   do_NBS = FALSE) 
+                                   do_NBS = FALSE,
+                                   do_hpc = FALSE,
+                                   repo_dir = "") 
 {
   # 1. Calculate params -------------------------------------------------------------
   
@@ -67,8 +69,12 @@ soil_landuse_to_swatre <- function(file = "",
   # https://github.com/ldemaz/rcropmod
   # Containing an Apache 2.0 license
   if (DEBUGm) message("pedotransfer.R")
+  # change directory when running for hpc
+  if (do_hpc == TRUE) {
+    source(paste0(repo_dir, "modules/rcropmod/pedotransfer.R"))
+  } else {
   source("modules/rcropmod/pedotransfer.R")
-  
+  }
   DF = 1.1  #<= CALIBRATION 260129: Density factor in Saxton rawls (def 1), increasing bulk density by 10% to 1.1
   # this decreases the Ksat mainly, assuming a higher bulk density
   

@@ -6,6 +6,7 @@ catchment.map
 ID.map
 ID_hourly.map
 buildings.map
+bua.map
 subcatch.map
 roads_fraction.map
 road_tile_mask.map
@@ -16,7 +17,6 @@ chantype.map
 culvertmask.map
 outpoints.map
 ldd.map
-bua.map
 buffermask.map
 maxq.map
 pondmask.map
@@ -24,3 +24,4 @@ tilestorage.map
 hard_surface.map
 hpc_sub.map
 flowboundary.map
+ndbi.map
