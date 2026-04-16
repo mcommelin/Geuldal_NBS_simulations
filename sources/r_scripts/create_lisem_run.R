@@ -347,7 +347,8 @@ create_lisem_run <- function(
     # rename the map, for easier coding
     file.rename(paste0(subdir, nbs_map), paste0(subdir, "nbs.map"))
     # keep the original landuse map
-    file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"))
+    file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"),
+              overwrite = TRUE)
     
     # adjust landuse map
     
@@ -364,7 +365,8 @@ create_lisem_run <- function(
     
     # adjust the DEM for landscape elements
     # keep the original dem
-    file.copy(paste0(subdir, "dem.map"), paste0(subdir, "dem_base.map"))
+    file.copy(paste0(subdir, "dem.map"), paste0(subdir, "dem_base.map"),
+              overwrite = TRUE)
     
     # swales - 17
     if (NBS_num == 17) {
@@ -400,7 +402,7 @@ create_lisem_run <- function(
                     of = "PCRASTER", oo = "PCRASTER_VALUESCALE=VS_SCALAR")
      
      # in pcraster combine adjusted dem with original dem
-     pcrcalc(options = "dem.map=cover(if(terrace.map > 0 and ter_dem_part_filled.map > 0, ter_dem_part_filled.map, dem.map), dem.map)", 
+     pcrcalc(options = "dem.map=cover(if(terrace.map > 0 and ter_dem_part_filled.map > 0, ter_dem_part_filled.map, dem_base.map), dem_base.map)", 
              work_dir = subdir)
      
     }

@@ -15,8 +15,9 @@ terrace = nbs.map; #map with:
 				# 2 = location of terraces on field
 				# other values - no terraces / other land use
 
-buffers = buffers.map; # remove - should be done earlier
-
+buffers = buffermask.map; # remove - should be done earlier
+roads = road_tile_mask.map;
+channels = chanmask.map;
 # the contour elevation spacing of the designed terraces
 # this should correspond to the input map
 terrace_spacing = ${1}; # [m]
@@ -30,8 +31,12 @@ initial
 # some aux maps
 area = dem * 0 + 1;
 
-# remove terraces where buffers are applied
-terrace = if(buffers ne 0, 0, terrace);
+# remove terraces in cells with, buffers, roads or channels
+buffers = cover(buffers, 0);
+roads = cover(roads, 0);
+channels =cover(channels, 0);
+
+terrace = if(buffers ne 0 or roads ne 0 or channels ne 0, 0, terrace);
 report terrace.map = terrace;
 
 #slope to fraction
@@ -43,7 +48,7 @@ loc_slope = max(sin(atan(slope(dem))),0.001);
 # mean slope around terrace
 av_slope = windowaverage(loc_slope, 100);
 
-#report av_slope.map = av_slope;
+report av_slope.map = av_slope;
 
 # estimate distance to next upstream terrace
 est_dist = terrace_spacing / av_slope;
@@ -51,7 +56,7 @@ est_dist = terrace_spacing / av_slope;
 #required terrace height to reduce upstream slope
 ter_height = terrace_spacing - (est_dist * desired_slope);
 ter_height = if(ter_height lt 0, 0, ter_height);
-#report ter_height.map = ter_height;
+report ter_height.map = ter_height;
 
 # add terrace height to dem
 ter_dem = if(terrace eq 2, dem + ter_height, dem);
@@ -72,10 +77,9 @@ ter_two_h = max(ditch_north, ditch_south, ditch_west, ditch_east);
 
 # add terrace height to dem
 ter_dem = if(ter_two eq 1 and ter_height > 0.1, ter_two_h, ter_dem);
-report ter_dem_part.map = if(terrace ne 0, ter_dem);
+report ter_dem_part.map = if(terrace ne 0 and ter_height > 0.1, ter_dem);
 
 # filling is done with SAGA gis - wang & liu 2006. this allows a filling gradient
 
 #report ter_dem_filled.map = lddcreatedem(ter_dem, 1e10, 1e10, 1e10, 1e10);
-
 #report ter_dem = cover(ter_dem_filled.map, dem);
