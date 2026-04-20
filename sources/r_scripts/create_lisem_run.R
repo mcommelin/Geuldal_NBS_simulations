@@ -354,7 +354,7 @@ create_lisem_run <- function(
     
     # check if the input map contains Landscape elements
     # if yes, the value in the input maps that needs to be changed is not
-    # 1 but 2, this is doen in the pcraster script.
+    # 1 but 2, this is done in the pcraster script.
     do_LE <- if(NBS_desc$do_LE == TRUE) 1 else 0
     
     pcr_script(
@@ -418,7 +418,7 @@ create_lisem_run <- function(
      
     # waterbuffers - 21
     if (NBS_num == 21) {
-      pond_volume <- 200 # [m3] give the design volume of the ponds
+      pond_volume <- 120 # [m3] give the design volume of the ponds
 
       # point of the ditch
       pcr_script(

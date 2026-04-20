@@ -10,7 +10,7 @@ binding
 
 # load some mape
 dem = dem.map;
-swales = nbs.map;
+ponds = nbs.map;
 buffers = buffermask.map;
 
 # the volume of the designed pond
@@ -25,42 +25,33 @@ initial
 # some aux maps
 area = dem * 0 + 1;
 
-# change swale map to 1 and 0
-swales = scalar(if(swales eq 2, 1, 0));
-
-# swale volume
-# we assume a triangle ditch so vol = (w*d) / 2
-swale_vol = (swale_dep * swale_width) / 2; 
-
-# the ditch in the DEM will be lowered to obtain the same
-# volume as the designed swale
-ditch_dep = swale_vol / celllength();
-
-# remove swales where buffers are applied
+# remove ponds where buffers are applied
 buffers = cover(buffers, 0);
-swales = if(buffers ne 0, 0, swales);
+ponds = if(buffers ne 0 and ponds eq 2, 1, ponds);
 
 # identify all swale features and give uniform height
-sw_clump = clump(nominal(swales * area));
-sw_mean_h = areaaverage(dem, sw_clump);
+pond_clump = clump(nominal(ponds * area));
+pond_mean_h = areaaverage(dem, pond_clump);
+pond_surface = areaarea(pond_clump); #area in m2 of each individual pond
 
-# the swale lines get a different landuse - so these represent the 'dike'
-# one cell upstream will be the 'ditch'
-
-# find the 'ditch' cells
-# make the maps if a cell is a ditch
-ditch_north = scalar(if(shift(dem, -1, 0) < dem and swales eq 0 and shift(swales, -1, 0) eq 1, shift(sw_mean_h, -1, 0),0));
-ditch_south = scalar(if(shift(dem, 1, 0) < dem and swales eq 0 and shift(swales, 1, 0) eq 1, shift(sw_mean_h, 1, 0),0));
-ditch_west = scalar(if(shift(dem, 0, -1) < dem and swales eq 0 and shift(swales, 0, -1) eq 1, shift(sw_mean_h, 0, -1),0));
-ditch_east = scalar(if(shift(dem, 0, 1) < dem and swales eq 0 and shift(swales, 0, 1) eq 1, shift(sw_mean_h, 0, 1),0));
+# all cells downstream - lower than the pond will be the 'dike'
+# find the downstream 'dike' cells
+# make the maps if a cell is a dike
+dike_north = scalar(if(shift(dem, -1, 0) > dem and ponds eq 1 and shift(ponds, -1, 0) eq 2, shift(pond_mean_h, -1, 0),0));
+dike_south = scalar(if(shift(dem, 1, 0) > dem and ponds eq 1 and shift(ponds, 1, 0) eq 2, shift(pond_mean_h, 1, 0),0));
+dike_west = scalar(if(shift(dem, 0, -1) > dem and ponds eq 1 and shift(ponds, 0, -1) eq 2, shift(pond_mean_h, 0, -1),0));
+dike_east = scalar(if(shift(dem, 0, 1) > dem and ponds eq 1 and shift(ponds, 0, 1) eq 2, shift(pond_mean_h, 0, 1),0));
 
 # combine to 1 
-sw_ditch = boolean(if(ditch_north + ditch_south + ditch_west + ditch_east > 0, 1, 0) * area);
+pond_dike = boolean(if(dike_north + dike_south + dike_west + dike_east > 0, 1, 0) * area);
 
-# make swale ditch height
-sw_ditch_h = max(ditch_north, ditch_south, ditch_west, ditch_east);
+# make pond dike height
+pond_dike_h = max(dike_north, dike_south, dike_west, dike_east);
 
-#make adjusted dem with dike = mean swale dike height
-sw_dem = if(swales eq 1, sw_mean_h, dem);
-# and ditch = mean dike height - swale depth
-report dem = if(sw_ditch eq 1, sw_ditch_h - ditch_dep, sw_dem);
+# pond depth
+pond_depth = pond_vol / pond_surface;
+
+#make adjusted dem with pond = mean pond height minus pond depth
+pond_dem = if(ponds eq 2, pond_mean_h - pond_depth, dem);
+# and dike = mean dike height
+report dem = if(pond_dike eq 1, pond_dike_h, pond_dem);
