@@ -1,7 +1,7 @@
 #! --matrixtable --lddin --clone mask.map
 ############################################
-# Adjust DEM for swales                    #
-# Date: 23-03-2026                         #
+# Make retentionponds in DEM               #
+# Date: 20-04-2026                         #
 # Author: Meindert Commelin                #
 ############################################
 
@@ -13,14 +13,13 @@ dem = dem.map;
 swales = nbs.map;
 buffers = buffermask.map;
 
-# the difference between the top of the dike and deepest
-# point of the ditch
-swale_dep = ${1}; # [m]
-# the width of the ditch
-swale_width = ${2}; #[m]
+# the volume of the designed pond
+# current approach will place everything within the assigned cells on the input map.
+# make sure the surface assigned in the input map is realistic compared to the design volume!
+pond_vol= ${1}; # [m3]
 
 #adjusted dem
-sw_dem = sw_dem.map; # set to dem.map in final code
+pond_dem = sw_dem.map; # set to dem.map in final code
 
 initial
 # some aux maps

@@ -418,7 +418,13 @@ create_lisem_run <- function(
      
     # waterbuffers - 21
     if (NBS_num == 21) {
-     test <- 1
+      pond_volume <- 200 # [m3] give the design volume of the ponds
+
+      # point of the ditch
+      pcr_script(
+        script = paste0("retentionponds.mod ", pond_volume),
+        script_dir = "sources/pcr_scripts",
+        work_dir = subdir)
      
     }    
     
