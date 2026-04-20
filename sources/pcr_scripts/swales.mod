@@ -11,7 +11,7 @@ binding
 # load some mape
 dem = dem.map;
 swales = nbs.map;
-buffers = buffers.map;
+buffers = buffermask.map;
 
 # the difference between the top of the dike and deepest
 # point of the ditch
@@ -27,7 +27,7 @@ initial
 area = dem * 0 + 1;
 
 # change swale map to 1 and 0
-swales = boolean(if(swales eq 2, 1, 0));
+swales = scalar(if(swales eq 2, 1, 0));
 
 # swale volume
 # we assume a triangle ditch so vol = (w*d) / 2

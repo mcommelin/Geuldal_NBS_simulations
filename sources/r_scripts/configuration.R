@@ -60,6 +60,10 @@ DEBUGm = if (config$debug_messages == "Y") {TRUE} else {FALSE}
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
 
+# unload RSAGA gives function confilcts
+unloadNamespace("RSAGA")
+unloadNamespace("plyr")
+
 # load pcraster functions
 source("sources/r_scripts/pcrasteR.R")
 set_pcraster(env = config$conda_env, miniconda = config$miniconda_path)

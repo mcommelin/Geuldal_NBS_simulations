@@ -1,6 +1,6 @@
 #! --matrixtable --lddin --clone mask.map
 ############################################
-# Make flowbarriers for swales             #
+# Make infiltrationstrips in dem           #
 # Date: 23-03-2026                         #
 # Author: Meindert Commelin                #
 ############################################
@@ -11,7 +11,7 @@ binding
 # load some mape
 dem = dem.map;
 strips = nbs.map;
-buffers = buffers.map;
+buffers = buffermask.map;
 
 #adjusted dem
 strip_dem = strip_dem.map; # set to dem.map in final code

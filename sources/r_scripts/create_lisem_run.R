@@ -370,8 +370,8 @@ create_lisem_run <- function(
     
     # swales - 17
     if (NBS_num == 17) {
-    swale_width <- 1.0 # [m] give the width in meters of the ditch of the swale
-    swale_depth <- 1.0 # [m] the difference between the top of the dike and deepest
+    swale_width <- 5.0 # [m] give the width in meters of the ditch of the swale
+    swale_depth <- 0.80 # [m] the difference between the top of the dike and deepest
                        # point of the ditch
      pcr_script(
       script = paste0("swales.mod ", swale_depth, " ", swale_width),
@@ -384,7 +384,7 @@ create_lisem_run <- function(
     if (NBS_num == 19) {
     terrace_spacing <- 5.0 # [m] the contour elevation spacing of the designed terraces
                             # this should correspond to the input map
-     desired_slope <- 5.0 # [%] the desired slope of the 'flat' sections 
+     desired_slope <- 8.0 # [%] the desired slope of the 'flat' sections 
      slope_deg <- (atan(desired_slope/100) * 180) / pi
      pcr_script(
        script = paste0("terraces.mod ", terrace_spacing, " ", desired_slope),
@@ -409,13 +409,17 @@ create_lisem_run <- function(
     
     # infiltratiestroken - 20
     if (NBS_num == 20) {
-      
+      pcr_script(
+        script = paste0("infiltrationstrips.mod"),
+        script_dir = "sources/pcr_scripts",
+        work_dir = subdir)
     }
      
      
     # waterbuffers - 21
     if (NBS_num == 21) {
-      
+     test <- 1
+     
     }    
     
     file.rename(paste0(subdir, "nbs.map"), paste0(subdir, nbs_map))
