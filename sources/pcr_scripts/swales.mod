@@ -64,4 +64,4 @@ sw_ditch_h = max(ditch_north, ditch_south, ditch_west, ditch_east);
 #make adjusted dem with dike = mean swale dike height
 sw_dem = if(swales eq 1, sw_mean_h, dem);
 # and ditch = mean dike height - swale depth
-report dem = if(sw_ditch eq 1, sw_ditch_h - ditch_dep, sw_dem);
+report dem = cover(if(sw_ditch eq 1, sw_ditch_h - ditch_dep, sw_dem),dem);

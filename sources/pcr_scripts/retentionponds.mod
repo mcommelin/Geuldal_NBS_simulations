@@ -54,4 +54,4 @@ pond_depth = pond_vol / pond_surface;
 #make adjusted dem with pond = mean pond height minus pond depth
 pond_dem = if(ponds eq 2, pond_mean_h - pond_depth, dem);
 # and dike = mean dike height
-report dem = if(pond_dike eq 1, pond_dike_h, pond_dem);
+report dem = cover(if(pond_dike eq 1, pond_dike_h, pond_dem), dem);
