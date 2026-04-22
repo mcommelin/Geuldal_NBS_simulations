@@ -418,7 +418,7 @@ create_lisem_run <- function(
      
     # waterbuffers - 21
     if (NBS_num == 21) {
-      pond_volume <- 120 # [m3] give the design volume of the ponds
+      pond_volume <- 150 # [m3] give the design volume of the ponds
 
       # point of the ditch
       pcr_script(
