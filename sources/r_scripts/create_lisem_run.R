@@ -154,8 +154,8 @@ ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
   
   # set theta calibration
   if (!is.null(theta_cal)) {
-    run_temp <- str_replace(run_temp, "Theta calibration=1.00",
-                            paste0("Theta calibration=", theta_cal))
+    run_temp <- str_replace(run_temp, "Psi calibration=1.00",
+                            paste0("Psi calibration=", theta_cal))
   }
   
   #set number of used cpu cores
