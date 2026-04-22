@@ -392,3 +392,63 @@ if (clean_up == TRUE) {
 }
 
 } # end function graph_lisem_simulation
+
+
+
+
+# loop over folders, read totals.csv and store in new big csv
+
+run_dir <- "LISEM_runs/NBS_runs/"
+
+total_files <- dir(path = run_dir, pattern = "totals-.csv",
+                   recursive = TRUE)
+totals_list <- vector("list", length = length(total_files))
+
+for (i in seq_along(total_files)) {
+  catch <- str_extract(total_files[i], "^[^_]+")
+  event <- str_extract(total_files[i], "T[^/]+")
+  nbs <- str_remove(str_extract(total_files[i], "m_[^/]+"), "m_")
+  if (is.na(nbs)) {nbs <- "base"}
+  
+  
+  totals_list[[i]] <- read_csv(paste0(run_dir, total_files[i])) %>%
+    rename_with( ~ c("vars", "vals")) %>%
+    mutate(vars = str_replace_all(vars, "\\(|\\)|\\ |:|/", "_")) %>%
+    pivot_wider(names_from = "vars", values_from = "vals") %>%
+    mutate(catchment = catch,
+           event = event,
+           nbs_type = nbs)
+  
+  
+}
+
+all_totals <- bind_rows(totals_list)
+
+# make csv for presentation
+a <- all_totals %>%
+  select(nbs_type, catchment, event, `Total_outflow__overland+channel___m3__`, 
+         `Peak_discharge_for_outlet_1__l_s__`) 
+base_vals <- a %>%
+  filter(nbs_type == "base") %>%
+  rename("total_Q" = "Total_outflow__overland+channel___m3__") %>%
+  rename("peak_Q" = "Peak_discharge_for_outlet_1__l_s__") %>%
+  select(-nbs_type)
+
+b <- a %>%
+  filter(nbs_type != "base") %>%
+  left_join(base_vals, by = c("catchment", "event")) %>%
+  mutate(`Total_outflow__overland+channel___m3__` = as.numeric(`Total_outflow__overland+channel___m3__`),
+         `Peak_discharge_for_outlet_1__l_s__` = as.numeric(`Peak_discharge_for_outlet_1__l_s__`),
+         total_Q = as.numeric(total_Q),
+         peak_Q = as.numeric(peak_Q),
+         qtot_red = 1 - `Total_outflow__overland+channel___m3__` / total_Q,
+         qpeak_red = 1 - `Peak_discharge_for_outlet_1__l_s__` / peak_Q)
+
+write_csv(b, "reductions_NBS.csv")
+
+c <- b %>%
+  group_by(catchment, nbs_type) %>%
+  summarise(qtot_red = mean(qtot_red),
+            qpeak_red = mean(qpeak_red))
+
+write_csv(c, "reductions_NBS_grouped.csv")
