@@ -1,6 +1,6 @@
 #! --matrixtable --lddin --clone mask.map
 ############################################
-# Make flowbarriers for swales             #
+# Adjust DEM for swales                    #
 # Date: 23-03-2026                         #
 # Author: Meindert Commelin                #
 ############################################
@@ -10,14 +10,14 @@ binding
 
 # load some mape
 dem = dem.map;
-swales = swales.map;
-buffers = buffers.map;
+swales = nbs.map;
+buffers = buffermask.map;
 
 # the difference between the top of the dike and deepest
 # point of the ditch
-swale_dep = 1.0; # [m]
+swale_dep = ${1}; # [m]
 # the width of the ditch
-swale_width = 1.0; #[m]
+swale_width = ${2}; #[m]
 
 #adjusted dem
 sw_dem = sw_dem.map; # set to dem.map in final code
@@ -25,6 +25,9 @@ sw_dem = sw_dem.map; # set to dem.map in final code
 initial
 # some aux maps
 area = dem * 0 + 1;
+
+# change swale map to 1 and 0
+swales = scalar(if(swales eq 2, 1, 0));
 
 # swale volume
 # we assume a triangle ditch so vol = (w*d) / 2
@@ -35,6 +38,7 @@ swale_vol = (swale_dep * swale_width) / 2;
 ditch_dep = swale_vol / celllength();
 
 # remove swales where buffers are applied
+buffers = cover(buffers, 0);
 swales = if(buffers ne 0, 0, swales);
 
 # identify all swale features and give uniform height
@@ -60,4 +64,4 @@ sw_ditch_h = max(ditch_north, ditch_south, ditch_west, ditch_east);
 #make adjusted dem with dike = mean swale dike height
 sw_dem = if(swales eq 1, sw_mean_h, dem);
 # and ditch = mean dike height - swale depth
-report sw_dem = if(sw_ditch eq 1, sw_ditch_h - ditch_dep, sw_dem);
+report dem = cover(if(sw_ditch eq 1, sw_ditch_h - ditch_dep, sw_dem),dem);

@@ -154,8 +154,8 @@ ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
   
   # set theta calibration
   if (!is.null(theta_cal)) {
-    run_temp <- str_replace(run_temp, "Theta calibration=1.00",
-                            paste0("Theta calibration=", theta_cal))
+    run_temp <- str_replace(run_temp, "Psi calibration=1.00",
+                            paste0("Psi calibration=", theta_cal))
   }
   
   #set number of used cpu cores
@@ -344,19 +344,90 @@ create_lisem_run <- function(
   # TODO extend code to allow for multiple NBS in the same simulation
   
   if (NBS_num != 0) {
-    # rename the map
+    # rename the map, for easier coding
     file.rename(paste0(subdir, nbs_map), paste0(subdir, "nbs.map"))
-    file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"))
+    # keep the original landuse map
+    file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"),
+              overwrite = TRUE)
     
+    # adjust landuse map
+    
+    # check if the input map contains Landscape elements
+    # if yes, the value in the input maps that needs to be changed is not
+    # 1 but 2, this is done in the pcraster script.
     do_LE <- if(NBS_desc$do_LE == TRUE) 1 else 0
-    
-    
     
     pcr_script(
       script = paste0("prepare_nbs.mod ", NBS_num, " ", do_LE),
       script_dir = "sources/pcr_scripts",
       work_dir = subdir
     )
+    
+    # adjust the DEM for landscape elements
+    # keep the original dem
+    file.copy(paste0(subdir, "dem.map"), paste0(subdir, "dem_base.map"),
+              overwrite = TRUE)
+    
+    # swales - 17
+    if (NBS_num == 17) {
+    swale_width <- 5.0 # [m] give the width in meters of the ditch of the swale
+    swale_depth <- 0.80 # [m] the difference between the top of the dike and deepest
+                       # point of the ditch
+     pcr_script(
+      script = paste0("swales.mod ", swale_depth, " ", swale_width),
+      script_dir = "sources/pcr_scripts",
+      work_dir = subdir
+    )
+    }
+    
+    # terraces / graften - 19
+    if (NBS_num == 19) {
+    terrace_spacing <- 5.0 # [m] the contour elevation spacing of the designed terraces
+                            # this should correspond to the input map
+     desired_slope <- 8.0 # [%] the desired slope of the 'flat' sections 
+     slope_deg <- (atan(desired_slope/100) * 180) / pi
+     pcr_script(
+       script = paste0("terraces.mod ", terrace_spacing, " ", desired_slope),
+       script_dir = "sources/pcr_scripts",
+       work_dir = subdir
+     )
+     # use SAGA GIS fill_sinks (wang & liu) to smooth the terraces!
+     gdal_translate(paste0(subdir, "ter_dem_part.map"), paste0(subdir, "ter_dem_part.sdat"), of = "SAGA")
+     RSAGA::rsaga.fill.sinks(in.dem = paste0(subdir, "ter_dem_part.sgrd"), 
+                             out.dem = paste0(subdir, "ter_dem_part_filled.sgrd"),
+                             minslope = slope_deg,
+                             method = "wang.liu.2006")
+     gdal_translate(src_dataset = paste0(subdir, "ter_dem_part_filled.sdat"), 
+                    dst_dataset = paste0(subdir, "ter_dem_part_filled.map"), 
+                    of = "PCRASTER", oo = "PCRASTER_VALUESCALE=VS_SCALAR")
+     
+     # in pcraster combine adjusted dem with original dem
+     pcrcalc(options = "dem.map=cover(if(terrace.map > 0 and ter_dem_part_filled.map > 0, ter_dem_part_filled.map, dem_base.map), dem_base.map)", 
+             work_dir = subdir)
+     
+    }
+    
+    # infiltratiestroken - 20
+    if (NBS_num == 20) {
+      pcr_script(
+        script = paste0("infiltrationstrips.mod"),
+        script_dir = "sources/pcr_scripts",
+        work_dir = subdir)
+    }
+     
+     
+    # waterbuffers - 21
+    if (NBS_num == 21) {
+      pond_volume <- 150 # [m3] give the design volume of the ponds
+
+      # point of the ditch
+      pcr_script(
+        script = paste0("retentionponds.mod ", pond_volume),
+        script_dir = "sources/pcr_scripts",
+        work_dir = subdir)
+     
+    }    
+    
     file.rename(paste0(subdir, "nbs.map"), paste0(subdir, nbs_map))
   }
   
