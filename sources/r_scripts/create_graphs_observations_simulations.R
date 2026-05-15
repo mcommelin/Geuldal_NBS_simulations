@@ -398,10 +398,11 @@ if (clean_up == TRUE) {
 
 # loop over folders, read totals.csv and store in new big csv
 
-run_dir <- "LISEM_runs/NBS_runs/"
+run_dir <- "LISEM_runs/spatial/"
 
 total_files <- dir(path = run_dir, pattern = "totals-.csv",
                    recursive = TRUE)
+
 totals_list <- vector("list", length = length(total_files))
 
 for (i in seq_along(total_files)) {
@@ -452,3 +453,49 @@ c <- b %>%
             qpeak_red = mean(qpeak_red))
 
 write_csv(c, "reductions_NBS_grouped.csv")
+
+
+# get all hydrograph files
+run_dir <- "LISEM_runs/NBS_simulations"
+
+hydr_files <- dir(path = run_dir, pattern = "hydrographs-_",
+                   recursive = TRUE, full.names = T)
+
+hydr_list <- vector("list", length = length(hydr_files))
+
+
+for (i in seq_along(hydr_files)) {
+  hy_names <- readLines(hydr_files[i])[2] %>%
+    str_split(",", simplify = TRUE) %>%
+    str_remove_all(" |#")
+  runtype = str_extract(hydr_files[i], "(Bo|Pe)[^/]+")
+  rain = str_extract(hydr_files[i], "(res)[^/]+")
+  hydr_list[[i]] <- read_csv(hydr_files[i], skip = 2) %>%
+    rename_with(~hy_names) %>%
+    arrange(Time) %>%
+    mutate(Q = Qall + Qbound,
+           R = runtype,
+           P = rain) %>%
+    select(Time, Pavg, R, P, Q) #, Qchan1)
+  
+}
+all_hy <- bind_rows(hydr_list) 
+
+# pivot_longer and assign code
+
+
+
+a <- all_hy %>%
+  group_by(R, P) %>%
+  summarise(Qmax = max(Q),
+            Q = sum(Q) * 10) #,
+            Q1max = max(Qchan1),
+            Q1 = sum(Qchan1))
+
+# plot
+plot_Q <- all_hy %>%
+  filter(str_detect(R, "10m$"))
+
+ggplot(plot_Q) +
+  geom_line(aes(x = Time, y = Qchan1, color = R)) +
+  theme_classic()
