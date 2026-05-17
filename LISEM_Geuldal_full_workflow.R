@@ -130,9 +130,9 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
-
-points_id <- c(1, 4, 14, 18) # use if you want to change catchment
-reso <- c(10, 20) # select different resolution
+points_id <- c(1, 4, 14, 18)
+points_id <- c(18) # use if you want to change catchment
+reso <- c(10) # select different resolution
 
 # load the function for subcatchment preparation
 source("sources/r_scripts/create_subcatch_db.R")
@@ -181,7 +181,7 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 54, run_type = "cal", 
 
 points_id <- c(1, 4, 14, 18) # use if you want to change catchment
 #swatre_file <- "cal_OM_test.csv" # use if you want to change the swatre params file on the go#
-reso = c(10, 20) # 5, 10 or 20
+reso = c(10) # 5, 10 or 20
 
 source("sources/r_scripts/create_lisem_run.R")
 
@@ -192,13 +192,14 @@ for (i in seq_along(points_id)) {
       catch_num = points_id[i],
       swatre_file = swatre_file,
       run_type = "cal",
-      do_runfile = T
+      do_runfile = F
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
 create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, run_type = "cal", do_runfile = F)
+create_lisem_run(resolution = 10, catch_num = 18, swatre_file = swatre_file, run_type = "cal", do_runfile = F)
 
 ## 2.5 Calibration settings and figures ----------------------------------------
 
