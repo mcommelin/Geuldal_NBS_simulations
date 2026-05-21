@@ -20,7 +20,7 @@ source("sources/r_scripts/configuration.R")
 # !! All datetime data in the project is in GMT+1 !!
 
 source("sources/r_scripts/source_to_base_maps.R")
-copy_spatial_data()
+
 ## 1.1 make base maps ----------------------------------------------------------
 # based on manual work, and preparation code in 'create_base_maps_lisem.R' 
 # base raster and vector layers are made
@@ -29,6 +29,9 @@ copy_spatial_data()
 # from here a full automated workflow is possible.
 # if the base maps are changed the workflow has to be rerun to rebuild all 
 # influenced maps
+
+# we first copy relevant data from ./spatial_data into the folder structure
+copy_spatial_data()
 
 ## 1.2 catchment delineation ----------------------------------------------------
 # catchment delineation based on DEM and the local drain direction on 20
@@ -39,21 +42,20 @@ catch_maps_res()
 
 ## 1.3 preparation of precipitation and discharge data -------------------------
 # with the script 'prepare_rainfall_discharge_lisem.R' the radar precipitation
-# is processed to input for OpenLISEM.(2)
+# is processed to input for OpenLISEM.
 # The required ID maps are given in ./spatial_data. We use a different ID for
 # hourly and 5 minute precipitation resolution due to different sources!
 # this script calls 'KNMI_precipitation.R' which download 5 minute radar data
-# from the KNMI data portal. It downloads the days of the selected events. (1)
+# from the KNMI data portal. It downloads the days of the selected events.
 
-#NOTE1: this data is already available from ./spatial_data/ext_data/
-#NOTE2: the input rainfall files can be found at .spatial_data/prepared/rain
-  # place this folder in ./LISEM_run/rain 
+#NOTE1: this data is already available from ./spatial_data/ and is automatically
+# used in the workflow.
 
 ## 1.4 prepare base dataset  ------------------------------------------------
 
 # the function below makes PCRaster maps for all resolutions from the data
 # in ./spatial_data/
-spatial_data_to_pcr(res = c(5, 10, 20)) # you can also select only 1 resolution -> faster
+spatial_data_to_pcr(res = reso) # you can also select only 1 resolution -> faster
 
 # warning: if you only make 1 resolution here, this need to be applied in the whole workflow!
 
@@ -67,16 +69,14 @@ spatial_data_to_pcr(res = c(5, 10, 20)) # you can also select only 1 resolution 
 # NOTE: ldd calculations for the whole Geul catchment take a lot of time
 # these maps are also provided in ./spatial_data/prepared/LISEM_data
 # set force_ldd = TRUE to recalculate the ldd
-ldd_subcatch(force_ldd = FALSE, res = c(5, 10, 20))
+ldd_subcatch(force_ldd = FALSE, res = reso)
 
 # 2. Calibration on subcatchments ---------------------------------------
 # we use subcatchments to test the model setup and do the calibration
 # the used subcatchments are (ID number points table):
 # for calibration:
-# # Kelmis (18), Gulp (4)
-# other interesting catchments
-# Watervalderbeek (10), Eyserbeek (14)
-# two small catchments for fast testing also for NBS
+# Kelmis (18), Gulp (4), Eyserbeek (14)
+# two small catchments for fast testing also for NBS:
 # Pesaken (52) and Bocholtz (54)
 
 ## 2.1 prepare lookup table landuse and soil -----------------------------------
@@ -99,12 +99,12 @@ landuse_table_cal()
 # for the simulations of infiltration we use the SWATRE model inside OpenLISEM
 # this requires the van Genuchten parameters for different soil layers for
 # each identified soil and landuse combination. 
-# To estimate these parameters from variables we know a modelling / equation
+# To estimate these parameters from variables we know, a modelling / equation
 # workflow is used.
 # Based on soil texture, organic matter and management we calculate the input
 # for SWATRE by first applying Saxton&Rawls 2006 equations and than the Rosetta
 # (v3) model.
-# larger alpha and smaller n give more rapid decrease of k(h)
+# NOTE: larger alpha and smaller n give more rapid decrease of k(h)
 # Warning: equations are not tested above OM = 8%
 
 source("sources/r_scripts/swatre_input.R")
@@ -130,7 +130,6 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
-points_id <- c(1, 4, 14, 18)
 points_id <- c(18) # use if you want to change catchment
 reso <- c(10) # select different resolution
 
@@ -144,7 +143,7 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       run_type = "cal",  # run_type: choose from "cal" or "base"
-      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }
@@ -192,13 +191,13 @@ for (i in seq_along(points_id)) {
       catch_num = points_id[i],
       swatre_file = swatre_file,
       run_type = "cal",
-      do_runfile = F
+      do_runfile = T,
+      inith_cal = 1.0
     )
   }
 }
 
 # you can also run for one specific subcatchment e.g.
-create_lisem_run(resolution = 20, catch_num = 1, swatre_file = swatre_file, run_type = "cal", do_runfile = F)
 create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, run_type = "cal", do_runfile = F)
 
 ## 2.5 Calibration settings and figures ----------------------------------------
