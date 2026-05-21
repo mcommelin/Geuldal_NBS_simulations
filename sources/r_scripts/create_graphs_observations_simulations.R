@@ -394,6 +394,7 @@ if (clean_up == TRUE) {
 } # end function graph_lisem_simulation
 
 
+### read totals.csv lisem runs --------------------
 
 
 # loop over folders, read totals.csv and store in new big csv
@@ -455,7 +456,7 @@ c <- b %>%
 write_csv(c, "reductions_NBS_grouped.csv")
 
 
-# get all hydrograph files
+### read hydrograph files lisem runs ------------------------------------------
 run_dir <- "LISEM_runs/NBS_simulations"
 
 hydr_files <- dir(path = run_dir, pattern = "hydrographs-_",
@@ -499,3 +500,50 @@ plot_Q <- all_hy %>%
 ggplot(plot_Q) +
   geom_line(aes(x = Time, y = Qchan1, color = R)) +
   theme_classic()
+
+### figure calibration full Geul ----------------------------------------------
+
+resdir <- "results/Geul_10m/res_20230622/H-90BF/res260518-2220/"
+refdate <- "2023-06-22"
+hydr_files <- dir(path = resdir, pattern = "hydrographs-",
+                  recursive = TRUE, full.names = T)
+
+points <- c(1, 14, 4, 16, 18)
+
+hydr_list <- vector("list", length = length(hydr_files))
+
+for (i in seq_along(hydr_files)) {
+  hy_names <- readLines(hydr_files[i])[2] %>%
+    str_split(",", simplify = TRUE) %>%
+    str_remove_all(" |#")
+  
+  channum <- str_extract(hydr_files[i], "\\d+(?=\\.\\w+$)")
+  
+  hydr_list[[i]] <- read_csv(hydr_files[i], skip = 2, show_col_types = F) %>%
+    rename_with(~hy_names) %>%
+    rename("Qchan" = paste0("Qchan", channum)) %>%
+    arrange(Time) %>%
+    mutate(chann = channum) %>%
+    select(Time, Qchan, chann)
+  
+}
+
+all_hy <- bind_rows(hydr_list) %>%
+  filter(chann %in% points) %>%
+  mutate(doy = floor(Time),
+         mod = round((Time %% 1) * 24 * 60, digits = 5),
+         hours = str_pad(floor(as.numeric(mod)/60), width = 2, side = "left", pad = "0"),
+         mins = str_pad(floor(as.numeric(mod) %% 60), width = 2, side = "left", pad = "0"),
+         date = as.Date(as.numeric(doy), origin = paste0(year(refdate), "-01-01")),
+         datestring = paste0(date, " ", hours, ":", mins),
+         timestamp = ymd_hm(datestring)) %>%
+  distinct(timestamp, chann, .keep_all = T) %>%
+  arrange(timestamp)
+
+# figure
+ggplot(all_hy) + 
+  geom_line(aes(x = timestamp, y = Qchan, color = chann)) +
+  theme_classic()
+
+
+
