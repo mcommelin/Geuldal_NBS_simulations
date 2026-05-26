@@ -258,7 +258,7 @@ rain <- rain_in %>%
   pivot_longer(cols = starts_with("T"), names_to = "type", values_to = "P") %>%
   mutate(P = P * 6) # from mm/10 min to mm/h
 
-# save to 4 separate files
+# save to separate files
 types <- unique(rain$type)
 for (i in seq_along(types)) {
   rain_file <- paste0("LISEM_runs/rain/rain_", types[i], ".txt")
