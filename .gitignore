@@ -13,6 +13,7 @@ documenten_en_literatuur/*
 LISEM_data/*
 spatial_data/*
 images/*
+results/*
 fieldwork/*
 *.html
 *.docx
