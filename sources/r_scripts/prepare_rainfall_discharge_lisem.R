@@ -497,11 +497,11 @@ write_csv(dat, "data/processed_data/obs_discharge/observed_discharge_high_res.cs
 # type of discharge (wh or Q)
 # which discharge points to include?
 
-points <- read_csv("LISEM_data/tables/outpoints_description.csv")
+points <- read_csv("sources/setup/outpoints_description.csv")
 
 # load discharge data - load hourly data from WL
-qall <- read_csv("data/raw_data/debiet_uur_data/debietgegevensgeul_VERKORT.csv",
-                 skip = 8) %>%
+qall <- read_csv("data/processed_data/obs_discharge/debietgegevensgeul_LANG.csv",
+                 skip = 9) %>%
   pivot_longer(cols = '12.Q.31':'10.Q.36',
                values_to = "Q",
                names_to = "code") %>%
@@ -516,9 +516,9 @@ qall <- qall %>%
   left_join(q_points, by = "code")
 
 #load the events
-events <- read_csv("sources/selected_events.csv") %>%
-  mutate(ts_start = ymd_hms(event_start),
-         ts_end = ymd_hms(event_end))
+events <- read_csv("sources/selected_events.csv") %>%1
+  mutate(ts_start = ymd_hms(event_start) - days(1),
+         ts_end = ymd_hms(event_end) + days(1))
 
 
 # filter per event

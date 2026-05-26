@@ -503,7 +503,7 @@ ggplot(plot_Q) +
 
 ### figure calibration full Geul ----------------------------------------------
 
-resdir <- "results/Geul_10m/res_20230622/H-90BF/res260518-2220/"
+  resdir <- "results/Geul_10m/res_20230622/HinitBF08/res260519-1309/"
 refdate <- "2023-06-22"
 hydr_files <- dir(path = resdir, pattern = "hydrographs-",
                   recursive = TRUE, full.names = T)
@@ -536,14 +536,62 @@ all_hy <- bind_rows(hydr_list) %>%
          mins = str_pad(floor(as.numeric(mod) %% 60), width = 2, side = "left", pad = "0"),
          date = as.Date(as.numeric(doy), origin = paste0(year(refdate), "-01-01")),
          datestring = paste0(date, " ", hours, ":", mins),
-         timestamp = ymd_hm(datestring)) %>%
+         timestamp = ymd_hm(datestring),
+         timestamp = timestamp - days(1) + hours(1)) %>%
   distinct(timestamp, chann, .keep_all = T) %>%
-  arrange(timestamp)
+  arrange(timestamp) 
+
+
+# add observation data
+out_points <- read_csv("sources/setup/outpoints_description.csv") %>%
+  filter(point %in% points) %>%
+  select(point, code, name) %>%
+  distinct() %>%
+  mutate(code = if_else(point == 4, "13.Q.34", code))
+
+q_obs <- read_csv("data/processed_data/obs_discharge/observed_discharge_high_res.csv") %>%
+  filter(point %in% points) %>%
+  rename("chann" = "point") %>%
+  mutate(Q = Q * 1000,
+         chann = as.character(chann)) %>%
+  filter(code %in% out_points$code)
+
+
+# load discharge data - load hourly data from WL
+q_obs_low <- read_csv("data/processed_data/obs_discharge/debietgegevensgeul_LANG.csv",
+                 skip = 9) %>%
+  pivot_longer(cols = '12.Q.31':'10.Q.36',
+               values_to = "Q",
+               names_to = "code") %>%
+  filter(!is.na(Q)) %>%
+  filter(code %in% out_points$code) %>%
+  filter(date(timestamp) > ymd("2023-06-15") & date(timestamp) < ymd("2023-06-25")) %>%
+  rename("Q_low" = "Q") %>%
+  select(timestamp, Q_low, code) %>%
+  mutate(Q_low = Q_low * 1000) %>%
+  left_join(out_points, by = "code") %>%
+  rename("chann" = "point") %>%
+  mutate(chann = as.character(chann))
+
+
+
+data <- all_hy %>%
+  left_join(q_obs_low, by = c("timestamp", "chann")) %>%
+  select(timestamp, Qchan, Q_low, chann) %>%
+  left_join(q_obs, by = c("timestamp", "chann"))
+
 
 # figure
-ggplot(all_hy) + 
+ggplot(data) + 
   geom_line(aes(x = timestamp, y = Qchan, color = chann)) +
+  geom_point(aes(x = timestamp, y = Q_low, color = chann), alpha = 0.6) +
+  geom_point(aes(x = timestamp, y = Q, color = chann), alpha = 0.6) +
+  scale_color_hue(labels = c("Meersen", "Eyserbeek", "Hommerich", "Kelmis", "Gulp")) +
+  guides(color=guide_legend("Meetpunt")) +
+  labs(x = "Time", y = "Discharge l/sec", 
+       title = "Afvoer Geuldal bij Hinit = berekend * 0.8") +
   theme_classic()
 
+ggsave("images/simulations/schematisatie_hinit_calc08.png", width = 20, height = 14, units = "cm")
 
 
