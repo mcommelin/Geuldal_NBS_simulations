@@ -308,7 +308,7 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       run_type = "base",  # for NBS use "base"
-      calc_ldd = F  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
     )
   }
 }

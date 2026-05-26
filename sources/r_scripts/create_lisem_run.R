@@ -56,7 +56,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   if (run_type == "cal") {
     rain_file <- paste0("rain_5min_", evdate, ".txt")
   } else {
-    rain_file <- paste0("rain_",str_remove_all(evdate, "_(w|d).*"), ".txt")
+    rain_file <- paste0("rain_",evdate, ".txt")
     # set ID map to 1 zone
     run_temp <- str_replace_all(run_temp, "ID=ID.map",
                                 paste0("ID=one.map"))
@@ -554,7 +554,7 @@ create_lisem_run <- function(
   if (run_type == "base") {
     if (do_runfile == TRUE) {
       # loop over standard events in stead of dates
-      rains <- c("T50", "T100", "T500", "T500_uur")
+      rains <- c("T10", "T25", "T100", "T500")
       initheads <- c("wet", "dry")
       standard_ev <- expand_grid(rains, initheads) %>%
         mutate(ev = paste0(rains, "_", initheads))
