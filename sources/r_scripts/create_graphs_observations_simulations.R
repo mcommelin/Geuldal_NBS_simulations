@@ -457,9 +457,11 @@ write_csv(c, "reductions_NBS_grouped.csv")
 
 
 ### read hydrograph files lisem runs ------------------------------------------
-run_dir <- "LISEM_runs/NBS_simulations"
+#run_dir <- "LISEM_runs/context/Pesaken_10m/"
+run_dir <- "results/nbs_simulations_new_rain_20260527"
 
-hydr_files <- dir(path = run_dir, pattern = "hydrographs-_",
+
+hydr_files <- dir(path = run_dir, pattern = "hydrographs-",
                    recursive = TRUE, full.names = T)
 
 hydr_list <- vector("list", length = length(hydr_files))
@@ -469,29 +471,75 @@ for (i in seq_along(hydr_files)) {
   hy_names <- readLines(hydr_files[i])[2] %>%
     str_split(",", simplify = TRUE) %>%
     str_remove_all(" |#")
-  runtype = str_extract(hydr_files[i], "(Bo|Pe)[^/]+")
-  rain = str_extract(hydr_files[i], "(res)[^/]+")
+  runtype = str_extract(hydr_files[i], "(Bo|Pe|Bi)[^/]+")
+  rain = str_extract(hydr_files[i], "(res_)[^/]+")
   hydr_list[[i]] <- read_csv(hydr_files[i], skip = 2) %>%
     rename_with(~hy_names) %>%
     arrange(Time) %>%
     mutate(Q = Qall + Qbound,
            R = runtype,
-           P = rain) %>%
-    select(Time, Pavg, R, P, Q) #, Qchan1)
+           P = rain,
+           run = i) %>%
+    select(Time, Pavg, R, P, Q, run) #, Qchan1)
   
 }
 all_hy <- bind_rows(hydr_list) 
 
 # pivot_longer and assign code
+coeff <- 0.005
+
+ggplot(all_hy) +
+  geom_line(aes(x = Time, y = Q, color = as.character(run)), linetype = "dashed") +
+  geom_line(aes(x = Time, y = Pavg / coeff, color = as.character(run))) +
+  theme_classic() +
+  scale_y_continuous(sec.axis = sec_axis(~ . * coeff)) +
+  labs(title = "difference in T100 dry events Bocholtz") +
+  scale_color_hue(labels = c("new", "old")) +
+  guides(color=guide_legend("Rain events"))
+
+ggsave("images/simulations/vergelijk_nieuwe_neerslag_bocholtz.png", width = 20, height = 14, units = "cm")
+
+
+# 28-05-2026 - some ugly book keeping to make the report 
+#
+#!!!!!!!!!!!!!!!!!!!!!!!!
+boch_old_schem <- all_hy %>% filter(run == 2)
+pes_old_schem <- all_hy %>% filter(run == 2)
 
 
 
+boch_new_schem <- all_hy %>% filter(run == 3)
+pes_new_schem <- all_hy %>% filter(run == 1)
+
+#
+boch <- bind_rows(boch_new_schem, boch_old_schem)
+
+
+b <- boch %>%
+  group_by(run) %>%
+  summarise(Qmax = max(Q),
+            Q = sum(Q) * 10) #
+
+pes <- bind_rows(pes_new_schem, pes_old_schem)
+p <- pes %>%
+  group_by(run) %>%
+  summarise(Qmax = max(Q),
+            Q = sum(Q) * 10) #
+
+
+# summary all NBS 
 a <- all_hy %>%
   group_by(R, P) %>%
   summarise(Qmax = max(Q),
-            Q = sum(Q) * 10) #,
-            Q1max = max(Qchan1),
-            Q1 = sum(Qchan1))
+            Q = sum(Q) * 10) #
+
+
+a2 <- a %>%
+  ungroup() %>%
+  group_by(R) %>%
+  summarise(Qmax = mean(Qmax),
+            Q = mean(Q))
+
 
 # plot
 plot_Q <- all_hy %>%
