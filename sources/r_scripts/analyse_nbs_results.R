@@ -50,6 +50,21 @@ for (i in seq_along(baseline_dirs)) {
       
       ok <- file.copy(from = src_file, to = dest_file, overwrite = TRUE)
       
+      base_maps <- c("whmap.map",
+                     "infiltration.map",
+                     "interception.map")
+      
+      # add "base" suffix to the base maps names in the subcatch dir
+      for (i in seq_along(base_maps)) {
+        file.copy(
+          from = paste0(main_dir, base_maps[i]),
+          to = paste0(sub_catch_dir, "base_", base_maps[i]),
+          overwrite = TRUE
+        )
+      }
+      
+      # copy landuse.map from NBS map to res folder
+      
       if (!ok) {
         message("Copy failed: ", dest_file)
         next
@@ -59,6 +74,12 @@ for (i in seq_along(baseline_dirs)) {
       
       pcrcalc("diff.map=whmax.map-whmax_base.map", dest_dir)
       
+      
+      # cleanup!
+      
     }
   }
 }
+
+
+# loop over input map folders and caluclate surface area of nbs
