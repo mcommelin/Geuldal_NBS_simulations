@@ -1,6 +1,8 @@
 # code to run an analysis for different scenarios 
 
-# fil the directory where the runs that need to be analyzed are located
+# 1. Spatial results ----------------------------------------------------------
+
+# fill the directory where the runs that need to be analyzed are located
 base_dir <- "results/nbs_simulations_new_rain_20260527"
 
 # find different scenarios - assume workflow based folder structure!
@@ -114,10 +116,65 @@ a3 <- bind_rows(list1[[3]])
 
 res_pcr <- bind_rows(a1, a2, a3)
 
+# 2. Hydrographs --------------------------------------------------------------
+
+# find all hydrograph files in the result folders
+hydr_files <- dir(path = base_dir, pattern = "hydrographs-",
+                  recursive = TRUE, full.names = T)
+# list to store everyting
+hydr_list <- vector("list", length = length(hydr_files))
+
+# loop over all folders and load results
+for (i in seq_along(hydr_files)) {
+  hy_names <- readLines(hydr_files[i])[2] %>%
+    str_split(",", simplify = TRUE) %>%
+    str_remove_all(" |#")
+  runtype = str_extract(hydr_files[i], "(Bo|Pe|Bi)[^/]+")
+  rain = str_extract(hydr_files[i], "(res_)[^/]+")
+  hydr_list[[i]] <- read_csv(hydr_files[i], skip = 2) %>%
+    rename_with(~hy_names) %>%
+    arrange(Time) %>%
+    mutate(Q = Qall + Qbound,
+           R = runtype,
+           P = rain,
+           run = i) %>%
+    select(Time, Pavg, R, P, Q, run) #, Qchan1)
+  
+}
+all_hy <- bind_rows(hydr_list) 
+
+# summary all NBS 
+all <- all_hy %>%
+  rename("scen" = "R", "cond" = "P") %>%
+  mutate(Pmm = Pavg / 360) %>%
+  group_by(scen, cond) %>%
+  summarise(Qmax = max(Q),
+            Q = sum(Q) * 10,
+            Ptot = sum(Pmm)) #
+
+base_hy <- all %>%
+  ungroup() %>%
+  filter(str_detect(scen, "10m$")) %>%
+  rename("catch" = "scen")
+
+
+scen_hy <- all %>%
+  ungroup() %>%
+  filter_out(str_detect(scen, "10m$")) %>%
+  mutate(catch = str_extract(scen, "^.*10m"))
+
+
+a2 <- all %>%
+  ungroup() %>%
+  group_by(R) %>%
+  summarise(Qmax = mean(Qmax),
+            Q = mean(Q))
+
+
 # load hydrograph results as well.
 # - recalculate total outflow volume to mm outflow and Q/P ratio
 
-
+# 3. summarise results ---------------------------------------------------------
 # produce different results
 
 # 1: area of each catchment
@@ -136,7 +193,6 @@ area_catch <- res_pcr %>%
   ungroup() %>%
   distinct(catch, catch_area)
  
-
 # nbs areas
 nbs_areas <- res_pcr %>%
   select(lu, area, catch) %>%
@@ -145,3 +201,46 @@ nbs_areas <- res_pcr %>%
   left_join(area_catch, by = "catch") %>%
   mutate(rel_area = area / catch_area) %>%
   left_join(landuse_info, by = "lu")
+
+# combine spatial and outlet results for more info
+lu_nr_nbs <- res_pcr %>%
+  filter(lu > 10) %>%
+  distinct(lu, scen, catch)
+
+nbs_areas <- nbs_areas %>%
+  left_join(lu_nr_nbs, by = c("lu", "catch")) %>%
+  select(-catch)
+
+scen_all <- scen_hy %>%
+  left_join(nbs_areas, by = "scen") %>%
+  mutate(Qmm = round(Q / catch_area, digits = 2),
+         QP = Qmm / Ptot)
+
+base_all <- base_hy %>%
+  left_join(area_catch, by = "catch")%>%
+  mutate(Qmm = round(Q / catch_area, digits = 2),
+         QP = Qmm / Ptot)
+
+base_left <- base_all %>%
+  select(catch, cond, Qmm, Q) %>%
+  rename("Qmm_base" = "Qmm", "Q_base" = "Q")
+
+scen_all_rel <- scen_all %>%
+  left_join(base_left, by = c("catch", "cond")) %>%
+  mutate(Qdiff = Q - Q_base,
+         Q_area_diff = Qdiff / area)
+  
+# make some figures or tables
+
+ggplot() + 
+  geom_point(data = scen_all_rel, aes(x = Ptot, y = Qmm_base), size = 4, alpha = 0.2) +
+  geom_point(data = scen_all_rel, aes(x = Ptot, y = Qmm, color = description)) +
+  theme_classic() +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  ylim(c(0,100)) + xlim(c(0,100)) +
+  facet_wrap(~ catch, nrow = 3)
+
+
+ggplot(scen_all_rel) +
+  geom_point(aes(x = Ptot, y = Q_rel_diff, color = description)) +
+  theme_classic()
