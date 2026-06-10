@@ -13,8 +13,6 @@
 binding 
 
 ### INPUT MAPS ### 
-
-catchment = catchment.map;
 lu = landuse.map;
 lu_base = landuse_base.map;
 infil = infiltration.map;
@@ -26,17 +24,35 @@ whmax_base = base_whmax.map;
 
 
 ### OUTPUT MAPS ###
+whmax_diff = wh_diff.map;
+infil_diff = infil_diff.map;
+icep_diff = icep_diff.map;
+lu_areas = lu_areas.map;
+lu_nom = lu_nom.map;
 
-
+infil_md = infil_md.map;
+icep_md = icep_md.map;
 
 
 
 initial 
 
-nbs = cover(nbs, 0) * catchment;
+# nominal landuse classes
+report lu_nom = nominal(lu);
 
-# for landscape elements value to change = 2 otherwise 1
-nbs_val = if(do_LE eq 1, 2, 1);
 
-# update the landuse map the the correct NBS class acording to the table
-report landuse = if(nbs eq nbs_val, nbs_num, landuse);
+#calculate total area of catchment
+tot_area = areaarea(nominal(lu * 0 + 1));
+
+# area of each landuse type
+report lu_areas = nominal(areaarea(lu_nom)); # m2
+
+# difference in infiltration, interception and whmax
+report whmax_diff = whmax - whmax_base;
+report infil_diff = infil - infil_base;
+report icep_diff = icep - icep_base;
+
+# mean change per landuse class
+report infil_md = nominal(areaaverage(infil_diff, lu_nom)*10); # in 0.1mm
+report icep_md = nominal(areaaverage(icep_diff, lu_nom)*10); # in 0.1mm
+
