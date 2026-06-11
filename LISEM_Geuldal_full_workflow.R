@@ -295,7 +295,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # update your subcatchment database with the NBS maps
 # the function will find any NBS maps in the base dataset and include them in 
 # the subcatchments.
-points_id <- c(52, 54)# use if you want to change catchment
+points_id <- c(52, 54, 55)# use if you want to change catchment
 reso <- c(10)
 
 # load the function for subcatchment preparation

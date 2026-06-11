@@ -20,7 +20,7 @@ area = dem * 0 + 1;
 
 # remove strips where buffers are applied
 buffers = cover(buffers, 0);
-strips = if(buffers ne 0, 0, strips);
+strips = cover(if(buffers ne 0, 0, strips), 0) * area;
 
 # identify all strip features and give uniform height
 st_clump = clump(nominal(strips * area));
