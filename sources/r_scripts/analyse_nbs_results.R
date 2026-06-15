@@ -233,14 +233,277 @@ scen_all_rel <- scen_all %>%
 # make some figures or tables
 
 ggplot() + 
-  geom_point(data = scen_all_rel, aes(x = Ptot, y = Qmm_base), size = 4, alpha = 0.2) +
-  geom_point(data = scen_all_rel, aes(x = Ptot, y = Qmm, color = description)) +
+  geom_point(data = scen_all_rel, aes(x = Ptot, y = Qmax, color = catch), size = 3, alpha = 0.2) +
+  geom_point(data = base_all, aes(x = Ptot, y = Qmax, color = catch)) +
   theme_classic() +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
-  ylim(c(0,100)) + xlim(c(0,100)) +
-  facet_wrap(~ catch, nrow = 3)
+ # geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  #ylim(c(0,100)) + xlim(c(0,100)) +
+  facet_wrap(~ description)
 
 
-ggplot(scen_all_rel) +
-  geom_point(aes(x = Ptot, y = Q_rel_diff, color = description)) +
-  theme_classic()
+ggplot() +
+  geom_point(data = scen_all_rel, aes(x = as.factor(cond), y = Qmax, color = description)) +
+  geom_point(data = base_all, aes(x = as.factor(cond), y = Qmax), size = 4, alpha = 0.5, shape = 2) +
+  theme_classic() +
+  facet_wrap(~ catch, nrow = 3, scales = "free_y")
+
+
+# table with area and or volume
+
+area_nbs <- scen_all_rel %>%
+  select(lu, description, catch, area, rel_area) %>%
+  distinct() %>%
+  arrange(lu) %>%
+  mutate(rel_area = sprintf("%.0f", rel_area * 100 ),
+         vol = if_else(lu == 17, area * 2 / 10, NA),
+         vol = if_else(lu == 21, area * 150 / 100, vol),
+         area = sprintf("%.1f", area / 10000),
+         catch = str_remove(catch, "_10m"),
+         description = str_replace(description, "_", " "))
+
+write_csv(area_nbs, "results/area_nbs.csv")
+
+# table with effects per measure and per area
+effect_nbs <- scen_all_rel %>%
+  mutate(Qdiff = Qdiff / -1000) %>% # to m3
+  group_by(lu, description, catch) %>%
+  summarise(Qmm_red_av = mean((Qmm - Qmm_base) * -1),
+            Qmm_red_min = min((Qmm - Qmm_base)* -1),
+            Qmm_red_max = max((Qmm - Qmm_base)* -1),
+            Qar_red_av = mean(Q_area_diff* -1),
+            Qar_red_min = min(Q_area_diff* -1),
+            Qar_red_max = max(Q_area_diff* -1),
+            Q_red_av = mean(Qdiff),
+            Q_red_min = min(Qdiff),
+            Q_red_max = max(Qdiff)) %>%
+  arrange(lu) %>%
+  mutate(Qmm_red = sprintf("%.1f (%.1f - %.0f)", Qmm_red_av, Qmm_red_min, Qmm_red_max),
+         Qar_red = sprintf("%.1f (%.1f - %.1f)", Qar_red_av, Qar_red_min, Qar_red_max),
+         Q_red = sprintf("%.0f (%.0f - %.0f)", Q_red_av, Q_red_min, Q_red_max),
+         catch = str_remove(catch, "_10m"),
+         description = str_replace(description, "_", " ")) %>%
+  select(lu, description, catch, Qmm_red, Qar_red, Q_red)
+
+write_csv(effect_nbs, "results/effect_nbs.csv")
+
+# table with mean reductions nbs
+main_effect_nbs <- scen_all_rel %>%
+  mutate(Qdiff = Qdiff / -1000) %>% # to m3
+  group_by(lu, description, catch) %>%
+  summarise(Qmm_red_av = mean((Qmm - Qmm_base) * -1),
+            Qmm_red_min = min((Qmm - Qmm_base)* -1),
+            Qmm_red_max = max((Qmm - Qmm_base)* -1),
+            Qar_red_av = mean(Q_area_diff* -1),
+            Qar_red_min = min(Q_area_diff* -1),
+            Qar_red_max = max(Q_area_diff* -1),
+            Q_red_av = mean(Qdiff),
+            Q_red_min = min(Qdiff),
+            Q_red_max = max(Qdiff)) %>%
+  arrange(lu) %>%
+  mutate(Qmm_red = sprintf("%.1f (%.1f - %.0f)", Qmm_red_av, Qmm_red_min, Qmm_red_max),
+         Qar_red = sprintf("%.1f (%.1f - %.1f)", Qar_red_av, Qar_red_min, Qar_red_max),
+         Q_red = sprintf("%.0f (%.0f - %.0f)", Q_red_av, Q_red_min, Q_red_max),
+         catch = str_remove(catch, "_10m"),
+         description = str_replace(description, "_", " ")) %>%
+  select(lu, description, catch, Qmm_red, Qar_red, Q_red)
+
+write_csv(effect_nbs, "results/main_effect_nbs.csv")
+
+# heat table qmax
+# desired order of conditions
+cond_order <- c(
+  "T10_dry", "T10_wet",
+  "T25_dry", "T25_wet",
+  "T100_dry", "T100_wet",
+  "T500_dry", "T500_wet"
+)
+
+
+base_select <- base_all %>%
+  select(catch, Qmax, cond)
+# add label for baseline
+base_tab <- base_select %>%
+  mutate(nbs = "baseline")
+
+scen_tab <- scen_all %>%
+  select(catch, Qmax, description, cond) %>%
+  rename("nbs" = "description")
+# combine baseline + nbs scenarios
+all_tab <- bind_rows(base_tab, scen_tab) %>%
+  left_join(
+    base_all %>% rename(Qmax_base = Qmax),
+    by = c("catch", "cond")
+  ) %>%
+  mutate(rel_change = if_else(nbs == "baseline", 0,
+            100 * (Qmax - Qmax_base) / Qmax_base),
+         cond = str_remove(cond, "res_"),
+         catch = str_remove(catch, "_10m"),
+         Qmax = Qmax / 1000
+  )
+
+# 3. order rows: baseline first within each catchment
+all_tab <- all_tab %>%
+  mutate(
+    nbs = factor(nbs, levels = c("baseline", sort(setdiff(unique(nbs), "baseline")))),
+    cond = factor(cond, levels = cond_order)
+  ) %>%
+  arrange(catch, nbs, cond)
+
+show_tab <- all_tab %>%
+  select(catch, nbs, cond, Qmax) %>%
+  pivot_wider(names_from = cond, values_from = Qmax) %>%
+  arrange(catch, nbs)
+
+color_tab <- all_tab %>%
+  select(catch, nbs, cond, rel_change) %>%
+  pivot_wider(names_from = cond, values_from = rel_change) %>%
+  arrange(catch, nbs)
+
+cond_cols <- cond_cols <- cond_order
+max_abs_change <- max(abs(all_tab$rel_change), na.rm = TRUE)
+
+pal <- col_numeric(
+  palette = c("#1a9850", "#f7f7f7", "#d73027"),
+  domain = c(-max_abs_change, max_abs_change)
+)
+
+show_tab_fmt <- show_tab %>%
+  mutate(across(all_of(cond_cols), ~ sprintf("%.2f", .x)))
+
+ft <- flextable(show_tab_fmt) %>%
+  flextable::align(align = "center", part = "all") %>%
+  bold(part = "header") %>%
+  merge_v(j = "catch") %>%
+  valign(j = "catch", valign = "center") %>%
+  fontsize(size = 8, part = "all") %>%          # smaller font
+  padding(padding = 2, part = "all") %>%        # tighter cells
+  height_all(height = 0.18) %>%                 # compact rows
+  autofit()
+
+for (cl in cond_cols) {
+  fills <- pal(color_tab[[cl]])
+  fills[color_tab$nbs == "baseline"] <- "#D9D9D9"
+  ft <- bg(ft, j = cl, bg = fills, part = "body")
+}
+
+#ft <- bold(ft, i = ~ nbs == "baseline", part = "body")
+
+# thicker line between catchments
+end_rows <- c(
+  which(show_tab_fmt$catch[-1] != show_tab_fmt$catch[-nrow(show_tab_fmt)]),
+  nrow(show_tab_fmt)
+)
+
+thick_border <- fp_border(color = "darkgrey", width = 2)
+
+ft <- hline(ft, i = end_rows, border = thick_border, part = "body")
+
+ft <- fit_to_width(ft, max_width = 9)
+
+ft
+
+doc <- read_docx() %>%
+  body_add_par("Peak discharge table", style = "heading 1") %>%
+  body_add_flextable(ft)
+
+print(doc, target = "peak_discharge_table.docx")
+
+
+
+# heat table qmm total
+# desired order of conditions
+cond_order <- c(
+  "T10_dry", "T10_wet",
+  "T25_dry", "T25_wet",
+  "T100_dry", "T100_wet",
+  "T500_dry", "T500_wet"
+)
+
+
+base_select <- base_all %>%
+  select(catch, Qmm, cond)
+# add label for baseline
+base_tab <- base_select %>%
+  mutate(nbs = "baseline")
+
+scen_tab <- scen_all %>%
+  select(catch, Qmm, description, cond) %>%
+  rename("nbs" = "description")
+# combine baseline + nbs scenarios
+all_tab <- bind_rows(base_tab, scen_tab) %>%
+  left_join(
+    base_all %>% rename(Qmm_base = Qmm),
+    by = c("catch", "cond")
+  ) %>%
+  mutate(rel_change = if_else(nbs == "baseline", 0,
+            100 * (Qmm - Qmm_base) / Qmm_base),
+         cond = str_remove(cond, "res_"),
+         catch = str_remove(catch, "_10m")
+  )
+
+# 3. order rows: baseline first within each catchment
+all_tab <- all_tab %>%
+  mutate(
+    nbs = factor(nbs, levels = c("baseline", sort(setdiff(unique(nbs), "baseline")))),
+    cond = factor(cond, levels = cond_order)
+  ) %>%
+  arrange(catch, nbs, cond)
+
+show_tab <- all_tab %>%
+  select(catch, nbs, cond, Qmm) %>%
+  pivot_wider(names_from = cond, values_from = Qmm) %>%
+  arrange(catch, nbs)
+
+color_tab <- all_tab %>%
+  select(catch, nbs, cond, rel_change) %>%
+  pivot_wider(names_from = cond, values_from = rel_change) %>%
+  arrange(catch, nbs)
+
+cond_cols <- cond_cols <- cond_order
+max_abs_change <- max(abs(all_tab$rel_change), na.rm = TRUE)
+
+pal <- col_numeric(
+  palette = c("#1a9850", "#f7f7f7", "#d73027"),
+domain = c(-max_abs_change, max_abs_change)
+)
+
+show_tab_fmt <- show_tab %>%
+  mutate(across(all_of(cond_cols), ~ sprintf("%.2f", .x)))
+
+ft <- flextable(show_tab_fmt) %>%
+  flextable::align(align = "center", part = "all") %>%
+  bold(part = "header") %>%
+  merge_v(j = "catch") %>%
+  valign(j = "catch", valign = "center") %>%
+  fontsize(size = 8, part = "all") %>%          # smaller font
+  padding(padding = 2, part = "all") %>%        # tighter cells
+  height_all(height = 0.18) %>%                 # compact rows
+  autofit()
+
+for (cl in cond_cols) {
+  fills <- pal(color_tab[[cl]])
+  fills[color_tab$nbs == "baseline"] <- "#D9D9D9"
+  ft <- bg(ft, j = cl, bg = fills, part = "body")
+}
+
+#ft <- bold(ft, i = ~ nbs == "baseline", part = "body")
+
+# thicker line between catchments
+end_rows <- c(
+  which(show_tab_fmt$catch[-1] != show_tab_fmt$catch[-nrow(show_tab_fmt)]),
+  nrow(show_tab_fmt)
+)
+
+thick_border <- fp_border(color = "darkgrey", width = 2)
+
+ft <- hline(ft, i = end_rows, border = thick_border, part = "body")
+
+ft <- fit_to_width(ft, max_width = 9)
+
+ft
+
+doc <- read_docx() %>%
+  body_add_par("Total discharge table", style = "heading 1") %>%
+  body_add_flextable(ft)
+
+print(doc, target = "Total_discharge_table.docx")
