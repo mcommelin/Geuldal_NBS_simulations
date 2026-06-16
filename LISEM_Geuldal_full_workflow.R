@@ -341,22 +341,18 @@ for (i in seq_along(points_id)) {
 }
 }
 
-## 3.3 Explore 6 NBS in batch --------------------------------------------------
+## 3.3 Explore 11 NBS in batch --------------------------------------------------
 
 # on linux use parallel to run all the simulations.
 # find ~/Werk/Geuldal_NBS/LISEM_runs/ -name "*.run" | parallel --dry-run -j 3 /home/mc/lisem-bin/Lisem -ni -r {}
 
-## 3.4 NBS with landscape elements --------------------------------------------
+## 3.4 combined NBS scenarios --------------------------------------------
 
-# load NBS map,
-# set trigger, do landscape element
-# from csvfile with lu_NBS_tbl.csv
-# add colums with do_LE (boolean)
-# update function, if do_LE == TRUE, don't update landuse - but wait.
-# separate script for each NBS
-# adjust stroming maps to have 1 on location of LE
-# if lu_map == 1, place landscape element. read lu params from table and
-# update input maps accordingly.
+# load NBS scenario map:
+# lu numbers according to lu_NBS_tbl.csv
+# change the use of NBSnum - does not work with combinations.
+# if combined - loop over all NBS nums, and execute accordingly?
+# NBSnum = 99 = combined scenario?
 
 
 

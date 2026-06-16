@@ -244,9 +244,14 @@ create_lisem_run <- function(
     
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
-      NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
-        filter(lu_nr == NBS_num)
-      NBS_name <- NBS_desc$description
+      # adjust to include vkv
+      if (NBS_num == 99) {
+        NBS_name <- "vkv_test"
+      } else {
+        NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
+          filter(lu_nr == NBS_num)
+        NBS_name <- NBS_desc$description
+      }
       catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
                           "m_", NBS_name, "/")
     } 
@@ -260,9 +265,14 @@ create_lisem_run <- function(
     
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
+      # adjust to include vkv
+      if (NBS_num == 99) {
+        NBS_name <- "vkv_test"
+      } else {
       NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
         filter(lu_nr == NBS_num)
       NBS_name <- NBS_desc$description
+      }
       catch_dir <- paste0(catch_num, "_", resolution, "m_", NBS_name, "/")
     } 
     run_dir <- paste0("LISEM_runs/hpc_runs/", dir_name, catch_dir)
