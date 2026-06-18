@@ -330,7 +330,10 @@ create_lisem_run <- function(
   
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   
-  # create landuse calibration table: used in prepare_db.map AND prepare_ndvi.mod
+  # create landuse calibration table: used in prepare_ndvi.mod
+  # NOTE - the calibration for RR and Mannings N is already taken into account 
+  # when making the landuse table: prepare_landuse_table.R
+  # The Ksat calibration is used in the SWATRE files preparation.
   cal_lu <- read_csv("sources/setup/calibration/calibration_landuse.csv") %>%
     select(-cal_comment)
   nms <- as.character(seq(0, ncol(cal_lu) - 1))
