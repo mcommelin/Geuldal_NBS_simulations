@@ -381,10 +381,17 @@ create_lisem_run <- function(
     file.copy(paste0(subdir, "dem.map"), paste0(subdir, "dem_base.map"),
               overwrite = TRUE)
     
+    # load the file with NBS properties for LE elements
+    nbs_prop <- read_csv("sources/setup/tables/nbs_properties.csv")
+    
     # swales - 17
     if (NBS_num == 17) {
-    swale_width <- 5.0 # [m] give the width in meters of the ditch of the swale
-    swale_depth <- 0.80 # [m] the difference between the top of the dike and deepest
+      # find properties from table
+      prop <- nbs_prop %>%
+        filter(lu_nr == NBS_num)
+      
+    swale_width <- filter(prop, property == "swale_width")$value # [m] give the width in meters of the ditch of the swale
+    swale_depth <- filter(prop, property == "swale_depth")$value # [m] the difference between the top of the dike and deepest
                        # point of the ditch
      pcr_script(
       script = paste0("swales.mod ", swale_depth, " ", swale_width),
@@ -395,9 +402,17 @@ create_lisem_run <- function(
     
     # terraces / graften - 19
     if (NBS_num == 19) {
-    terrace_spacing <- 5.0 # [m] the contour elevation spacing of the designed terraces
-                            # this should correspond to the input map
-     desired_slope <- 8.0 # [%] the desired slope of the 'flat' sections 
+      
+      # find properties from table
+      prop <- nbs_prop %>%
+        filter(lu_nr == NBS_num)
+      
+      terrace_spacing <- filter(prop, property == "terrace_spacing")$value 
+                # [m] the contour elevation spacing of the designed terraces
+                # this should correspond to the input map
+     desired_slope <- filter(prop, property == "desired_slope")$value  
+                # [%] the desired slope of the 'flat' sections 
+     
      slope_deg <- (atan(desired_slope/100) * 180) / pi
      pcr_script(
        script = paste0("terraces.mod ", terrace_spacing, " ", desired_slope),
@@ -431,7 +446,12 @@ create_lisem_run <- function(
      
     # waterbuffers - 21
     if (NBS_num == 21) {
-      pond_volume <- 150 # [m3] give the design volume of the ponds
+      # find properties from table
+      prop <- nbs_prop %>%
+        filter(lu_nr == NBS_num)
+      
+      pond_volume  <- filter(prop, property == "pond_volume")$value 
+                          # [m3] give the design volume of the ponds
 
       # point of the ditch
       pcr_script(

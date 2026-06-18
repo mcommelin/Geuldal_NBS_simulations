@@ -1,0 +1,6 @@
+lu_nr, property, value
+17, swale_width, 5.0
+17, swale_depth, 0.8
+19, terrace_spacing, 5.0
+19, desired_slope, 8.0
+21, pond_volume, 150
