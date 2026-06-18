@@ -266,7 +266,7 @@ create_lisem_run <- function(
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
       # adjust to include vkv
-      if (NBS_num == 99) {
+      if (NBS_num > 99) {
         NBS_name <- "vkv_test"
       } else {
       NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
