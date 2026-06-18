@@ -4,7 +4,7 @@
 
 # fill the directory where the runs that need to be analyzed are located
 base_dir <- "results/nbs_simulations_new_rain_20260527"
-
+base_dir <- "LISEM_runs"
 # find different scenarios - assume workflow based folder structure!
 scen_dirs <- dir(base_dir, full.names = TRUE)
 
