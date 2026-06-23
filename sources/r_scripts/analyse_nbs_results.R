@@ -1,5 +1,9 @@
 # code to run an analysis for different scenarios 
 
+library(flextable)
+library(officer)
+
+
 # 1. Spatial results ----------------------------------------------------------
 
 # fill the directory where the runs that need to be analyzed are located
@@ -174,7 +178,7 @@ a2 <- all %>%
 # load hydrograph results as well.
 # - recalculate total outflow volume to mm outflow and Q/P ratio
 
-# 3. summarise results ---------------------------------------------------------
+# 3. Summarise results ---------------------------------------------------------
 # produce different results
 
 # 1: area of each catchment
@@ -507,3 +511,92 @@ doc <- read_docx() %>%
   body_add_flextable(ft)
 
 print(doc, target = "Total_discharge_table.docx")
+
+
+# 4. Catchment overview -------------------------------------------------------
+
+# select directory in LISEM_data
+geul_dir <- "LISEM_data/Geul_10m/maps/"
+sub_catch_name <- c("Bildchen", "Bocholtz", "Pesaken", "Lemiers", "Hekerbeek", 
+                   "Grunstrasserbach")
+sub_catch_dir <- sub_catch_name %>%
+  paste0("LISEM_data/subcatchments/", ., "_10m/maps/")
+catch_names <- c("Geul", sub_catch_name)
+dirs <- c(geul_dir, sub_catch_dir)
+
+area_list <- vector("list", length = length(dirs))
+
+for (i in seq_along(dirs)) {
+    # do PCR script
+pcr_script(script = "catchment_overview.mod",
+           script_dir = "sources/pcr_scripts",
+           work_dir = dirs[i])
+
+# write PCR results to table
+pcrtable(work_dir = dirs[i],
+         maps = "lu_nom.map av_slope.map",
+         outfile = "areas.txt")
+
+#read table in R
+tab <- read.table(paste0(dirs[i], "/areas.txt"), header = F)
+
+# add information to table
+nms <- c("lu", "slope", "area")
+
+area_list[[i]] <- as_tibble(tab) %>%
+  rename_with( ~ nms) %>%
+  mutate(catch = catch_names[i])
+
+# remove maps and pcrtable - clean_up
+files <- c("lu_nom.map", "av_slope.map", "grad.map", "areas.txt")
+file.remove(paste0(dirs[i], files))
+
+} # end catchment loop
+
+
+# load results and format as flextable
+table <- bind_rows(area_list)
+
+# reorder
+full_area <- table %>%
+  group_by(catch) %>%
+  summarize(full_area = sum(area) / 1000000,
+            slope = min(slope))
+
+lu_areas <- table %>%
+  select(-slope) %>%
+  filter(lu != 0) %>%  # remove landuse class 0 - it is an artiefact and doesnt add a lot.
+  mutate(area = area / 1000000) %>%
+  left_join(full_area, by = "catch") %>%
+  mutate(fraction = (area / full_area) * 100,
+         value = sprintf("%.1f - %.0f%%", area, fraction)) %>%
+  select(-slope, -area, - fraction) %>%
+  pivot_wider(names_from = lu, values_from = value) %>%
+  left_join(full_area, by = c("catch", "full_area")) %>%
+  rename_with(~ c("gebied", "oppervlakte", "akker", "loofbos", "prod. gras", "nat. gras", "verhard", 
+                  "water", "naaldbos", "helling")) %>%
+  mutate(naaldbos = if_else(is.na(naaldbos), "0.0 - 0%", naaldbos),
+         oppervlakte = sprintf("%.1f", oppervlakte),
+         helling = sprintf("%.0f%%", helling)) %>%
+  select(gebied, oppervlakte, helling, everything())
+  
+
+# make and write flextable
+ft <- flextable(lu_areas) %>%
+  flextable::align(align = "center", part = "all") %>%
+  bold(part = "header") %>%
+  merge_v(j = "gebied") %>%
+  valign(j = "gebied", valign = "center") %>%
+  fontsize(size = 8, part = "all") %>%          # smaller font
+  padding(padding = 2, part = "all") %>%        # tighter cells
+  height_all(height = 0.18) %>%                 # compact rows
+  autofit()
+
+ft
+
+doc <- read_docx() %>%
+  body_add_par("Gebied overzicht", style = "heading 1") %>%
+  body_add_flextable(ft)
+
+print(doc, target = "documenten_en_literatuur/results/Gebied_overzicht.docx")
+
