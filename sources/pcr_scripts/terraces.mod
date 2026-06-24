@@ -36,7 +36,7 @@ buffers = cover(buffers, 0);
 roads = cover(roads, 0);
 channels =cover(channels, 0);
 
-terrace = if(buffers ne 0 or roads ne 0 or channels ne 0, 0, terrace);
+terrace = cover(if(buffers ne 0 or roads ne 0 or channels ne 0, 0, terrace), 0) * area;
 report terrace.map = terrace;
 
 #slope to fraction

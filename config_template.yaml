@@ -22,12 +22,12 @@ conda_env: "lisem"
 # see the file /sources/setup/outpoints_description.csv
 # for subcatchment names and numbers.
 # WARNING: 1 = the whole catchment - very long processing times
-# Subcatchments for calibration are: Gulp = 4, Kelmis = 18,
-# Watervalderbeek = 10, Eyserbeek = 14.
+# Subcatchments for calibration are: Gulp = 4, Kelmis = 18 and Eyserbeek = 14.
+# For testing of NBS two small catchment, Bocholtz = 54 and Pesaken = 52 are used.
 # You can specify one or more numbers, e.g. [10, 12, 18]
 subcatchments: [4, 18]
 
-# 6. resolution to work on, available are 5 , 10 and 20, both is also possible
+# 6. resolution to work on, available are 5 , 10 and 20, multiple is also possible
 resolution: [10, 20]
 
 # 7. Number of cpu cores assigned to the lisem model.

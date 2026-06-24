@@ -56,7 +56,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   if (run_type == "cal") {
     rain_file <- paste0("rain_5min_", evdate, ".txt")
   } else {
-    rain_file <- paste0("rain_",str_remove_all(evdate, "_(w|d).*"), ".txt")
+    rain_file <- paste0("rain_",evdate, ".txt")
     # set ID map to 1 zone
     run_temp <- str_replace_all(run_temp, "ID=ID.map",
                                 paste0("ID=one.map"))
@@ -152,7 +152,7 @@ ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
                             paste0("Channel baseflow method=0"))
   }
   
-  # set theta calibration
+  # set inithead calibration
   if (!is.null(theta_cal)) {
     run_temp <- str_replace(run_temp, "Psi calibration=1.00",
                             paste0("Psi calibration=", theta_cal))
@@ -221,7 +221,7 @@ create_lisem_run <- function(
     return()
   }
   
-  # check if it is a base run, or simulation a NBS
+  # check if it is a base run, or simulation of a NBS
   if (NBS_num != 0) {
     do_NBS = TRUE
   } else {
@@ -244,9 +244,14 @@ create_lisem_run <- function(
     
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
-      NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
-        filter(lu_nr == NBS_num)
-      NBS_name <- NBS_desc$description
+      # adjust to include vkv
+      if (NBS_num == 99) {
+        NBS_name <- "vkv_test"
+      } else {
+        NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
+          filter(lu_nr == NBS_num)
+        NBS_name <- NBS_desc$description
+      }
       catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
                           "m_", NBS_name, "/")
     } 
@@ -260,9 +265,14 @@ create_lisem_run <- function(
     
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
+      # adjust to include vkv
+      if (NBS_num == 99) {
+        NBS_name <- "vkv_test"
+      } else {
       NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
         filter(lu_nr == NBS_num)
       NBS_name <- NBS_desc$description
+      }
       catch_dir <- paste0(catch_num, "_", resolution, "m_", NBS_name, "/")
     } 
     run_dir <- paste0("LISEM_runs/hpc_runs/", dir_name, catch_dir)
@@ -320,7 +330,10 @@ create_lisem_run <- function(
   
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   
-  # create landuse calibration table: used in prepare_db.map AND prepare_ndvi.mod
+  # create landuse calibration table: used in prepare_ndvi.mod
+  # NOTE - the calibration for RR and Mannings N is already taken into account 
+  # when making the landuse table: prepare_landuse_table.R
+  # The Ksat calibration is used in the SWATRE files preparation.
   cal_lu <- read_csv("sources/setup/calibration/calibration_landuse.csv") %>%
     select(-cal_comment)
   nms <- as.character(seq(0, ncol(cal_lu) - 1))
@@ -368,10 +381,17 @@ create_lisem_run <- function(
     file.copy(paste0(subdir, "dem.map"), paste0(subdir, "dem_base.map"),
               overwrite = TRUE)
     
+    # load the file with NBS properties for LE elements
+    nbs_prop <- read_csv("sources/setup/tables/nbs_properties.csv")
+    
     # swales - 17
     if (NBS_num == 17) {
-    swale_width <- 5.0 # [m] give the width in meters of the ditch of the swale
-    swale_depth <- 0.80 # [m] the difference between the top of the dike and deepest
+      # find properties from table
+      prop <- nbs_prop %>%
+        filter(lu_nr == NBS_num)
+      
+    swale_width <- filter(prop, property == "swale_width")$value # [m] give the width in meters of the ditch of the swale
+    swale_depth <- filter(prop, property == "swale_depth")$value # [m] the difference between the top of the dike and deepest
                        # point of the ditch
      pcr_script(
       script = paste0("swales.mod ", swale_depth, " ", swale_width),
@@ -382,9 +402,17 @@ create_lisem_run <- function(
     
     # terraces / graften - 19
     if (NBS_num == 19) {
-    terrace_spacing <- 5.0 # [m] the contour elevation spacing of the designed terraces
-                            # this should correspond to the input map
-     desired_slope <- 8.0 # [%] the desired slope of the 'flat' sections 
+      
+      # find properties from table
+      prop <- nbs_prop %>%
+        filter(lu_nr == NBS_num)
+      
+      terrace_spacing <- filter(prop, property == "terrace_spacing")$value 
+                # [m] the contour elevation spacing of the designed terraces
+                # this should correspond to the input map
+     desired_slope <- filter(prop, property == "desired_slope")$value  
+                # [%] the desired slope of the 'flat' sections 
+     
      slope_deg <- (atan(desired_slope/100) * 180) / pi
      pcr_script(
        script = paste0("terraces.mod ", terrace_spacing, " ", desired_slope),
@@ -418,7 +446,12 @@ create_lisem_run <- function(
      
     # waterbuffers - 21
     if (NBS_num == 21) {
-      pond_volume <- 150 # [m3] give the design volume of the ponds
+      # find properties from table
+      prop <- nbs_prop %>%
+        filter(lu_nr == NBS_num)
+      
+      pond_volume  <- filter(prop, property == "pond_volume")$value 
+                          # [m3] give the design volume of the ponds
 
       # point of the ditch
       pcr_script(
@@ -499,13 +532,7 @@ create_lisem_run <- function(
                                       side = "left", pad = "0"), ":",
                               str_pad(as.character(hour(ts_end) * 60 + minute(ts_end)), width = 4,
                                       side = "left", pad = "0")))
-    # load theta_cal file
-    if (do_hpc == FALSE) {
-    cn = catch_num
-    theta_factors <- read_csv("sources/setup/calibration/calibration_theta.csv") %>%
-      filter(catch_num == cn)
-    }
-    
+
     for (i in seq_along(events$event_start)) {
       #make baseflow
       date_event <- str_remove_all(as.character(date(events$ts_start[i])), "-")
@@ -528,19 +555,6 @@ create_lisem_run <- function(
       file.rename(paste0(subdir, "baseflow.map"),
                   paste0(subdir, "baseflow_", date_event, ".map"))
       
-      # get theta_cal
-      if (do_hpc == TRUE) {
-        theta_cal <- inith_cal
-      } else {
-      if (nrow(theta_factors) == 0) {
-        theta_cal <-  1.00
-      } else {
-        theta_cal <- theta_factors %>%
-          filter(date == date_event)
-        
-        theta_cal <- theta_cal$theta_cal}
-      }
-      
       #make an additional results directory for each standard event
       dir <- paste0("res_", date_event)
         dir_path <- paste0(run_dir, dir)
@@ -548,7 +562,6 @@ create_lisem_run <- function(
           dir.create(dir_path)
         }
 
-      
       # make runfile  
       if (do_runfile == TRUE) {
         
@@ -563,7 +576,7 @@ create_lisem_run <- function(
           resolution = resolution,
           do_ndvi_run = do_ndvi,
           run_type = run_type,
-          theta_cal = theta_cal,
+          theta_cal = inith_cal,
           cpu_cores = cpu_cores,
           do_hpc = do_hpc
         )
@@ -574,7 +587,7 @@ create_lisem_run <- function(
   if (run_type == "base") {
     if (do_runfile == TRUE) {
       # loop over standard events in stead of dates
-      rains <- c("T50", "T100", "T500", "T500_uur")
+      rains <- c("T10", "T25", "T100", "T500")
       initheads <- c("wet", "dry")
       standard_ev <- expand_grid(rains, initheads) %>%
         mutate(ev = paste0(rains, "_", initheads))

@@ -394,14 +394,16 @@ if (clean_up == TRUE) {
 } # end function graph_lisem_simulation
 
 
+### read totals.csv lisem runs --------------------
 
 
 # loop over folders, read totals.csv and store in new big csv
 
-run_dir <- "LISEM_runs/NBS_runs/"
+run_dir <- "LISEM_runs/spatial/"
 
 total_files <- dir(path = run_dir, pattern = "totals-.csv",
                    recursive = TRUE)
+
 totals_list <- vector("list", length = length(total_files))
 
 for (i in seq_along(total_files)) {
@@ -452,3 +454,192 @@ c <- b %>%
             qpeak_red = mean(qpeak_red))
 
 write_csv(c, "reductions_NBS_grouped.csv")
+
+
+### read hydrograph files lisem runs ------------------------------------------
+#run_dir <- "LISEM_runs/context/Pesaken_10m/"
+run_dir <- "results/nbs_simulations_new_rain_20260527"
+
+
+hydr_files <- dir(path = run_dir, pattern = "hydrographs-",
+                   recursive = TRUE, full.names = T)
+
+hydr_list <- vector("list", length = length(hydr_files))
+
+
+for (i in seq_along(hydr_files)) {
+  hy_names <- readLines(hydr_files[i])[2] %>%
+    str_split(",", simplify = TRUE) %>%
+    str_remove_all(" |#")
+  runtype = str_extract(hydr_files[i], "(Bo|Pe|Bi)[^/]+")
+  rain = str_extract(hydr_files[i], "(res_)[^/]+")
+  hydr_list[[i]] <- read_csv(hydr_files[i], skip = 2) %>%
+    rename_with(~hy_names) %>%
+    arrange(Time) %>%
+    mutate(Q = Qall + Qbound,
+           R = runtype,
+           P = rain,
+           run = i) %>%
+    select(Time, Pavg, R, P, Q, run) #, Qchan1)
+  
+}
+all_hy <- bind_rows(hydr_list) 
+
+# pivot_longer and assign code
+coeff <- 0.005
+
+ggplot(all_hy) +
+  geom_line(aes(x = Time, y = Q, color = as.character(run)), linetype = "dashed") +
+  geom_line(aes(x = Time, y = Pavg / coeff, color = as.character(run))) +
+  theme_classic() +
+  scale_y_continuous(sec.axis = sec_axis(~ . * coeff)) +
+  labs(title = "difference in T100 dry events Bocholtz") +
+  scale_color_hue(labels = c("new", "old")) +
+  guides(color=guide_legend("Rain events"))
+
+ggsave("images/simulations/vergelijk_nieuwe_neerslag_bocholtz.png", width = 20, height = 14, units = "cm")
+
+
+# 28-05-2026 - some ugly book keeping to make the report 
+#
+#!!!!!!!!!!!!!!!!!!!!!!!!
+boch_old_schem <- all_hy %>% filter(run == 2)
+pes_old_schem <- all_hy %>% filter(run == 2)
+
+
+
+boch_new_schem <- all_hy %>% filter(run == 3)
+pes_new_schem <- all_hy %>% filter(run == 1)
+
+#
+boch <- bind_rows(boch_new_schem, boch_old_schem)
+
+
+b <- boch %>%
+  group_by(run) %>%
+  summarise(Qmax = max(Q),
+            Q = sum(Q) * 10) #
+
+pes <- bind_rows(pes_new_schem, pes_old_schem)
+p <- pes %>%
+  group_by(run) %>%
+  summarise(Qmax = max(Q),
+            Q = sum(Q) * 10) #
+
+
+# summary all NBS 
+a <- all_hy %>%
+  group_by(R, P) %>%
+  summarise(Qmax = max(Q),
+            Q = sum(Q) * 10) #
+
+
+a2 <- a %>%
+  ungroup() %>%
+  group_by(R) %>%
+  summarise(Qmax = mean(Qmax),
+            Q = mean(Q))
+
+
+# plot
+plot_Q <- all_hy %>%
+  filter(str_detect(R, "10m$"))
+
+ggplot(plot_Q) +
+  geom_line(aes(x = Time, y = Qchan1, color = R)) +
+  theme_classic()
+
+### figure calibration full Geul ----------------------------------------------
+
+  resdir <- "results/Geul_10m/res_20230622/HinitBF08/res260519-1309/"
+refdate <- "2023-06-22"
+hydr_files <- dir(path = resdir, pattern = "hydrographs-",
+                  recursive = TRUE, full.names = T)
+
+points <- c(1, 14, 4, 16, 18)
+
+hydr_list <- vector("list", length = length(hydr_files))
+
+for (i in seq_along(hydr_files)) {
+  hy_names <- readLines(hydr_files[i])[2] %>%
+    str_split(",", simplify = TRUE) %>%
+    str_remove_all(" |#")
+  
+  channum <- str_extract(hydr_files[i], "\\d+(?=\\.\\w+$)")
+  
+  hydr_list[[i]] <- read_csv(hydr_files[i], skip = 2, show_col_types = F) %>%
+    rename_with(~hy_names) %>%
+    rename("Qchan" = paste0("Qchan", channum)) %>%
+    arrange(Time) %>%
+    mutate(chann = channum) %>%
+    select(Time, Qchan, chann)
+  
+}
+
+all_hy <- bind_rows(hydr_list) %>%
+  filter(chann %in% points) %>%
+  mutate(doy = floor(Time),
+         mod = round((Time %% 1) * 24 * 60, digits = 5),
+         hours = str_pad(floor(as.numeric(mod)/60), width = 2, side = "left", pad = "0"),
+         mins = str_pad(floor(as.numeric(mod) %% 60), width = 2, side = "left", pad = "0"),
+         date = as.Date(as.numeric(doy), origin = paste0(year(refdate), "-01-01")),
+         datestring = paste0(date, " ", hours, ":", mins),
+         timestamp = ymd_hm(datestring),
+         timestamp = timestamp - days(1) + hours(1)) %>%
+  distinct(timestamp, chann, .keep_all = T) %>%
+  arrange(timestamp) 
+
+
+# add observation data
+out_points <- read_csv("sources/setup/outpoints_description.csv") %>%
+  filter(point %in% points) %>%
+  select(point, code, name) %>%
+  distinct() %>%
+  mutate(code = if_else(point == 4, "13.Q.34", code))
+
+q_obs <- read_csv("data/processed_data/obs_discharge/observed_discharge_high_res.csv") %>%
+  filter(point %in% points) %>%
+  rename("chann" = "point") %>%
+  mutate(Q = Q * 1000,
+         chann = as.character(chann)) %>%
+  filter(code %in% out_points$code)
+
+
+# load discharge data - load hourly data from WL
+q_obs_low <- read_csv("data/processed_data/obs_discharge/debietgegevensgeul_LANG.csv",
+                 skip = 9) %>%
+  pivot_longer(cols = '12.Q.31':'10.Q.36',
+               values_to = "Q",
+               names_to = "code") %>%
+  filter(!is.na(Q)) %>%
+  filter(code %in% out_points$code) %>%
+  filter(date(timestamp) > ymd("2023-06-15") & date(timestamp) < ymd("2023-06-25")) %>%
+  rename("Q_low" = "Q") %>%
+  select(timestamp, Q_low, code) %>%
+  mutate(Q_low = Q_low * 1000) %>%
+  left_join(out_points, by = "code") %>%
+  rename("chann" = "point") %>%
+  mutate(chann = as.character(chann))
+
+
+
+data <- all_hy %>%
+  left_join(q_obs_low, by = c("timestamp", "chann")) %>%
+  select(timestamp, Qchan, Q_low, chann) %>%
+  left_join(q_obs, by = c("timestamp", "chann"))
+
+
+# figure
+ggplot(data) + 
+  geom_line(aes(x = timestamp, y = Qchan, color = chann)) +
+  geom_point(aes(x = timestamp, y = Q_low, color = chann), alpha = 0.6) +
+  geom_point(aes(x = timestamp, y = Q, color = chann), alpha = 0.6) +
+  scale_color_hue(labels = c("Meersen", "Eyserbeek", "Hommerich", "Kelmis", "Gulp")) +
+  guides(color=guide_legend("Meetpunt")) +
+  labs(x = "Time", y = "Discharge l/sec", 
+       title = "Afvoer Geuldal bij Hinit = berekend * 0.8") +
+  theme_classic()
+
+ggsave("images/simulations/schematisatie_hinit_calc08.png", width = 20, height = 14, units = "cm")
+
+
