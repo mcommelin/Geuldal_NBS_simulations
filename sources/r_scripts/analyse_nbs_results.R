@@ -178,6 +178,38 @@ a2 <- all %>%
 # load hydrograph results as well.
 # - recalculate total outflow volume to mm outflow and Q/P ratio
 
+
+# plot
+q_ev <- all_hy %>%
+  filter(R == "Pesaken_10m" &
+           P == "res_T25_dry")
+
+titel <- paste0("Afvoer en neerslag voor ", q_ev$R[1], " met conditie: ", 
+                str_remove(q_ev$P[1], "res_"))
+
+# plot
+# axis constants
+q_max_round <- ceiling(max(c(q_ev$Q), na.rm = TRUE))
+p_max       <- max(q_ev$Pavg, na.rm = TRUE)
+k           <- q_max_round / (p_max * 1.2)
+y_top       <- q_max_round * 2
+
+# plot regular and inverted y-axis
+ggplot(q_ev) +
+  geom_linerange(aes(x = Time, ymin = y_top,
+                               ymax = y_top - Pavg * k), color = "grey") +
+  geom_line(aes(x = Time, y = Q), linewidth = 0.3) +
+  scale_y_continuous(
+    name     = "Debiet (L s⁻¹)",
+    limits   = c(0, y_top),
+    sec.axis = sec_axis(
+      ~ (y_top - .) / k,
+      name = "Neerslag (mm h⁻¹)"
+    ),
+    expand = c(0,0)) +
+  labs(title = titel) +
+  theme_bw()
+
 # 3. Summarise results ---------------------------------------------------------
 
 ## helper settings -------------------------------------------------------------
@@ -188,10 +220,9 @@ style_ft <- function(ft) {
     flextable::align(align = "center", part = "all") %>%
     bold(part = "header") %>%
     fontsize(size = 8, part = "all") %>%          # smaller font
-    padding(padding = 2, part = "all") %>%        # tighter cells
+    padding(padding = 1, part = "all") %>%        # tighter cells
     height_all(height = 0.18) %>%                 # compact rows
-    fit_to_width(ft, max_width = 9) %>%
-    autofit()
+    fit_to_width(max_width = 7)
 }
 
 
@@ -362,8 +393,7 @@ saveRDS(ef_norm, "documenten_en_literatuur/results/r_tables/ef_norm.rds")
 ef_norm <- readRDS("documenten_en_literatuur/results/r_tables/ef_norm.rds")
 
 ft_ef_norm <- flextable(ef_norm) %>%
-  style_ft() %>%
-  fit_to_width(max_width = 6.5)
+  style_ft()
 
 ft_ef_norm
 # printing is done at the bottom of the script
