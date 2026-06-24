@@ -8,7 +8,7 @@ library(officer)
 
 # fill the directory where the runs that need to be analyzed are located
 base_dir <- "results/nbs_simulations_new_rain_20260527"
-base_dir <- "LISEM_runs"
+#base_dir <- "LISEM_runs"
 # find different scenarios - assume workflow based folder structure!
 scen_dirs <- dir(base_dir, full.names = TRUE)
 
@@ -105,7 +105,7 @@ for (i in seq_along(baseline_dirs)) {
                scen = sc,
                cond = conditions[k])
 
-    } # end conditions
+    } # end conditions loop
     list2[[j]] <- list3
   } # end catchment loop
   
@@ -133,7 +133,7 @@ for (i in seq_along(hydr_files)) {
   hy_names <- readLines(hydr_files[i])[2] %>%
     str_split(",", simplify = TRUE) %>%
     str_remove_all(" |#")
-  runtype = str_extract(hydr_files[i], "(Bo|Pe|Bi)[^/]+")
+  runtype <- sub("^([^/]+/){2}([^/]+).*$", "\\2", hydr_files[i])
   rain = str_extract(hydr_files[i], "(res_)[^/]+")
   hydr_list[[i]] <- read_csv(hydr_files[i], skip = 2) %>%
     rename_with(~hy_names) %>%
@@ -179,6 +179,18 @@ a2 <- all %>%
 # - recalculate total outflow volume to mm outflow and Q/P ratio
 
 # 3. Summarise results ---------------------------------------------------------
+
+## helper settings -------------------------------------------------------------
+
+# desired order of conditions
+cond_order <- c(
+  "T10_dry", "T10_wet",
+  "T25_dry", "T25_wet",
+  "T100_dry", "T100_wet",
+  "T500_dry", "T500_wet"
+)
+
+
 # produce different results
 
 # 1: area of each catchment
@@ -252,7 +264,11 @@ ggplot() +
   facet_wrap(~ catch, nrow = 3, scales = "free_y")
 
 
+## Table xx : Results, NBS specific share per catchment --------------------------
 # table with area and or volume
+
+# TODO make for each NBS separate
+# TODO adjust to flextable
 
 area_nbs <- scen_all_rel %>%
   select(lu, description, catch, area, rel_area) %>%
@@ -267,10 +283,14 @@ area_nbs <- scen_all_rel %>%
 
 write_csv(area_nbs, "results/area_nbs.csv")
 
+## Table xx : Results, normalised effects NBS ----------------------------------
 # table with effects per measure and per area
+
+# TODO adjust to flextable
+# the multiplication with -1 is used to express the reduction as positive value
 effect_nbs <- scen_all_rel %>%
   mutate(Qdiff = Qdiff / -1000) %>% # to m3
-  group_by(lu, description, catch) %>%
+  group_by(lu, description, cond) %>%
   summarise(Qmm_red_av = mean((Qmm - Qmm_base) * -1),
             Qmm_red_min = min((Qmm - Qmm_base)* -1),
             Qmm_red_max = max((Qmm - Qmm_base)* -1),
@@ -284,34 +304,24 @@ effect_nbs <- scen_all_rel %>%
   mutate(Qmm_red = sprintf("%.1f (%.1f - %.0f)", Qmm_red_av, Qmm_red_min, Qmm_red_max),
          Qar_red = sprintf("%.1f (%.1f - %.1f)", Qar_red_av, Qar_red_min, Qar_red_max),
          Q_red = sprintf("%.0f (%.0f - %.0f)", Q_red_av, Q_red_min, Q_red_max),
-         catch = str_remove(catch, "_10m"),
-         description = str_replace(description, "_", " ")) %>%
-  select(lu, description, catch, Qmm_red, Qar_red, Q_red)
+         description = str_replace(description, "_", " "),
+         cond = str_remove(cond, "res_"),
+         cond = factor(cond, levels = cond_order)) %>%
+  select(lu, description, cond, Qar_red, Q_red) %>%
+  arrange(cond)
+
+ef_norm <- effect_nbs %>%
+  select(-Q_red) %>%
+  pivot_wider(names_from = cond, values_from = Qar_red)
+
+# different tables for volumes?
 
 write_csv(effect_nbs, "results/effect_nbs.csv")
 
-# table with mean reductions nbs
-main_effect_nbs <- scen_all_rel %>%
-  mutate(Qdiff = Qdiff / -1000) %>% # to m3
-  group_by(lu, description, catch) %>%
-  summarise(Qmm_red_av = mean((Qmm - Qmm_base) * -1),
-            Qmm_red_min = min((Qmm - Qmm_base)* -1),
-            Qmm_red_max = max((Qmm - Qmm_base)* -1),
-            Qar_red_av = mean(Q_area_diff* -1),
-            Qar_red_min = min(Q_area_diff* -1),
-            Qar_red_max = max(Q_area_diff* -1),
-            Q_red_av = mean(Qdiff),
-            Q_red_min = min(Qdiff),
-            Q_red_max = max(Qdiff)) %>%
-  arrange(lu) %>%
-  mutate(Qmm_red = sprintf("%.1f (%.1f - %.0f)", Qmm_red_av, Qmm_red_min, Qmm_red_max),
-         Qar_red = sprintf("%.1f (%.1f - %.1f)", Qar_red_av, Qar_red_min, Qar_red_max),
-         Q_red = sprintf("%.0f (%.0f - %.0f)", Q_red_av, Q_red_min, Q_red_max),
-         catch = str_remove(catch, "_10m"),
-         description = str_replace(description, "_", " ")) %>%
-  select(lu, description, catch, Qmm_red, Qar_red, Q_red)
 
-write_csv(effect_nbs, "results/main_effect_nbs.csv")
+
+
+## Table xx: Results, NBS Qpeak reduction -------------------------------------
 
 # heat table qmax
 # desired order of conditions
@@ -412,7 +422,7 @@ doc <- read_docx() %>%
 
 print(doc, target = "peak_discharge_table.docx")
 
-
+## Table xx: Results, NBS Qtot reduction ---------------------------------------
 
 # heat table qmm total
 # desired order of conditions
@@ -515,6 +525,7 @@ print(doc, target = "Total_discharge_table.docx")
 
 # 4. Catchment overview -------------------------------------------------------
 
+## Table xx : introduction NBS report --------------------------------
 # select directory in LISEM_data
 geul_dir <- "LISEM_data/Geul_10m/maps/"
 sub_catch_name <- c("Bildchen", "Bocholtz", "Pesaken", "Lemiers", "Hekerbeek", 
