@@ -2,7 +2,7 @@
 
 library(flextable)
 library(officer)
-
+library(scales)
 
 # 1. Spatial results ----------------------------------------------------------
 
@@ -182,6 +182,20 @@ a2 <- all %>%
 
 ## helper settings -------------------------------------------------------------
 
+# flextable layout
+style_ft <- function(ft) {
+  ft %>%
+    flextable::align(align = "center", part = "all") %>%
+    bold(part = "header") %>%
+    fontsize(size = 8, part = "all") %>%          # smaller font
+    padding(padding = 2, part = "all") %>%        # tighter cells
+    height_all(height = 0.18) %>%                 # compact rows
+    fit_to_width(ft, max_width = 9) %>%
+    autofit()
+}
+
+
+
 # desired order of conditions
 cond_order <- c(
   "T10_dry", "T10_wet",
@@ -189,6 +203,8 @@ cond_order <- c(
   "T100_dry", "T100_wet",
   "T500_dry", "T500_wet"
 )
+
+
 
 
 # produce different results
@@ -267,9 +283,6 @@ ggplot() +
 ## Table xx : Results, NBS specific share per catchment --------------------------
 # table with area and or volume
 
-# TODO make for each NBS separate
-# TODO adjust to flextable
-
 area_nbs <- scen_all_rel %>%
   select(lu, description, catch, area, rel_area) %>%
   distinct() %>%
@@ -281,9 +294,33 @@ area_nbs <- scen_all_rel %>%
          catch = str_remove(catch, "_10m"),
          description = str_replace(description, "_", " "))
 
-write_csv(area_nbs, "results/area_nbs.csv")
+# save so table can be remade
+saveRDS(area_nbs, "documenten_en_literatuur/results/r_tables/area_nbs.rds")
 
-## Table xx : Results, normalised effects NBS ----------------------------------
+# make and write flextable
+area_nbs <- readRDS("documenten_en_literatuur/results/r_tables/area_nbs.rds")
+
+# TODO change from per catch to per NBS!
+subc <- unique(area_nbs$catch)
+
+ft_area_list <- vector("list", length = length(subc))
+
+for (i in seq_along(subc)) {
+t_area_nbs <- area_nbs %>%
+  filter(catch == subc[i]) %>%
+  select(-lu, -catch) %>%
+  mutate(rel_area = sprintf("%s%%", rel_area)) %>%
+  rename_with(~ c("NBS", "Oppervlakte \n(ha)", "opp. %", "volume \n(m³)"))
+
+
+
+ft_area_list[[i]] <- flextable(t_area_nbs) %>%
+  style_ft()
+}
+
+ft_area_nbs[[1]]
+
+## Table xx : Results, normalised effects NBS area -----------------------------
 # table with effects per measure and per area
 
 # TODO adjust to flextable
@@ -312,13 +349,61 @@ effect_nbs <- scen_all_rel %>%
 
 ef_norm <- effect_nbs %>%
   select(-Q_red) %>%
-  pivot_wider(names_from = cond, values_from = Qar_red)
+  pivot_wider(names_from = cond, values_from = Qar_red) %>%
+  rename("NBS" = "description") %>%
+  ungroup() %>%
+  select(-lu)
 
+
+# save so table can be remade
+saveRDS(ef_norm, "documenten_en_literatuur/results/r_tables/ef_norm.rds")
+
+# make and write flextable
+ef_norm <- readRDS("documenten_en_literatuur/results/r_tables/ef_norm.rds")
+
+ft_ef_norm <- flextable(ef_norm) %>%
+  style_ft() %>%
+  fit_to_width(max_width = 6.5)
+
+ft_ef_norm
+# printing is done at the bottom of the script
+
+## Table xx : Results, normalised effects NBS vol ------------------------------
 # different tables for volumes?
+vol_nbs <- c(17, 21)
 
-write_csv(effect_nbs, "results/effect_nbs.csv")
+effect_nbs_vol <- scen_all_rel %>%
+  mutate(Qdiff = Qdiff / -1000) %>% # to m3
+  filter(lu %in% vol_nbs) %>%
+  mutate(catch = str_remove(catch, "_10m"),
+         description = str_replace(description, "_", " ")) %>%
+  select(catch, description, cond, Qdiff) %>%
+  left_join(area_nbs, by = c("catch", "description")) %>%
+  mutate(rel_vol_ef = Qdiff / vol) %>%
+  group_by(lu, description, cond) %>%
+  summarise(rel_mean = mean(rel_vol_ef),
+            rel_min = min(rel_vol_ef),
+            rel_max = max(rel_vol_ef)) %>%
+  arrange(lu) %>%
+  ungroup() %>%
+  mutate(vol_red = sprintf("%.1f (%.1f - %.1f)", rel_mean, rel_min, rel_max),
+         cond = str_remove(cond, "res_"),
+         cond = factor(cond, levels = cond_order)) %>%
+  select(description, cond, vol_red) %>%
+  arrange(cond) %>%
+  pivot_wider(names_from = cond, values_from = vol_red) %>%
+  rename("NBS" = "description")
+  
+# save so table can be remade
+saveRDS(effect_nbs_vol, "documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
 
+# make and write flextable
+effect_nbs_vol <- readRDS("documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
 
+ft_ef_vol <- flextable(effect_nbs_vol) %>%
+  style_ft()
+ 
+ft_ef_vol
 
 
 ## Table xx: Results, NBS Qpeak reduction -------------------------------------
@@ -412,7 +497,7 @@ thick_border <- fp_border(color = "darkgrey", width = 2)
 
 ft <- hline(ft, i = end_rows, border = thick_border, part = "body")
 
-ft <- fit_to_width(ft, max_width = 9)
+ft <- 
 
 ft
 
@@ -592,22 +677,58 @@ lu_areas <- table %>%
   select(gebied, oppervlakte, helling, everything())
   
 
+# save so table can be remade
+saveRDS(lu_areas, "documenten_en_literatuur/results/r_tables/lu_areas.rds")
+
 # make and write flextable
-ft <- flextable(lu_areas) %>%
-  flextable::align(align = "center", part = "all") %>%
-  bold(part = "header") %>%
-  merge_v(j = "gebied") %>%
-  valign(j = "gebied", valign = "center") %>%
-  fontsize(size = 8, part = "all") %>%          # smaller font
-  padding(padding = 2, part = "all") %>%        # tighter cells
-  height_all(height = 0.18) %>%                 # compact rows
-  autofit()
+lu_areas <- readRDS("documenten_en_literatuur/results/r_tables/lu_areas.rds")
 
-ft
+ft_lu_area <- flextable(lu_areas) %>%
+  style_ft()
 
-doc <- read_docx() %>%
-  body_add_par("Gebied overzicht", style = "heading 1") %>%
-  body_add_flextable(ft)
+ft_lu_area
 
-print(doc, target = "documenten_en_literatuur/results/Gebied_overzicht.docx")
 
+
+
+# 5. Print results ------------------------------------------------------------
+
+# make a word document with bookmarks for all tables, this will be filled
+# while running the code below.
+doc <- read_docx()
+
+doc <- doc %>%
+  #Heading
+  body_add_par("NBS results report - tables and figures", style = "heading 1") %>%
+  body_add_par("") %>%
+  
+  #table
+  
+  body_add_par("Normalised effects NBS per area", style = "heading 2") %>%
+  body_add_flextable(ft_ef_norm) %>%
+  
+  body_add_par("Normalised effects NBS per volume", style = "heading 2") %>%
+  body_add_flextable(ft_ef_vol) %>%
+  
+  body_add_par(paste0("NBS area in ", subc[1]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[1]]) %>%
+  
+  body_add_par(paste0("NBS area in ", subc[2]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[2]]) %>%
+  
+  body_add_par(paste0("NBS area in ", subc[3]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[3]])%>%
+  
+  body_add_par("Gebied overzicht", style = "heading 2") %>%
+  body_add_flextable(ft_lu_area)
+
+
+
+
+# save everything
+print(doc, target = "documenten_en_literatuur/results/nbs_report_tables_figures.docx")
+
+
+# figure
+body_add_par("Peak discharge figure", style = "heading 1") %>%
+  body_add_gg(value = p_peak, width = 6.5, height = 4.5)
