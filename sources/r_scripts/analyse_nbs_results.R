@@ -517,7 +517,7 @@ print(doc, target = "Total_discharge_table.docx")
 
 # select directory in LISEM_data
 geul_dir <- "LISEM_data/Geul_10m/maps/"
-sub_catch_name <- c("Bildchen", "Bocholtz", "Pesaken", "Lemiers", "Hekerbeek", 
+sub_catch_name <- c("Bildchen", "Bocholtz", "Pesaken", "Mechelderbeek", "LangeGracht", 
                    "Grunstrasserbach")
 sub_catch_dir <- sub_catch_name %>%
   paste0("LISEM_data/subcatchments/", ., "_10m/maps/")
