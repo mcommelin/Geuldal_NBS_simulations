@@ -120,6 +120,10 @@ a3 <- bind_rows(list1[[3]])
 
 res_pcr <- bind_rows(a1, a2, a3)
 
+# save and load so whole analysis can be skippen
+saveRDS(res_pcr, "documenten_en_literatuur/results/r_tables/res_pcr.rds")
+res_pcr <- readRDS("documenten_en_literatuur/results/r_tables/res_pcr.rds")
+
 # 2. Hydrographs --------------------------------------------------------------
 
 # find all hydrograph files in the result folders
@@ -146,6 +150,11 @@ for (i in seq_along(hydr_files)) {
   
 }
 all_hy <- bind_rows(hydr_list) 
+
+# save and load so whole analysis can be skippen
+saveRDS(all_hy, "documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
+all_hy <- readRDS("documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
+
 
 # summary all NBS 
 all <- all_hy %>%
@@ -310,8 +319,11 @@ ggplot() +
   theme_classic() +
   facet_wrap(~ catch, nrow = 3, scales = "free_y")
 
+## Table xx: Results, Discharge baseline runs ----------------------------------
 
-## Table xx : Results, NBS specific share per catchment --------------------------
+
+
+## Table xx : Results, NBS specific share per catchment ------------------------
 # table with area and or volume
 
 area_nbs <- scen_all_rel %>%
@@ -640,7 +652,7 @@ print(doc, target = "Total_discharge_table.docx")
 
 # 4. Catchment overview -------------------------------------------------------
 
-## Table xx : introduction NBS report --------------------------------
+## Table xx : Introduction, subcatch overview ----------------------------------
 # select directory in LISEM_data
 geul_dir <- "LISEM_data/Geul_10m/maps/"
 sub_catch_name <- c("Bildchen", "Bocholtz", "Pesaken", "Lemiers", "Hekerbeek", 
