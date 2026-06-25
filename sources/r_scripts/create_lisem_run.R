@@ -152,7 +152,7 @@ ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
                             paste0("Channel baseflow method=0"))
   }
   
-  # set theta calibration
+  # set inithead calibration
   if (!is.null(theta_cal)) {
     run_temp <- str_replace(run_temp, "Psi calibration=1.00",
                             paste0("Psi calibration=", theta_cal))
@@ -221,7 +221,7 @@ create_lisem_run <- function(
     return()
   }
   
-  # check if it is a base run, or simulation a NBS
+  # check if it is a base run, or simulation of a NBS
   if (NBS_num != 0) {
     do_NBS = TRUE
   } else {
@@ -422,13 +422,7 @@ create_lisem_run <- function(
                                       side = "left", pad = "0"), ":",
                               str_pad(as.character(hour(ts_end) * 60 + minute(ts_end)), width = 4,
                                       side = "left", pad = "0")))
-    # load theta_cal file
-    if (do_hpc == FALSE) {
-    cn = catch_num
-    theta_factors <- read_csv("sources/setup/calibration/calibration_theta.csv") %>%
-      filter(catch_num == cn)
-    }
-    
+
     for (i in seq_along(events$event_start)) {
       #make baseflow
       date_event <- str_remove_all(as.character(date(events$ts_start[i])), "-")
@@ -451,19 +445,6 @@ create_lisem_run <- function(
       file.rename(paste0(subdir, "baseflow.map"),
                   paste0(subdir, "baseflow_", date_event, ".map"))
       
-      # get theta_cal
-      if (do_hpc == TRUE) {
-        theta_cal <- inith_cal
-      } else {
-      if (nrow(theta_factors) == 0) {
-        theta_cal <-  1.00
-      } else {
-        theta_cal <- theta_factors %>%
-          filter(date == date_event)
-        
-        theta_cal <- theta_cal$theta_cal}
-      }
-      
       #make an additional results directory for each standard event
       dir <- paste0("res_", date_event)
         dir_path <- paste0(run_dir, dir)
@@ -471,7 +452,6 @@ create_lisem_run <- function(
           dir.create(dir_path)
         }
 
-      
       # make runfile  
       if (do_runfile == TRUE) {
         
@@ -486,7 +466,7 @@ create_lisem_run <- function(
           resolution = resolution,
           do_ndvi_run = do_ndvi,
           run_type = run_type,
-          theta_cal = theta_cal,
+          theta_cal = inith_cal,
           cpu_cores = cpu_cores,
           do_hpc = do_hpc
         )
