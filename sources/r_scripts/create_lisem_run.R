@@ -56,7 +56,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   if (run_type == "cal") {
     rain_file <- paste0("rain_5min_", evdate, ".txt")
   } else {
-    rain_file <- paste0("rain_",str_remove_all(evdate, "_(w|d).*"), ".txt")
+    rain_file <- paste0("rain_",evdate, ".txt")
     # set ID map to 1 zone
     run_temp <- str_replace_all(run_temp, "ID=ID.map",
                                 paste0("ID=one.map"))
@@ -81,11 +81,24 @@ make_runfile_lisem <- function(work_dir = NULL,
   # initial head
   runname <- evdate
   if (run_type == "cal") {
+    if (theta_cal > 90) {
+      # use precalculated initial head values, heterogeneous over the catchment
+      # can stille be calibrated with an homogeneous factor.
     # set correct inithead for event
     ih_ev <- str_remove(runname, "^\\d\\d")
     
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
                                 paste0("ih", ih_ev))
+    # correct theta_cal
+    theta_cal <- theta_cal - 100
+    
+    } else {
+      # use 1 homogeneous initial head value for the whole catchment.
+      # we fill -100 always, with the calibration factor this can be tuned the 
+      # the desired value.
+      run_temp <- str_replace_all(run_temp, "Use one matrix potential=0", 
+                                  paste0("Use one matrix potential=1"))
+    }
   } else {
     # run with standard rain
     
@@ -192,7 +205,10 @@ ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
 #' Will be placed at ./LISEM_runs/hpc_runs/**dir_name** Should end with a "/"!. 
 #' Only works if do_hpc = TRUE
 #' @param inith_cal Calibration factor multiplying inithead for the whole 
-#' catchment. Only used in hpc setup.
+#' catchment. Only makes sense for calibrartion events, but also works for base runs.
+#' When you want to use the precalculated initial head instead of a homogeneous value,
+#' Add 100 to the calibration factor, so 100 + 1.05 = 101.05. The code will adjust this back.
+#' Also make sure that the precalculated values are available as maps in ./spatial_data
 #' 
 #' @returns creates a map and runfile dataset to run OpenLISEM
 #'
@@ -244,9 +260,14 @@ create_lisem_run <- function(
     
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
-      NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
-        filter(lu_nr == NBS_num)
-      NBS_name <- NBS_desc$description
+      # adjust to include vkv
+      if (NBS_num == 99) {
+        NBS_name <- "vkv_test"
+      } else {
+        NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
+          filter(lu_nr == NBS_num)
+        NBS_name <- NBS_desc$description
+      }
       catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
                           "m_", NBS_name, "/")
     } 
@@ -260,9 +281,14 @@ create_lisem_run <- function(
     
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
+      # adjust to include vkv
+      if (NBS_num == 99) {
+        NBS_name <- "vkv_test"
+      } else {
       NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
         filter(lu_nr == NBS_num)
       NBS_name <- NBS_desc$description
+      }
       catch_dir <- paste0(catch_num, "_", resolution, "m_", NBS_name, "/")
     } 
     run_dir <- paste0("LISEM_runs/hpc_runs/", dir_name, catch_dir)
@@ -320,7 +346,10 @@ create_lisem_run <- function(
   
   file.copy(from = "sources/setup/tables/chan.tbl", to = subdir, overwrite = T)
   
-  # create landuse calibration table: used in prepare_db.map AND prepare_ndvi.mod
+  # create landuse calibration table: used in prepare_ndvi.mod
+  # NOTE - the calibration for RR and Mannings N is already taken into account 
+  # when making the landuse table: prepare_landuse_table.R
+  # The Ksat calibration is used in the SWATRE files preparation.
   cal_lu <- read_csv("sources/setup/calibration/calibration_landuse.csv") %>%
     select(-cal_comment)
   nms <- as.character(seq(0, ncol(cal_lu) - 1))
@@ -340,16 +369,114 @@ create_lisem_run <- function(
   }
   
   ### start running scripts
-  # update the landuse map, to include the NBS
+  # update the landuse map and DEM, to include the NBS
+  # TODO extend code to allow for multiple NBS in the same simulation
+  
   if (NBS_num != 0) {
-    # rename the map
+    # rename the map, for easier coding
     file.rename(paste0(subdir, nbs_map), paste0(subdir, "nbs.map"))
-    file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"))
+    # keep the original landuse map
+    file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"),
+              overwrite = TRUE)
+    
+    # adjust landuse map
+    
+    # check if the input map contains Landscape elements
+    # if yes, the value in the input maps that needs to be changed is not
+    # 1 but 2, this is done in the pcraster script.
+    do_LE <- if(NBS_desc$do_LE == TRUE) 1 else 0
+    
     pcr_script(
-      script = paste0("prepare_nbs.mod ", NBS_num),
+      script = paste0("prepare_nbs.mod ", NBS_num, " ", do_LE),
       script_dir = "sources/pcr_scripts",
       work_dir = subdir
     )
+    
+    # adjust the DEM for landscape elements
+    # keep the original dem
+    file.copy(paste0(subdir, "dem.map"), paste0(subdir, "dem_base.map"),
+              overwrite = TRUE)
+    
+    # load the file with NBS properties for LE elements
+    nbs_prop <- read_csv("sources/setup/tables/nbs_properties.csv")
+    
+    # swales - 17
+    if (NBS_num == 17) {
+      # find properties from table
+      prop <- nbs_prop %>%
+        filter(lu_nr == NBS_num)
+      
+    swale_width <- filter(prop, property == "swale_width")$value # [m] give the width in meters of the ditch of the swale
+    swale_depth <- filter(prop, property == "swale_depth")$value # [m] the difference between the top of the dike and deepest
+                       # point of the ditch
+     pcr_script(
+      script = paste0("swales.mod ", swale_depth, " ", swale_width),
+      script_dir = "sources/pcr_scripts",
+      work_dir = subdir
+    )
+    }
+    
+    # terraces / graften - 19
+    if (NBS_num == 19) {
+      
+      # find properties from table
+      prop <- nbs_prop %>%
+        filter(lu_nr == NBS_num)
+      
+      terrace_spacing <- filter(prop, property == "terrace_spacing")$value 
+                # [m] the contour elevation spacing of the designed terraces
+                # this should correspond to the input map
+     desired_slope <- filter(prop, property == "desired_slope")$value  
+                # [%] the desired slope of the 'flat' sections 
+     
+     slope_deg <- (atan(desired_slope/100) * 180) / pi
+     pcr_script(
+       script = paste0("terraces.mod ", terrace_spacing, " ", desired_slope),
+       script_dir = "sources/pcr_scripts",
+       work_dir = subdir
+     )
+     # use SAGA GIS fill_sinks (wang & liu) to smooth the terraces!
+     gdal_translate(paste0(subdir, "ter_dem_part.map"), paste0(subdir, "ter_dem_part.sdat"), of = "SAGA")
+     RSAGA::rsaga.fill.sinks(in.dem = paste0(subdir, "ter_dem_part.sgrd"), 
+                             out.dem = paste0(subdir, "ter_dem_part_filled.sgrd"),
+                             minslope = slope_deg,
+                             method = "wang.liu.2006")
+     gdal_translate(src_dataset = paste0(subdir, "ter_dem_part_filled.sdat"), 
+                    dst_dataset = paste0(subdir, "ter_dem_part_filled.map"), 
+                    of = "PCRASTER", oo = "PCRASTER_VALUESCALE=VS_SCALAR")
+     
+     # in pcraster combine adjusted dem with original dem
+     pcrcalc(options = "dem.map=cover(if(terrace.map > 0 and ter_dem_part_filled.map > 0, ter_dem_part_filled.map, dem_base.map), dem_base.map)", 
+             work_dir = subdir)
+     
+    }
+    
+    # infiltratiestroken - 20
+    if (NBS_num == 20) {
+      pcr_script(
+        script = paste0("infiltrationstrips.mod"),
+        script_dir = "sources/pcr_scripts",
+        work_dir = subdir)
+    }
+     
+     
+    # waterbuffers - 21
+    if (NBS_num == 21) {
+      # find properties from table
+      prop <- nbs_prop %>%
+        filter(lu_nr == NBS_num)
+      
+      pond_volume  <- filter(prop, property == "pond_volume")$value 
+                          # [m3] give the design volume of the ponds
+
+      # point of the ditch
+      pcr_script(
+        script = paste0("retentionponds.mod ", pond_volume),
+        script_dir = "sources/pcr_scripts",
+        work_dir = subdir)
+     
+    }    
+    
     file.rename(paste0(subdir, "nbs.map"), paste0(subdir, nbs_map))
   }
   
@@ -369,7 +496,6 @@ create_lisem_run <- function(
       work_dir = subdir
     )
   }
-  
   
   pcr_script(
     script = "prepare_db.mod",
@@ -477,7 +603,7 @@ create_lisem_run <- function(
   if (run_type == "base") {
     if (do_runfile == TRUE) {
       # loop over standard events in stead of dates
-      rains <- c("T50", "T100", "T500", "T500_uur")
+      rains <- c("T10", "T25", "T100", "T500")
       initheads <- c("wet", "dry")
       standard_ev <- expand_grid(rains, initheads) %>%
         mutate(ev = paste0(rains, "_", initheads))

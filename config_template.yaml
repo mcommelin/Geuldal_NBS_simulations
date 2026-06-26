@@ -1,5 +1,5 @@
 # This configuration file is used to set user specific settings for this project.
-# Make adjustement to all settings where needed and save this file as:
+# Make adjustments to all settings where needed and save this file as:
 # ./config.yaml
 
 ## Preparation ------------------
@@ -23,14 +23,14 @@ conda_env: "lisem"
 # for subcatchment names and numbers.
 # WARNING: 1 = the whole catchment - very long processing times
 # Subcatchments for calibration are: Gulp = 4, Kelmis = 18 and Eyserbeek = 14.
-# For testing of NBS two small catchment, Bocholtz = 54 and Pesaken = 52 are used.
+# For testing of NBS 6 small catchments [52, 54, 55, 56, 57, 58] are used.
 # You can specify one or more numbers, e.g. [10, 12, 18]
 subcatchments: [4, 18]
 
-# 6. resolution to work on, available are 5 , 10 and 20, multiple is also possible
-resolution: [10, 20]
+# 6. resolution to work on, available are 5 , 10 and 20, multiple is also possible, default = 10
+resolution: [10]
 
 # 7. Number of cpu cores assigned to the lisem model.
-# -1 = 50% of available cores assigned (default)
+# -1 = 50% of available cores assigned
 # 0 = all available cores assigned - with GUI can give instability!
-cpu_cores: [-1]
+cpu_cores: [2]

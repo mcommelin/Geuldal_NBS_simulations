@@ -33,7 +33,7 @@ bufvol=buffermask.map;      # buffer volumes, only used to make buffers.map cosm
 NDBI = ndbi.map; # normalized Build-up 
 
 ### INPUT TABLES ### 
-# calibration for standard maps moved to R code,
+# calibration for standard maps moved to R code: prepare_landuse_table.R
 # still active in date specific do_ndvi = TRUE
 lutbl = lu.tbl;     # 
 chantbl = chan.tbl;	# table with param values for different channel types
