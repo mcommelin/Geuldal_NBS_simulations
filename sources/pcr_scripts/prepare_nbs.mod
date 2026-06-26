@@ -22,5 +22,5 @@ nbs = cover(nbs, 0) * catchment;
 # for landscape elements value to change = 2 otherwise 1
 nbs_val = if(do_LE eq 1, 2, 1);
 
-# update the landuse map the the correct NBS class acording to the table
+# update the landuse map to the correct NBS class acording to the table
 report landuse = if(nbs eq nbs_val, nbs_num, landuse);
