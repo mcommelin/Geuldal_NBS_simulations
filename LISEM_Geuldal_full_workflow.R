@@ -130,7 +130,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
-points_id <- c(18) # use if you want to change catchment
+points_id <- c(14) # use if you want to change catchment
 reso <- c(10) # select different resolution
 
 # load the function for subcatchment preparation
@@ -192,7 +192,7 @@ for (i in seq_along(points_id)) {
       swatre_file = swatre_file,
       run_type = "cal",
       do_runfile = T,
-      inith_cal = 1.0
+      inith_cal = 0.65
     )
   }
 }
