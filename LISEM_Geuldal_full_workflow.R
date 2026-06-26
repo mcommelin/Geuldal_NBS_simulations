@@ -248,7 +248,7 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 54, calc_ldd = F,
 # create the run:
 source("sources/r_scripts/create_lisem_run.R")
 create_lisem_run(resolution = 10, catch_num = 54, swatre_file = swatre_file,
-                 run_type = "base", do_hpc = FALSE, cpu_cores = ncpu)
+                 run_type = "base", do_hpc = FALSE, cpu_cores = ncpu, inith_cal = 1.0)
 
 
 # TODO add meaningfull visualisation and reporting.
