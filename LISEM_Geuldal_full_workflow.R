@@ -130,7 +130,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
-points_id <- c(14) # use if you want to change catchment
+points_id <- c(4, 14, 18) # use if you want to change catchment
 reso <- c(10) # select different resolution
 
 # load the function for subcatchment preparation
@@ -295,7 +295,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 # update your subcatchment database with the NBS maps
 # the function will find any NBS maps in the base dataset and include them in 
 # the subcatchments.
-points_id <- c(52, 54, 55)# use if you want to change catchment
+points_id <- c(52, 54, 55, 56, 57, 58)# use if you want to change catchment
 reso <- c(10)
 
 # load the function for subcatchment preparation
@@ -320,7 +320,7 @@ source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
 # see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
-nbs_ids <- c(0, 11, 14, 17, 21) # 0 = base run without NBS
+nbs_ids <- c(0, 14, 19) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
