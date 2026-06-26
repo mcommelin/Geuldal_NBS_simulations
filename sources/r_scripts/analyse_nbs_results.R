@@ -1,10 +1,14 @@
 # code to run an analysis for different scenarios 
 
+library(flextable)
+library(officer)
+library(scales)
+
 # 1. Spatial results ----------------------------------------------------------
 
 # fill the directory where the runs that need to be analyzed are located
 base_dir <- "results/nbs_simulations_new_rain_20260527"
-base_dir <- "LISEM_runs"
+#base_dir <- "LISEM_runs"
 # find different scenarios - assume workflow based folder structure!
 scen_dirs <- dir(base_dir, full.names = TRUE)
 
@@ -101,7 +105,7 @@ for (i in seq_along(baseline_dirs)) {
                scen = sc,
                cond = conditions[k])
 
-    } # end conditions
+    } # end conditions loop
     list2[[j]] <- list3
   } # end catchment loop
   
@@ -116,6 +120,10 @@ a3 <- bind_rows(list1[[3]])
 
 res_pcr <- bind_rows(a1, a2, a3)
 
+# save and load so whole analysis can be skippen
+saveRDS(res_pcr, "documenten_en_literatuur/results/r_tables/res_pcr.rds")
+res_pcr <- readRDS("documenten_en_literatuur/results/r_tables/res_pcr.rds")
+
 # 2. Hydrographs --------------------------------------------------------------
 
 # find all hydrograph files in the result folders
@@ -129,7 +137,7 @@ for (i in seq_along(hydr_files)) {
   hy_names <- readLines(hydr_files[i])[2] %>%
     str_split(",", simplify = TRUE) %>%
     str_remove_all(" |#")
-  runtype = str_extract(hydr_files[i], "(Bo|Pe|Bi)[^/]+")
+  runtype <- sub("^([^/]+/){2}([^/]+).*$", "\\2", hydr_files[i])
   rain = str_extract(hydr_files[i], "(res_)[^/]+")
   hydr_list[[i]] <- read_csv(hydr_files[i], skip = 2) %>%
     rename_with(~hy_names) %>%
@@ -142,6 +150,11 @@ for (i in seq_along(hydr_files)) {
   
 }
 all_hy <- bind_rows(hydr_list) 
+
+# save and load so whole analysis can be skippen
+saveRDS(all_hy, "documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
+all_hy <- readRDS("documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
+
 
 # summary all NBS 
 all <- all_hy %>%
@@ -174,7 +187,66 @@ a2 <- all %>%
 # load hydrograph results as well.
 # - recalculate total outflow volume to mm outflow and Q/P ratio
 
-# 3. summarise results ---------------------------------------------------------
+
+# plot
+q_ev <- all_hy %>%
+  filter(R == "Pesaken_10m" &
+           P == "res_T25_dry")
+
+titel <- paste0("Afvoer en neerslag voor ", q_ev$R[1], " met conditie: ", 
+                str_remove(q_ev$P[1], "res_"))
+
+# plot
+# axis constants
+q_max_round <- ceiling(max(c(q_ev$Q), na.rm = TRUE))
+p_max       <- max(q_ev$Pavg, na.rm = TRUE)
+k           <- q_max_round / (p_max * 1.2)
+y_top       <- q_max_round * 2
+
+# plot regular and inverted y-axis
+ggplot(q_ev) +
+  geom_linerange(aes(x = Time, ymin = y_top,
+                               ymax = y_top - Pavg * k), color = "grey") +
+  geom_line(aes(x = Time, y = Q), linewidth = 0.3) +
+  scale_y_continuous(
+    name     = "Debiet (L s⁻¹)",
+    limits   = c(0, y_top),
+    sec.axis = sec_axis(
+      ~ (y_top - .) / k,
+      name = "Neerslag (mm h⁻¹)"
+    ),
+    expand = c(0,0)) +
+  labs(title = titel) +
+  theme_bw()
+
+# 3. Summarise results ---------------------------------------------------------
+
+## helper settings -------------------------------------------------------------
+
+# flextable layout
+style_ft <- function(ft) {
+  ft %>%
+    flextable::align(align = "center", part = "all") %>%
+    bold(part = "header") %>%
+    fontsize(size = 8, part = "all") %>%          # smaller font
+    padding(padding = 1, part = "all") %>%        # tighter cells
+    height_all(height = 0.18) %>%                 # compact rows
+    fit_to_width(max_width = 7)
+}
+
+
+
+# desired order of conditions
+cond_order <- c(
+  "T10_dry", "T10_wet",
+  "T25_dry", "T25_wet",
+  "T100_dry", "T100_wet",
+  "T500_dry", "T500_wet"
+)
+
+
+
+
 # produce different results
 
 # 1: area of each catchment
@@ -247,7 +319,11 @@ ggplot() +
   theme_classic() +
   facet_wrap(~ catch, nrow = 3, scales = "free_y")
 
+## Table xx: Results, Discharge baseline runs ----------------------------------
 
+
+
+## Table xx : Results, NBS specific share per catchment ------------------------
 # table with area and or volume
 
 area_nbs <- scen_all_rel %>%
@@ -261,12 +337,40 @@ area_nbs <- scen_all_rel %>%
          catch = str_remove(catch, "_10m"),
          description = str_replace(description, "_", " "))
 
-write_csv(area_nbs, "results/area_nbs.csv")
+# save so table can be remade
+saveRDS(area_nbs, "documenten_en_literatuur/results/r_tables/area_nbs.rds")
 
+# make and write flextable
+area_nbs <- readRDS("documenten_en_literatuur/results/r_tables/area_nbs.rds")
+
+# TODO change from per catch to per NBS!
+subc <- unique(area_nbs$catch)
+
+ft_area_list <- vector("list", length = length(subc))
+
+for (i in seq_along(subc)) {
+t_area_nbs <- area_nbs %>%
+  filter(catch == subc[i]) %>%
+  select(-lu, -catch) %>%
+  mutate(rel_area = sprintf("%s%%", rel_area)) %>%
+  rename_with(~ c("NBS", "Oppervlakte \n(ha)", "opp. %", "volume \n(m³)"))
+
+
+
+ft_area_list[[i]] <- flextable(t_area_nbs) %>%
+  style_ft()
+}
+
+ft_area_nbs[[1]]
+
+## Table xx : Results, normalised effects NBS area -----------------------------
 # table with effects per measure and per area
+
+# TODO adjust to flextable
+# the multiplication with -1 is used to express the reduction as positive value
 effect_nbs <- scen_all_rel %>%
   mutate(Qdiff = Qdiff / -1000) %>% # to m3
-  group_by(lu, description, catch) %>%
+  group_by(lu, description, cond) %>%
   summarise(Qmm_red_av = mean((Qmm - Qmm_base) * -1),
             Qmm_red_min = min((Qmm - Qmm_base)* -1),
             Qmm_red_max = max((Qmm - Qmm_base)* -1),
@@ -280,34 +384,71 @@ effect_nbs <- scen_all_rel %>%
   mutate(Qmm_red = sprintf("%.1f (%.1f - %.0f)", Qmm_red_av, Qmm_red_min, Qmm_red_max),
          Qar_red = sprintf("%.1f (%.1f - %.1f)", Qar_red_av, Qar_red_min, Qar_red_max),
          Q_red = sprintf("%.0f (%.0f - %.0f)", Q_red_av, Q_red_min, Q_red_max),
-         catch = str_remove(catch, "_10m"),
-         description = str_replace(description, "_", " ")) %>%
-  select(lu, description, catch, Qmm_red, Qar_red, Q_red)
+         description = str_replace(description, "_", " "),
+         cond = str_remove(cond, "res_"),
+         cond = factor(cond, levels = cond_order)) %>%
+  select(lu, description, cond, Qar_red, Q_red) %>%
+  arrange(cond)
 
-write_csv(effect_nbs, "results/effect_nbs.csv")
+ef_norm <- effect_nbs %>%
+  select(-Q_red) %>%
+  pivot_wider(names_from = cond, values_from = Qar_red) %>%
+  rename("NBS" = "description") %>%
+  ungroup() %>%
+  select(-lu)
 
-# table with mean reductions nbs
-main_effect_nbs <- scen_all_rel %>%
+
+# save so table can be remade
+saveRDS(ef_norm, "documenten_en_literatuur/results/r_tables/ef_norm.rds")
+
+# make and write flextable
+ef_norm <- readRDS("documenten_en_literatuur/results/r_tables/ef_norm.rds")
+
+ft_ef_norm <- flextable(ef_norm) %>%
+  style_ft()
+
+ft_ef_norm
+# printing is done at the bottom of the script
+
+## Table xx : Results, normalised effects NBS vol ------------------------------
+# different tables for volumes?
+vol_nbs <- c(17, 21)
+
+effect_nbs_vol <- scen_all_rel %>%
   mutate(Qdiff = Qdiff / -1000) %>% # to m3
-  group_by(lu, description, catch) %>%
-  summarise(Qmm_red_av = mean((Qmm - Qmm_base) * -1),
-            Qmm_red_min = min((Qmm - Qmm_base)* -1),
-            Qmm_red_max = max((Qmm - Qmm_base)* -1),
-            Qar_red_av = mean(Q_area_diff* -1),
-            Qar_red_min = min(Q_area_diff* -1),
-            Qar_red_max = max(Q_area_diff* -1),
-            Q_red_av = mean(Qdiff),
-            Q_red_min = min(Qdiff),
-            Q_red_max = max(Qdiff)) %>%
-  arrange(lu) %>%
-  mutate(Qmm_red = sprintf("%.1f (%.1f - %.0f)", Qmm_red_av, Qmm_red_min, Qmm_red_max),
-         Qar_red = sprintf("%.1f (%.1f - %.1f)", Qar_red_av, Qar_red_min, Qar_red_max),
-         Q_red = sprintf("%.0f (%.0f - %.0f)", Q_red_av, Q_red_min, Q_red_max),
-         catch = str_remove(catch, "_10m"),
+  filter(lu %in% vol_nbs) %>%
+  mutate(catch = str_remove(catch, "_10m"),
          description = str_replace(description, "_", " ")) %>%
-  select(lu, description, catch, Qmm_red, Qar_red, Q_red)
+  select(catch, description, cond, Qdiff) %>%
+  left_join(area_nbs, by = c("catch", "description")) %>%
+  mutate(rel_vol_ef = Qdiff / vol) %>%
+  group_by(lu, description, cond) %>%
+  summarise(rel_mean = mean(rel_vol_ef),
+            rel_min = min(rel_vol_ef),
+            rel_max = max(rel_vol_ef)) %>%
+  arrange(lu) %>%
+  ungroup() %>%
+  mutate(vol_red = sprintf("%.1f (%.1f - %.1f)", rel_mean, rel_min, rel_max),
+         cond = str_remove(cond, "res_"),
+         cond = factor(cond, levels = cond_order)) %>%
+  select(description, cond, vol_red) %>%
+  arrange(cond) %>%
+  pivot_wider(names_from = cond, values_from = vol_red) %>%
+  rename("NBS" = "description")
+  
+# save so table can be remade
+saveRDS(effect_nbs_vol, "documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
 
-write_csv(effect_nbs, "results/main_effect_nbs.csv")
+# make and write flextable
+effect_nbs_vol <- readRDS("documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
+
+ft_ef_vol <- flextable(effect_nbs_vol) %>%
+  style_ft()
+ 
+ft_ef_vol
+
+
+## Table xx: Results, NBS Qpeak reduction -------------------------------------
 
 # heat table qmax
 # desired order of conditions
@@ -398,7 +539,7 @@ thick_border <- fp_border(color = "darkgrey", width = 2)
 
 ft <- hline(ft, i = end_rows, border = thick_border, part = "body")
 
-ft <- fit_to_width(ft, max_width = 9)
+ft <- 
 
 ft
 
@@ -408,7 +549,7 @@ doc <- read_docx() %>%
 
 print(doc, target = "peak_discharge_table.docx")
 
-
+## Table xx: Results, NBS Qtot reduction ---------------------------------------
 
 # heat table qmm total
 # desired order of conditions
@@ -507,3 +648,129 @@ doc <- read_docx() %>%
   body_add_flextable(ft)
 
 print(doc, target = "Total_discharge_table.docx")
+
+
+# 4. Catchment overview -------------------------------------------------------
+
+## Table xx : Introduction, subcatch overview ----------------------------------
+# select directory in LISEM_data
+geul_dir <- "LISEM_data/Geul_10m/maps/"
+sub_catch_name <- c("Bildchen", "Bocholtz", "Pesaken", "Mechelderbeek", "LangeGracht", 
+                   "Grunstrasserbach")
+sub_catch_dir <- sub_catch_name %>%
+  paste0("LISEM_data/subcatchments/", ., "_10m/maps/")
+catch_names <- c("Geul", sub_catch_name)
+dirs <- c(geul_dir, sub_catch_dir)
+
+area_list <- vector("list", length = length(dirs))
+
+for (i in seq_along(dirs)) {
+    # do PCR script
+pcr_script(script = "catchment_overview.mod",
+           script_dir = "sources/pcr_scripts",
+           work_dir = dirs[i])
+
+# write PCR results to table
+pcrtable(work_dir = dirs[i],
+         maps = "lu_nom.map av_slope.map",
+         outfile = "areas.txt")
+
+#read table in R
+tab <- read.table(paste0(dirs[i], "/areas.txt"), header = F)
+
+# add information to table
+nms <- c("lu", "slope", "area")
+
+area_list[[i]] <- as_tibble(tab) %>%
+  rename_with( ~ nms) %>%
+  mutate(catch = catch_names[i])
+
+# remove maps and pcrtable - clean_up
+files <- c("lu_nom.map", "av_slope.map", "grad.map", "areas.txt")
+file.remove(paste0(dirs[i], files))
+
+} # end catchment loop
+
+
+# load results and format as flextable
+table <- bind_rows(area_list)
+
+# reorder
+full_area <- table %>%
+  group_by(catch) %>%
+  summarize(full_area = sum(area) / 1000000,
+            slope = min(slope))
+
+lu_areas <- table %>%
+  select(-slope) %>%
+  filter(lu != 0) %>%  # remove landuse class 0 - it is an artiefact and doesnt add a lot.
+  mutate(area = area / 1000000) %>%
+  left_join(full_area, by = "catch") %>%
+  mutate(fraction = (area / full_area) * 100,
+         value = sprintf("%.1f - %.0f%%", area, fraction)) %>%
+  select(-slope, -area, - fraction) %>%
+  pivot_wider(names_from = lu, values_from = value) %>%
+  left_join(full_area, by = c("catch", "full_area")) %>%
+  rename_with(~ c("gebied", "oppervlakte", "akker", "loofbos", "prod. gras", "nat. gras", "verhard", 
+                  "water", "naaldbos", "helling")) %>%
+  mutate(naaldbos = if_else(is.na(naaldbos), "0.0 - 0%", naaldbos),
+         oppervlakte = sprintf("%.1f", oppervlakte),
+         helling = sprintf("%.0f%%", helling)) %>%
+  select(gebied, oppervlakte, helling, everything())
+  
+
+# save so table can be remade
+saveRDS(lu_areas, "documenten_en_literatuur/results/r_tables/lu_areas.rds")
+
+# make and write flextable
+lu_areas <- readRDS("documenten_en_literatuur/results/r_tables/lu_areas.rds")
+
+ft_lu_area <- flextable(lu_areas) %>%
+  style_ft()
+
+ft_lu_area
+
+
+
+
+# 5. Print results ------------------------------------------------------------
+
+# make a word document with bookmarks for all tables, this will be filled
+# while running the code below.
+doc <- read_docx()
+
+doc <- doc %>%
+  #Heading
+  body_add_par("NBS results report - tables and figures", style = "heading 1") %>%
+  body_add_par("") %>%
+  
+  #table
+  
+  body_add_par("Normalised effects NBS per area", style = "heading 2") %>%
+  body_add_flextable(ft_ef_norm) %>%
+  
+  body_add_par("Normalised effects NBS per volume", style = "heading 2") %>%
+  body_add_flextable(ft_ef_vol) %>%
+  
+  body_add_par(paste0("NBS area in ", subc[1]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[1]]) %>%
+  
+  body_add_par(paste0("NBS area in ", subc[2]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[2]]) %>%
+  
+  body_add_par(paste0("NBS area in ", subc[3]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[3]])%>%
+  
+  body_add_par("Gebied overzicht", style = "heading 2") %>%
+  body_add_flextable(ft_lu_area)
+
+
+
+
+# save everything
+print(doc, target = "documenten_en_literatuur/results/nbs_report_tables_figures.docx")
+
+
+# figure
+body_add_par("Peak discharge figure", style = "heading 1") %>%
+  body_add_gg(value = p_peak, width = 6.5, height = 4.5)

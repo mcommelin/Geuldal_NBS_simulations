@@ -130,7 +130,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
 
 # the catchments and resolution are by default used from the config file
 # alternatively you can adjust that below:
-points_id <- c(18) # use if you want to change catchment
+points_id <- c(4, 14, 18) # use if you want to change catchment
 reso <- c(10) # select different resolution
 
 # load the function for subcatchment preparation
@@ -192,7 +192,7 @@ for (i in seq_along(points_id)) {
       swatre_file = swatre_file,
       run_type = "cal",
       do_runfile = T,
-      inith_cal = 1.0
+      inith_cal = 0.65
     )
   }
 }
@@ -230,13 +230,12 @@ create_lisem_run(resolution = 10, catch_num = 4, swatre_file = swatre_file, run_
 #' in this section, code and functions will be developed to simulate small test
 #' catchments with NBS solutions. 
 #' Idea are:
-#' 1. Test Pesaken (52) en Bocholtz (54)
+#' 1. Test 6 small catchment that represent the Geul catchment
 #' 2. sensitivity analysis of single measures, rainfall types etc etc.
 
 ## 3.1 Simulating standard events ----------------------------------------------
 
 # ' Based on the calibration we can run simulations for standard events. 
-#' The have recurrence times of 50, 100 and 500 years.
 #' Set run_type to 'base' to create standard event lisem runs.
 #' All NBS simulations will also be done with standard events.
 
@@ -247,8 +246,8 @@ base_maps_subcatchment(cell_size = 10, sub_catch_number = 52, calc_ldd = T,
 
 # create the run:
 source("sources/r_scripts/create_lisem_run.R")
-create_lisem_run(resolution = 10, catch_num = 52, swatre_file = swatre_file,
-                 run_type = "base", do_hpc = FALSE, cpu_cores = ncpu)
+create_lisem_run(resolution = 10, catch_num = 54, swatre_file = swatre_file,
+                 run_type = "base", do_hpc = FALSE, cpu_cores = ncpu, inith_cal = 1.0)
 
 
 # TODO add meaningfull visualisation and reporting.
@@ -270,7 +269,9 @@ create_lisem_run(resolution = 10, catch_num = 52, swatre_file = swatre_file,
 # the name should be: nn_description.tif
 # with nn the number of the NBS landuse corresponding to the table:
 # ./sources/tables/lu_NBS_tbl.csv
-# The map should be boolean, 1 = location for measure, 0 = original landuse
+# The map should have the following values: 1 = location for measure, 0 = original landuse
+# In case of a Landscape Element NBS 1 = area where measure can be placed and
+# 2 = actual physical location of NBS, according to maps provided by Stroming.
 # Alternative (not yet implemented): map should have landuse number of 
 # NBS already in the map, this can be used for scenarios with multiple measures.
 
@@ -289,13 +290,12 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        do_NBS = TRUE
 )
 
-# The code is now functioning for landuse changing NBS. Adapt further for NBS 
-# that leave original landuse applicable.
+# The code is now functioning for 11 NBS - see landuse table.
 
 # update your subcatchment database with the NBS maps
 # the function will find any NBS maps in the base dataset and include them in 
 # the subcatchments.
-points_id <- c(52, 54, 55)# use if you want to change catchment
+points_id <- c(52, 54, 55, 56, 57, 58)# use if you want to change catchment
 reso <- c(10)
 
 # load the function for subcatchment preparation
@@ -320,7 +320,7 @@ source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
 # see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
-nbs_ids <- c(0, 11, 14, 17, 21) # 0 = base run without NBS
+nbs_ids <- c(0, 14, 19) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
@@ -360,63 +360,14 @@ for (i in seq_along(points_id)) {
 
 #' this section shows the workflow for the HPC simulations of the whole Geul
 #' catchment on a HPC. 
-#' Steps:
-#' 1. Make sure to run all code from chapter 1, which gives a base dataset for
-#' the whole Geul catchment.
-#' 2. Make the basic subcatchment data (4.1). Define a subset if needed. Creating 
-#' data for the whole Geul takes some time ~ xx minutes.
-#' 3. Make the actual OpenLISEM simulation runs.
 #' 
-
-## 4.1 HPC subcatchments ------------------------------------------------------
-
-#load the csv file to identify all sub catch numbers
-hpc_ids <- read_csv("sources/setup/hpc/subcatch_id_link.csv")
-
-# produce all subcatchments base maps
-#subnums <- hpc_ids$LISEM_ID
-
-# or use a subset (now Belgian part of the Gulp)
-subnums <- c(120, 125, 128, 130, 131, 140)
-
-# cut all the subcatchments from the Geul
-source("sources/r_scripts/create_subcatch_db.R")
-for (i in seq_along(subnums)) {
-  base_maps_subcatchment(cell_size = 10, sub_catch_number = subnums[i],
-                         run_type = "base", do_hpc = TRUE)
-}
-
-
-## 4.2 Make HPC simulation set ------------------------------------------------
-
-# make the swatre base file to produce inputs for the model runs
-# when a NBS is added, or settings are changed, repeat this step!
-# update landuse table, this works for all NBS solutions.
-source("sources/r_scripts/prepare_landuse_table.R")
-landuse_table_nbs()
-
-# make a new swatre file, this works for all NBS solutions.
-source("sources/r_scripts/swatre_input.R")
-swatre_file <- "swatre_NBS.csv"
-soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
-                       swatre_out = paste0("sources/setup/calibration/", swatre_file),
-                       do_NBS = TRUE
-)
-
-
-
-# make the actual run databases for the hpc
-# choices are:
-# include NBS: set a number, 0 = no nbs
-# whole Geul or subset?
-source("sources/r_scripts/create_hpc_run.R")
-create_hpc_run(subset = subnums,
-               swatre_file = swatre_file,
-               NBS_num = 0,    
-               resolution = 10,
-               dir_name = "",
-               run_type = "base",
-               do_runfile = TRUE,
-               cpu_cores = 6)
-
+#' To make runs for a HPC an automated workflow is available in:
+#'  ./sources/r_scripts/hpc_workflow.R
+#' 
+#' #' Steps:
+#' 1. place the spatial data folder on the same level as this repository.
+#'    So one folder level up compared to the manual workflow.
+#' 2. adjust the settings in ./hpc_template.yaml and save under a different name
+#' 3. Runs the database and run preparation with:
+#' Rscript --vanilla ./sources/r_scripts/hpc_workflow.R [name_hpc_config].yaml
 

@@ -51,9 +51,12 @@ av_slope = windowaverage(loc_slope, 100);
 report av_slope.map = av_slope;
 
 # estimate distance to next upstream terrace
-est_dist = terrace_spacing / av_slope;
+est_dist = terrace_spacing / loc_slope;
 
 #required terrace height to reduce upstream slope
+# 20260625 - switched to local slope instead of av_slope
+# in some dry valleys the slope at the bottom is low, and when taking an average slope
+# over a long distance, these would get filled up in the wang & liu filling step.
 ter_height = terrace_spacing - (est_dist * desired_slope);
 ter_height = if(ter_height lt 0, 0, ter_height);
 report ter_height.map = ter_height;
