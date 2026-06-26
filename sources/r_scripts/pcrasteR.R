@@ -226,6 +226,34 @@ map2asc <- function(asc_header = TRUE, options = "", map_in = "in.map", map_out 
   system(command)
 }
 
+# table
+
+# this function assumes 'set_pcraster()' is already used.
+# for explanation of function see pcraster documentation
+# https://pcraster.geo.uu.nl/pcraster/4.4.0/documentation/pcraster_manual/sphinx/app_table.html
+
+
+pcrtable <- function(work_dir = "", maps = "", outfile = "") {
+  # check if pcr_dir exists
+  if (!exists("pcr_dir")) {
+    stop("Please set PCraster installation with 'set_pcraster()")
+  }
+  # combine input to command
+  options <- paste0(maps, " ", outfile)
+  
+  # set working directory to execute command - return to project at end of function
+  projwd <- getwd()
+  setwd(paste0("./", work_dir))
+  
+  sys_type <- Sys.info()['sysname']
+  exe <- ifelse(sys_type == "Windows", ".exe", "")
+  command <- paste0(pcr_dir, "table", exe, " ", options)
+  system(command)
+  setwd(projwd)
+  
+}
+
+
 
 ## test -------------
 #set_pcraster(env = "lisem")

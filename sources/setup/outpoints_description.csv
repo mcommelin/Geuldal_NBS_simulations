@@ -51,9 +51,9 @@ x,y,point,cell_size,name,description,subcatch_name,code
 188511.616,309012.18,22,10,Slenaken,Slenaken,Gulp,13.H.25
 189620.437,307386.242,23,10,Teuven,Teuven,Gulp,13.H.159
 197388.74,303269.99,51,10,LeverBach,LandEX exploration catchment,LeverBach,
-189080.13,312415.68,52,10,Pesaken,LandEX exploration catchment,Pesaken,
+189080.13,312415.68,52,10,Pesaken,NBS exploration catchment,Pesaken,
 192437.42,311351.15,53,10,Landeus,LandEX exploration catchment,Landeus,
-198600.03,313424.19,54,10,Bocholtz,LandEX exploration catchment,Bocholtz,
+198600.03,313424.19,54,10,Bocholtz,NBS exploration catchment,Bocholtz,
 193719.549,307559.559,90,10,Sippenaeken,Test catchment,Sippenaeken,
 178376.67,323010.425,1,20,juliana kanaal,outlet Geul bij Julianakanaal,Geul,10.Q.36
 189258.8,318193.66,2,20,scheumerbeek,Ransdalerveld,Ransdalerveld,
@@ -83,3 +83,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 192437.42,311351.15,53,20,Landeus,LandEX exploration catchment,Landeus,
 198600.03,313424.19,54,20,Bocholtz,LandEX exploration catchment,Bocholtz,
 193699.06,307546.35,90,20,Sippenaeken,Test catchment,Sippenaeken,
+200328.86,303640.88,55,10,Bildchen,NBS exploration catchment,Bildchen,
+198429.04,302042.06,56,10,Grunstrasserbach,NBS exploration catchment,Grunstrasserbach,
+193218.21,311891.2,57,10,Mechelderbeek,NBS exploration catchment,Mechelderbeek,
+190602.01,317201.1,58,10,LangeGracht,NBS exploration catchment,LangeGracht,

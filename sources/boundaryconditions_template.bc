@@ -1,0 +1,1293 @@
+# written by HYDROLIB-core 0.8.0
+
+[General]
+fileVersion = 1.01
+fileType    = boundConds
+
+[Forcing]
+name     = 178345.826100_324274.780000
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = waterlevelbnd
+unit     = m
+37.65
+
+[Forcing]
+name     = 176651.930600_322935.904700
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = waterlevelbnd
+unit     = m
+38.07
+
+[Forcing]
+name     = 176185.655800_320475.399900
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = waterlevelbnd
+unit     = m
+39.1
+
+[Forcing]
+name     = 178560.088900_319780.648300
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = dischargebnd
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 179403.601000_326702.768000
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = waterlevelbnd
+unit     = m
+35.8
+
+[Forcing]
+name     = 179522.311000_324096.675000
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = dischargebnd
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 177126.539309_320616.739771
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = waterlevelbnd
+unit     = m
+42.0
+
+[Forcing]
+name     = 177325.558458_323652.001951
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = waterlevelbnd
+unit     = m
+38.0
+
+[Forcing]
+name     = 10.001_B_4
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_1_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_1_2
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_1_3
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_5
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_5_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_3
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_6
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_6_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_7
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_7_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_2
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_B_2_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_B_3
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_B_3_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_B_2
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_B_2_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_01
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_01_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_02
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_02_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_03
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_03_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_04
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_04_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_05
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_05_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_06
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_07
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_07_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_09
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_10
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_10_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_11
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_11_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_13
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_16
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_16_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_17
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_17_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_18
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_19
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_19_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_20
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_20_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_20_2
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.001_20_3
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.005
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.017
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.022
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.024
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.027U
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.032
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.035
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.039
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.041
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.043
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.045P
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.046
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.047
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.048
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.051
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.055
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.069
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.H.12
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.H.13
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.H.14
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.H.14_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.H.16
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.H.19
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.Q.30
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.Q.30_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 10.Q.36
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_01
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_01_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_02
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_02_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_03
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_03_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_04
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_05
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_05_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_07
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_07_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_08
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_08_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_09
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_09_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001_B
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.001H
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.005
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.007K
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.007L
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.007O
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 11.007R
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_01
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_01_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_01_2
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_02
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_02_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_03
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_04
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_04_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_06
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_06_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_B
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_07
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_07_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.001_07_2
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.013
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.014
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.014Q
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.Q.46
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.Q.50
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 12.Q.50_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_01
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_01_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_02
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_02_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_03
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_03_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_05
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_05_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_05_2
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_06
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.001_06_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.007
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.008
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.515
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.H.25
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.H.25_1
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.H.25_2
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.H.25_3
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+
+[Forcing]
+name     = 13.Q.34
+function = constant
+offset   = 0.0
+factor   = 1.0
+quantity = lateral_discharge
+unit     = m3/s
+0.01
+

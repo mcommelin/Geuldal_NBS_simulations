@@ -84,8 +84,10 @@ spatial_data_to_pcr <- function(only_NBS = FALSE,
   # loop over NBS_maps
   for (i in seq_along(NBS_maps)) { 
     map <- rast(paste0(dir_sd, "NBS_maps/", NBS_maps[i]))
+    resamp_method <- "near"
+    if (str_detect(NBS_maps[i], "contourgreppels|graften")) {resamp_method <- "max"}
     for (r in seq_along(res)) {
-      map_res <- terra::resample(map, mask[[r]], method = "near")
+      map_res <- terra::resample(map, mask[[r]], method = resamp_method)
       map_out <- paste0(res_dir[[r]], NBS_out[i])
       writeRaster(map_res, map_out , filetype = "PCRaster", NAflag = -9999,
                   overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")

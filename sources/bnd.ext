@@ -1,0 +1,1126 @@
+# written by HYDROLIB-core 0.8.0
+
+[General]
+fileVersion = 2.01
+fileType    = extForce
+
+[Boundary]
+quantity     = waterlevelbnd
+nodeId       = 178345.826100_324274.780000
+forcingFile  = boundaryconditions.bc
+
+[Boundary]
+quantity     = waterlevelbnd
+nodeId       = 176651.930600_322935.904700
+forcingFile  = boundaryconditions.bc
+
+[Boundary]
+quantity     = waterlevelbnd
+nodeId       = 176185.655800_320475.399900
+forcingFile  = boundaryconditions.bc
+
+[Boundary]
+quantity     = dischargebnd
+nodeId       = 178560.088900_319780.648300
+forcingFile  = boundaryconditions.bc
+
+[Boundary]
+quantity     = waterlevelbnd
+nodeId       = 179403.601000_326702.768000
+forcingFile  = boundaryconditions.bc
+
+[Boundary]
+quantity     = dischargebnd
+nodeId       = 179522.311000_324096.675000
+forcingFile  = boundaryconditions.bc
+
+[Boundary]
+quantity     = waterlevelbnd
+nodeId       = 177126.539309_320616.739771
+forcingFile  = boundaryconditions.bc
+
+[Boundary]
+quantity     = waterlevelbnd
+nodeId       = 177325.558458_323652.001951
+forcingFile  = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_4
+name         = 10.001_B_4
+locationType = 1d
+branchId     = GEU_209.1
+chainage     = 828.17
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_1
+name         = 10.001_B_1
+locationType = 1d
+branchid     = GEU_247.1
+chainage     = 21.329
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_1_1
+name         = 10.001_B_1_1
+locationType = 1d
+branchid     = GEU_247.1
+chainage     = 23.329
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_1_2
+name         = 10.001_B_1_2
+locationType = 1d
+branchid     = GEU_247.1
+chainage     = 25.329
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_1_3
+name         = 10.001_B_1_3
+locationType = 1d
+branchid     = GEU_247.1
+chainage     = 27.329
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_5
+name         = 10.001_B_5
+locationType = 1d
+branchid     = GEU_209.1
+chainage     = 3422.04
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_5_1
+name         = 10.001_B_5_1
+locationType = 1d
+branchid     = GEU_209.1
+chainage     = 3424.04
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_3
+name         = 10.001_B_3
+locationType = 1d
+branchId       = GEU_209.1
+chainage       = 74.748
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_6
+name         = 10.001_B_6
+locationType = 1d
+branchid     = GEU_209.1
+chainage     = 4051.564
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_6_1
+name         = 10.001_B_6_1
+locationType = 1d
+branchid     = GEU_209.1
+chainage     = 4053.564
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_7
+name         = 10.001_B_7
+locationType = 1d
+branchid     = GEU_209.1
+chainage     = 7128.289
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_7_1
+name         = 10.001_B_7_1
+locationType = 1d
+branchid     = GEU_209.1
+chainage     = 7130.289
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_2
+name         = 10.001_B_2
+locationType = 1d
+branchid     = GEU_247.1
+chainage     = 112.207
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_B_2_1
+name         = 10.001_B_2_1
+locationType = 1d
+branchid     = GEU_247.1
+chainage     = 114.207
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_B_3
+name         = 13.001_B_3
+locationType = 1d
+branchid     = W_120
+chainage     = 6791.751
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_B_3_1
+name         = 13.001_B_3_1
+locationType = 1d
+branchid     = W_120
+chainage     = 6793.751
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_B_2
+name         = 13.001_B_2
+locationType = 1d
+branchid     = W_120
+chainage     = 3130.467
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_B_2_1
+name         = 13.001_B_2_1
+locationType = 1d
+branchid     = W_120
+chainage     = 3132.467
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_01
+name         = 10.001_01
+locationType = 1d
+branchid     = W_73
+chainage     = 499.556
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_01_1
+name         = 10.001_01_1
+locationType = 1d
+branchid     = W_73
+chainage     = 501.556
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_02
+name         = 10.001_02
+locationType = 1d
+branchid     = W_299
+chainage     = 391.115
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_02_1
+name         = 10.001_02_1
+locationType = 1d
+branchid     = W_299
+chainage     = 393.115
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_03
+name         = 10.001_03
+locationType = 1d
+branchid     = W_259
+chainage     = 1006.088
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_03_1
+name         = 10.001_03_1
+locationType = 1d
+branchid     = W_259
+chainage     = 1008.088
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_04
+name         = 10.001_04
+locationType = 1d
+branchid     = W_399
+chainage     = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_04_1
+name         = 10.001_04_1
+locationType = 1d
+branchid     = W_399
+chainage     = 3.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_05
+name         = 10.001_05
+locationType = 1d
+branchid     = W_337
+chainage     = 5.455
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_05_1
+name         = 10.001_05_1
+locationType = 1d
+branchid     = W_337
+chainage     = 7.455
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_06
+name         = 10.001_06
+locationType = 1d
+branchId       = W_21
+chainage       = 203.28
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_07
+name         = 10.001_07
+locationType = 1d
+branchid     = W_162
+chainage     = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_07_1
+name         = 10.001_07_1
+locationType = 1d
+branchid     = W_162
+chainage     = 3.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_09
+name         = 10.001_09
+locationType = 1d
+branchId       = W_78
+chainage       = 466.662
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_10
+name         = 10.001_10
+locationType = 1d
+branchid     = W_258
+chainage     = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_10_1
+name         = 10.001_10_1
+locationType = 1d
+branchid     = W_258
+chainage     = 3.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_11
+name         = 10.001_11
+locationType = 1d
+branchid     = W_36
+chainage     = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_11_1
+name         = 10.001_11_1
+locationType = 1d
+branchid     = W_36
+chainage     = 3.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_13
+name         = 10.001_13
+locationType = 1d
+branchId       = W_398
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_16
+name         = 10.001_16
+locationType = 1d
+branchid     = W_292
+chainage     = 1.479
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_16_1
+name         = 10.001_16_1
+locationType = 1d
+branchid     = W_292
+chainage     = 3.479
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_17
+name         = 10.001_17
+locationType = 1d
+branchid     = W_123
+chainage     = 787.906
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_17_1
+name         = 10.001_17_1
+locationType = 1d
+branchid     = W_123
+chainage     = 789.906
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_18
+name         = 10.001_18
+locationType = 1d
+branchId       = W_231
+chainage       = 69.004
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_19
+name         = 10.001_19
+locationType = 1d
+branchid     = W_130
+chainage     = 7.457
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_19_1
+name         = 10.001_19_1
+locationType = 1d
+branchid     = W_130
+chainage     = 9.457
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_20
+name         = 10.001_20
+locationType = 1d
+branchid     = W_287
+chainage     = 2.6
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_20_1
+name         = 10.001_20_1
+locationType = 1d
+branchid     = W_287
+chainage     = 4.6
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_20_2
+name         = 10.001_20_2
+locationType = 1d
+branchid     = W_287
+chainage     = 6.6
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.001_20_3
+name         = 10.001_20_3
+locationType = 1d
+branchid     = W_287
+chainage     = 8.6
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.005
+name         = 10.005
+locationType = 1d
+branchId       = W_312
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.017
+name         = 10.017
+locationType = 1d
+branchId       = W_290
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.022
+name         = 10.022
+locationType = 1d
+branchId       = W_262
+chainage       = 1.812
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.024
+name         = 10.024
+locationType = 1d
+branchId       = W_372
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.027U
+name         = 10.027U
+locationType = 1d
+branchId       = W_347
+chainage       = 7.889
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.032
+name         = 10.032
+locationType = 1d
+branchId       = W_45
+chainage       = 18.029
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.035
+name         = 10.035
+locationType = 1d
+branchId       = W_205
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.039
+name         = 10.039
+locationType = 1d
+branchId       = W_240
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.041
+name         = 10.041
+locationType = 1d
+branchId       = W_394
+chainage       = 6.322
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.043
+name         = 10.043
+locationType = 1d
+branchId       = W_268
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.045P
+name         = 10.045P
+locationType = 1d
+branchId       = W_365
+chainage       = 7.491
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.046
+name         = 10.046
+locationType = 1d
+branchId       = W_12
+chainage       = 54.097
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.047
+name         = 10.047
+locationType = 1d
+branchId       = W_24
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.048
+name         = 10.048
+locationType = 1d
+branchId       = W_297
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.051
+name         = 10.051
+locationType = 1d
+branchId       = W_148
+chainage       = 2.287
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.055
+name         = 10.055
+locationType = 1d
+branchId       = W_395
+chainage       = 82.998
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.069
+name         = 10.069
+locationType = 1d
+branchId       = W_195
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.H.12
+name         = 10.H.12
+locationType = 1d
+branchId       = W_164
+chainage       = 5.023
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.H.13
+name         = 10.H.13
+locationType = 1d
+branchId       = W_51
+chainage       = 59.365
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.H.14
+name         = 10.H.14
+locationType = 1d
+branchid     = W_281
+chainage     = 28.312
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.H.14_1
+name         = 10.H.14_1
+locationType = 1d
+branchid     = W_281
+chainage     = 30.312
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.H.16
+name         = 10.H.16
+locationType = 1d
+branchId       = W_21
+chainage       = 358.606
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.H.19
+name         = 10.H.19
+locationType = 1d
+branchId       = W_322
+chainage       = 27.839
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.Q.30
+name         = 10.Q.30
+locationType = 1d
+branchid     = W_392
+chainage     = 963.619
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.Q.30_1
+name         = 10.Q.30_1
+locationType = 1d
+branchid     = W_392
+chainage     = 965.619
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 10.Q.36
+name         = 10.Q.36
+locationType = 1d
+branchId       = W_53
+chainage       = 65.428
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_01
+name         = 11.001_01
+locationType = 1d
+branchid     = W_277
+chainage     = 1649.267
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_01_1
+name         = 11.001_01_1
+locationType = 1d
+branchid     = W_277
+chainage     = 1651.267
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_02
+name         = 11.001_02
+locationType = 1d
+branchid     = W_135
+chainage     = 7.634
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_02_1
+name         = 11.001_02_1
+locationType = 1d
+branchid     = W_135
+chainage     = 9.634
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_03
+name         = 11.001_03
+locationType = 1d
+branchid     = W_252
+chainage     = 66.307
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_03_1
+name         = 11.001_03_1
+locationType = 1d
+branchid     = W_252
+chainage     = 68.307
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_04
+name         = 11.001_04
+locationType = 1d
+branchId       = W_239
+chainage       = 143.653
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_05
+name         = 11.001_05
+locationType = 1d
+branchid     = W_228
+chainage     = 669.822
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_05_1
+name         = 11.001_05_1
+locationType = 1d
+branchid     = W_228
+chainage     = 671.822
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_07
+name         = 11.001_07
+locationType = 1d
+branchid     = W_75
+chainage     = 93.791
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_07_1
+name         = 11.001_07_1
+locationType = 1d
+branchid     = W_75
+chainage     = 95.791
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_08
+name         = 11.001_08
+locationType = 1d
+branchid     = W_358
+chainage     = 1371.102
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_08_1
+name         = 11.001_08_1
+locationType = 1d
+branchid     = W_358
+chainage     = 1373.102
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_09
+name         = 11.001_09
+locationType = 1d
+branchid     = W_376
+chainage     = 113.732
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_09_1
+name         = 11.001_09_1
+locationType = 1d
+branchid     = W_376
+chainage     = 115.732
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001_B
+name         = 11.001_B
+locationType = 1d
+branchId       = W_47
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.001H
+name         = 11.001H
+locationType = 1d
+branchId       = W_136
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.005
+name         = 11.005
+locationType = 1d
+branchId       = W_366
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.007K
+name         = 11.007K
+locationType = 1d
+branchId       = W_108
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.007L
+name         = 11.007L
+locationType = 1d
+branchId       = W_170
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.007O
+name         = 11.007O
+locationType = 1d
+branchId       = W_283
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 11.007R
+name         = 11.007R
+locationType = 1d
+branchId       = W_151
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_01
+name         = 12.001_01
+locationType = 1d
+branchid     = W_66
+chainage     = 2348.071
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_01_1
+name         = 12.001_01_1
+locationType = 1d
+branchid     = W_66
+chainage     = 2350.071
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_01_2
+name         = 12.001_01_2
+locationType = 1d
+branchid     = W_66
+chainage     = 2352.071
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_02
+name         = 12.001_02
+locationType = 1d
+branchid     = W_17
+chainage     = 1825.335
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_02_1
+name         = 12.001_02_1
+locationType = 1d
+branchid     = W_17
+chainage     = 1827.335
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_03
+name         = 12.001_03
+locationType = 1d
+branchId       = W_263
+chainage       = 487.178
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_04
+name         = 12.001_04
+locationType = 1d
+branchid     = W_171
+chainage     = 828.205
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_04_1
+name         = 12.001_04_1
+locationType = 1d
+branchid     = W_171
+chainage     = 830.205
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_06
+name         = 12.001_06
+locationType = 1d
+branchid     = W_196
+chainage     = 327.668
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_06_1
+name         = 12.001_06_1
+locationType = 1d
+branchid     = W_196
+chainage     = 329.668
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_B
+name         = 12.001_B
+locationType = 1d
+branchId       = W_212
+chainage       = 156.109
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_07
+name         = 12.001_07
+locationType = 1d
+branchid     = W_212
+chainage     = 3190.675
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_07_1
+name         = 12.001_07_1
+locationType = 1d
+branchid     = W_212
+chainage     = 3192.675
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.001_07_2
+name         = 12.001_07_2
+locationType = 1d
+branchid     = W_212
+chainage     = 3194.675
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.013
+name         = 12.013
+locationType = 1d
+branchId       = W_300
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.014
+name         = 12.014
+locationType = 1d
+branchId       = W_128
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.014Q
+name         = 12.014Q
+locationType = 1d
+branchId       = W_204
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.Q.46
+name         = 12.Q.46
+locationType = 1d
+branchId       = W_80
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.Q.50
+name         = 12.Q.50
+locationType = 1d
+branchid     = W_307
+chainage     = 1419.955
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 12.Q.50_1
+name         = 12.Q.50_1
+locationType = 1d
+branchid     = W_307
+chainage     = 1421.955
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_01
+name         = 13.001_01
+locationType = 1d
+branchid     = W_211
+chainage     = 823.789
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_01_1
+name         = 13.001_01_1
+locationType = 1d
+branchid     = W_211
+chainage     = 825.789
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_02
+name         = 13.001_02
+locationType = 1d
+branchid     = W_18
+chainage     = 932.825
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_02_1
+name         = 13.001_02_1
+locationType = 1d
+branchid     = W_18
+chainage     = 934.825
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_03
+name         = 13.001_03
+locationType = 1d
+branchid     = W_26
+chainage     = 551.526
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_03_1
+name         = 13.001_03_1
+locationType = 1d
+branchid     = W_26
+chainage     = 553.526
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_05
+name         = 13.001_05
+locationType = 1d
+branchid     = W_142
+chainage     = 14.615
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_05_1
+name         = 13.001_05_1
+locationType = 1d
+branchid     = W_142
+chainage     = 16.615000000000002
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_05_2
+name         = 13.001_05_2
+locationType = 1d
+branchid     = W_142
+chainage     = 18.615000000000002
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_06
+name         = 13.001_06
+locationType = 1d
+branchid     = W_400
+chainage     = 1382.777
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.001_06_1
+name         = 13.001_06_1
+locationType = 1d
+branchid     = W_400
+chainage     = 1384.777
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.007
+name         = 13.007
+locationType = 1d
+branchId       = W_274
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.008
+name         = 13.008
+locationType = 1d
+branchId       = W_114
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.515
+name         = 13.515
+locationType = 1d
+branchId       = W_320
+chainage       = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.H.25
+name         = 13.H.25
+locationType = 1d
+branchid     = W_230
+chainage     = 1.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.H.25_1
+name         = 13.H.25_1
+locationType = 1d
+branchid     = W_230
+chainage     = 3.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.H.25_2
+name         = 13.H.25_2
+locationType = 1d
+branchid     = W_230
+chainage     = 5.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.H.25_3
+name         = 13.H.25_3
+locationType = 1d
+branchid     = W_230
+chainage     = 7.0
+discharge    = boundaryconditions.bc
+
+[Lateral]
+id           = 13.Q.34
+name         = 13.Q.34
+locationType = 1d
+branchId       = W_211
+chainage       = 221.639
+discharge    = boundaryconditions.bc
+
