@@ -81,11 +81,24 @@ make_runfile_lisem <- function(work_dir = NULL,
   # initial head
   runname <- evdate
   if (run_type == "cal") {
+    if (theta_cal > 90) {
+      # use precalculated initial head values, heterogeneous over the catchment
+      # can stille be calibrated with an homogeneous factor.
     # set correct inithead for event
     ih_ev <- str_remove(runname, "^\\d\\d")
     
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
                                 paste0("ih", ih_ev))
+    # correct theta_cal
+    theta_cal <- theta_cal - 100
+    
+    } else {
+      # use 1 homogeneous initial head value for the whole catchment.
+      # we fill -100 always, with the calibration factor this can be tuned the 
+      # the desired value.
+      run_temp <- str_replace_all(run_temp, "Use one matrix potential=0", 
+                                  paste0("Use one matrix potential=1"))
+    }
   } else {
     # run with standard rain
     
@@ -192,7 +205,10 @@ ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
 #' Will be placed at ./LISEM_runs/hpc_runs/**dir_name** Should end with a "/"!. 
 #' Only works if do_hpc = TRUE
 #' @param inith_cal Calibration factor multiplying inithead for the whole 
-#' catchment. Only used in hpc setup.
+#' catchment. Only makes sense for calibrartion events, but also works for base runs.
+#' When you want to use the precalculated initial head instead of a homogeneous value,
+#' Add 100 to the calibration factor, so 100 + 1.05 = 101.05. The code will adjust this back.
+#' Also make sure that the precalculated values are available as maps in ./spatial_data
 #' 
 #' @returns creates a map and runfile dataset to run OpenLISEM
 #'
