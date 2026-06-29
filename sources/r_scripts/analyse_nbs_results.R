@@ -7,7 +7,7 @@ library(scales)
 # 1. Spatial results ----------------------------------------------------------
 
 # fill the directory where the runs that need to be analyzed are located
-base_dir <- "results/nbs_simulations_new_rain_20260527"
+base_dir <- "results/nbs_simulations_20260629"
 #base_dir <- "LISEM_runs"
 # find different scenarios - assume workflow based folder structure!
 scen_dirs <- dir(base_dir, full.names = TRUE)
@@ -117,8 +117,13 @@ for (i in seq_along(baseline_dirs)) {
 a1 <- bind_rows(list1[[1]])
 a2 <- bind_rows(list1[[2]])
 a3 <- bind_rows(list1[[3]])
+a4 <- bind_rows(list1[[4]])
+a5 <- bind_rows(list1[[5]])
+a6 <- bind_rows(list1[[6]])
 
-res_pcr <- bind_rows(a1, a2, a3)
+res_pcr <- bind_rows(a1, a2, a3, a4, a5, a6) %>%
+  mutate(cond = str_remove(cond, "res_"))
+
 
 # save and load so whole analysis can be skippen
 saveRDS(res_pcr, "documenten_en_literatuur/results/r_tables/res_pcr.rds")
@@ -149,75 +154,15 @@ for (i in seq_along(hydr_files)) {
     select(Time, Pavg, R, P, Q, run) #, Qchan1)
   
 }
-all_hy <- bind_rows(hydr_list) 
+all_hy <- bind_rows(hydr_list) %>%
+  rename("scen" = "R", "cond" = "P") %>%
+  mutate(Pmm = Pavg / 360,
+         cond = str_remove(cond, "res_"))
 
 # save and load so whole analysis can be skippen
 saveRDS(all_hy, "documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
 all_hy <- readRDS("documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
 
-
-# summary all NBS 
-all <- all_hy %>%
-  rename("scen" = "R", "cond" = "P") %>%
-  mutate(Pmm = Pavg / 360) %>%
-  group_by(scen, cond) %>%
-  summarise(Qmax = max(Q),
-            Q = sum(Q) * 10,
-            Ptot = sum(Pmm)) #
-
-base_hy <- all %>%
-  ungroup() %>%
-  filter(str_detect(scen, "10m$")) %>%
-  rename("catch" = "scen")
-
-
-scen_hy <- all %>%
-  ungroup() %>%
-  filter_out(str_detect(scen, "10m$")) %>%
-  mutate(catch = str_extract(scen, "^.*10m"))
-
-
-a2 <- all %>%
-  ungroup() %>%
-  group_by(R) %>%
-  summarise(Qmax = mean(Qmax),
-            Q = mean(Q))
-
-
-# load hydrograph results as well.
-# - recalculate total outflow volume to mm outflow and Q/P ratio
-
-
-# plot
-q_ev <- all_hy %>%
-  filter(R == "Pesaken_10m" &
-           P == "res_T25_dry")
-
-titel <- paste0("Afvoer en neerslag voor ", q_ev$R[1], " met conditie: ", 
-                str_remove(q_ev$P[1], "res_"))
-
-# plot
-# axis constants
-q_max_round <- ceiling(max(c(q_ev$Q), na.rm = TRUE))
-p_max       <- max(q_ev$Pavg, na.rm = TRUE)
-k           <- q_max_round / (p_max * 1.2)
-y_top       <- q_max_round * 2
-
-# plot regular and inverted y-axis
-ggplot(q_ev) +
-  geom_linerange(aes(x = Time, ymin = y_top,
-                               ymax = y_top - Pavg * k), color = "grey") +
-  geom_line(aes(x = Time, y = Q), linewidth = 0.3) +
-  scale_y_continuous(
-    name     = "Debiet (L s⁻¹)",
-    limits   = c(0, y_top),
-    sec.axis = sec_axis(
-      ~ (y_top - .) / k,
-      name = "Neerslag (mm h⁻¹)"
-    ),
-    expand = c(0,0)) +
-  labs(title = titel) +
-  theme_bw()
 
 # 3. Summarise results ---------------------------------------------------------
 
@@ -238,23 +183,45 @@ style_ft <- function(ft) {
 
 # desired order of conditions
 cond_order <- c(
-  "T10_dry", "T10_wet",
-  "T25_dry", "T25_wet",
-  "T100_dry", "T100_wet",
-  "T500_dry", "T500_wet"
+  "T10_wet", "T10_dry",
+  "T25_wet", "T25_dry",
+  "T100_wet", "T100_dry",
+  "T500_wet", "T500_dry"
 )
 
 
+## 3.1 Organise hydrographs ----------------------------------------------------
+
+# summary all NBS 
+all <- all_hy %>%
+  group_by(scen, cond) %>%
+  summarise(Qmax = max(Q),
+            Q = sum(Q) * 10,
+            Ptot = sum(Pmm)) #
+
+base_hy <- all %>%
+  ungroup() %>%
+  filter(str_detect(scen, "10m$")) %>%
+  rename("catch" = "scen")
 
 
-# produce different results
+scen_hy <- all %>%
+  ungroup() %>%
+  filter_out(str_detect(scen, "10m$")) %>%
+  mutate(catch = str_extract(scen, "^.*10m"))
 
-# 1: area of each catchment
-# 2: table with area of each lu in each catchment baseline
-# 3: table with area of each nbs in each catchment
-# 4: 
 
-landuse_info <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", show_col_types = FALSE) %>%
+# a2 <- all %>%
+#   ungroup() %>%
+#   group_by(R) %>%
+#   summarise(Qmax = mean(Qmax),
+#             Q = mean(Q))
+
+
+## 3.2 Organise spatial data ---------------------------------------------------
+
+landuse_info <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", 
+                         show_col_types = FALSE) %>%
   select(lu_nr, description) %>%
   rename("lu" = "lu_nr")
 
@@ -301,29 +268,37 @@ scen_all_rel <- scen_all %>%
   left_join(base_left, by = c("catch", "cond")) %>%
   mutate(Qdiff = Q - Q_base,
          Q_area_diff = Qdiff / area)
+
+## 3.3 Tables ------------------------------------------------------------------
+
+### Table xx: Results, Discharge baseline runs ----------------------------------
+qp_cond <- base_all %>%
+  ungroup() %>%
+  group_by(cond) %>%
+  summarise(Ptot = mean(Ptot),
+            Qmm_sd = sd(Qmm),
+            Qmm = mean(Qmm),
+            QP_sd = sd(QP),
+            QP = mean(QP)) %>%
+  mutate(cond = factor(cond, levels = cond_order)) %>%
+  arrange(cond)
   
-# make some figures or tables
+base_qp <- qp_cond %>%
+  mutate(P = sprintf("%.1f", Ptot),
+         Qmm = sprintf("%.1f ± %.1f", Qmm, Qmm_sd),
+         QP = sprintf("%.0f%% ± %.0f%%", QP * 100, QP_sd * 100)) %>%
+  select(cond, P, Qmm, QP) %>%
+  rename_with(~ c("cond", "neerslag (mm)", "afstroming (mm)", "Q/P")) %>%
+  pivot_longer(cols = -cond, names_to = "par", values_to = "value") %>%
+  pivot_wider(names_from = cond)
 
-ggplot() + 
-  geom_point(data = scen_all_rel, aes(x = Ptot, y = Qmax, color = catch), size = 3, alpha = 0.2) +
-  geom_point(data = base_all, aes(x = Ptot, y = Qmax, color = catch)) +
-  theme_classic() +
- # geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
-  #ylim(c(0,100)) + xlim(c(0,100)) +
-  facet_wrap(~ description)
+ft_base_qp <- flextable(base_qp) %>%
+  set_header_labels(par = "") %>%
+  style_ft()
 
+ft_base_qp
 
-ggplot() +
-  geom_point(data = scen_all_rel, aes(x = as.factor(cond), y = Qmax, color = description)) +
-  geom_point(data = base_all, aes(x = as.factor(cond), y = Qmax), size = 4, alpha = 0.5, shape = 2) +
-  theme_classic() +
-  facet_wrap(~ catch, nrow = 3, scales = "free_y")
-
-## Table xx: Results, Discharge baseline runs ----------------------------------
-
-
-
-## Table xx : Results, NBS specific share per catchment ------------------------
+### Table xx : Results, NBS specific share per catchment ------------------------
 # table with area and or volume
 
 area_nbs <- scen_all_rel %>%
@@ -363,7 +338,7 @@ ft_area_list[[i]] <- flextable(t_area_nbs) %>%
 
 ft_area_nbs[[1]]
 
-## Table xx : Results, normalised effects NBS area -----------------------------
+### Table xx : Results, normalised effects NBS area -----------------------------
 # table with effects per measure and per area
 
 # TODO adjust to flextable
@@ -410,7 +385,7 @@ ft_ef_norm <- flextable(ef_norm) %>%
 ft_ef_norm
 # printing is done at the bottom of the script
 
-## Table xx : Results, normalised effects NBS vol ------------------------------
+### Table xx : Results, normalised effects NBS vol ------------------------------
 # different tables for volumes?
 vol_nbs <- c(17, 21)
 
@@ -448,7 +423,7 @@ ft_ef_vol <- flextable(effect_nbs_vol) %>%
 ft_ef_vol
 
 
-## Table xx: Results, NBS Qpeak reduction -------------------------------------
+### Table xx: Results, NBS Qpeak reduction -------------------------------------
 
 # heat table qmax
 # desired order of conditions
@@ -549,7 +524,7 @@ doc <- read_docx() %>%
 
 print(doc, target = "peak_discharge_table.docx")
 
-## Table xx: Results, NBS Qtot reduction ---------------------------------------
+### Table xx: Results, NBS Qtot reduction ---------------------------------------
 
 # heat table qmm total
 # desired order of conditions
@@ -649,6 +624,85 @@ doc <- read_docx() %>%
 
 print(doc, target = "Total_discharge_table.docx")
 
+## 3.4 Figures -----------------------------------------------------------------
+
+### Figure xx: Results - individual hydrographs ---------------------------------
+# - recalculate total outflow volume to mm outflow and Q/P ratio
+
+subc <- unique(base_all$catch)
+
+
+for (i in seq_along(subc)) {
+  for (j in seq_along(cond_order)) {
+
+    c <- subc[i]
+    o <- cond_order[j]
+    
+# plot
+q_ev <- all_hy %>%
+  filter(scen == c &
+           cond == o) %>%
+  mutate( t_min = Time * 24 * 60,                 # minutes since start
+          t_bin = floor(t_min / 2) * 2) %>%     
+  group_by(t_bin) %>%
+  summarise(Q = mean(Q),
+            Pavg = mean(Pavg)) %>%
+  mutate(
+    Time = as.POSIXct("2000-01-01 00:00:00", tz = "UTC") + t_bin * 60
+  )
+
+titel <- paste0("Afvoer en neerslag voor ", c, " met conditie: ", 
+                o)
+
+# plot
+# axis constants
+q_max_round <- ceiling(max(c(q_ev$Q), na.rm = TRUE))
+p_max       <- max(q_ev$Pavg, na.rm = TRUE)
+k           <- q_max_round / (p_max * 1.2)
+y_top       <- q_max_round * 2
+
+# plot regular and inverted y-axis
+ggplot(q_ev) +
+  geom_linerange(aes(x = Time, ymin = y_top,
+                     ymax = y_top - Pavg * k), color = "grey") +
+  geom_line(aes(x = Time, y = Q), linewidth = 0.3) +
+  scale_y_continuous(
+    name     = "Debiet (L s⁻¹)",
+    limits   = c(0, y_top),
+    sec.axis = sec_axis(
+      ~ (y_top - .) / k,
+      name = "Neerslag (mm h⁻¹)"
+    ),
+    expand = c(0,0)) +
+  scale_x_datetime(
+    date_labels = "%H:%M",
+    date_breaks = "2 hours"
+  ) +
+  labs(title = titel, x = "Tijd (uu:mm)") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 10))
+  
+
+ggsave(paste0("images/results/nbs_report/", c, "_", o, ".png"), width = 6, height = 4)
+  }
+}
+### Figure xx: Results - NBS effects comparison ---------------------------------  
+# make some figures or tables
+
+ggplot() + 
+  geom_point(data = scen_all_rel, aes(x = Ptot, y = Qmax, color = catch), size = 3, alpha = 0.2) +
+  geom_point(data = base_all, aes(x = Ptot, y = Qmax, color = catch)) +
+  theme_classic() +
+  # geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  #ylim(c(0,100)) + xlim(c(0,100)) +
+  facet_wrap(~ description)
+
+
+ggplot() +
+  geom_point(data = scen_all_rel, aes(x = as.factor(cond), y = Qmax, color = description)) +
+  geom_point(data = base_all, aes(x = as.factor(cond), y = Qmax), size = 4, alpha = 0.5, shape = 2) +
+  theme_classic() +
+  facet_wrap(~ catch, nrow = 3, scales = "free_y")
 
 # 4. Catchment overview -------------------------------------------------------
 
@@ -731,8 +785,6 @@ ft_lu_area <- flextable(lu_areas) %>%
 ft_lu_area
 
 
-
-
 # 5. Print results ------------------------------------------------------------
 
 # make a word document with bookmarks for all tables, this will be filled
@@ -745,6 +797,8 @@ doc <- doc %>%
   body_add_par("") %>%
   
   #table
+  body_add_par("Neerslag en afstroming per conditie", style = "heading 2") %>%
+  body_add_flextable(ft_base_qp) %>%
   
   body_add_par("Normalised effects NBS per area", style = "heading 2") %>%
   body_add_flextable(ft_ef_norm) %>%
