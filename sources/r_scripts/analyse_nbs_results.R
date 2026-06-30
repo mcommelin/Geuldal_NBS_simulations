@@ -200,14 +200,37 @@ pal6 <- c(
   "#56B4E9"  # sky blue
 )
 
+pal6_catch <- c(
+  "Bildchen" = "#0072B2", # blue
+  "Bocholtz" =  "#E69F00", # orange
+  "Grunstrasserbach" = "#009E73", # bluish green
+  "LangeGracht" = "#D55E00", # vermillion
+  "Mechelderbeek" = "#CC79A7", # reddish purple
+  "Pesaken" = "#56B4E9"  # sky blue
+)
+
+# fix colors for each catchment
+fixed_color_scale <- scale_color_manual(
+  name = NULL,
+  values = pal6_catch,                    # your named palette
+  drop = FALSE                      # keep all levels even if not in data
+)
+
 ## 3.1 Organise hydrographs ----------------------------------------------------
 
 # summary all NBS 
 all <- all_hy %>%
   group_by(scen, cond) %>%
+  mutate( t_min = Time * 24 * 60,                 # minutes since start
+          t_bin = floor(t_min / 2) * 2) %>%     
+  group_by(scen, cond, t_bin) %>%
+  summarise(Q = mean(Q),
+            Pavg = mean(Pavg),
+            ) %>%
+  group_by(scen, cond) %>%
   summarise(Qmax = max(Q),
-            Q = sum(Q) * 10,
-            Ptot = sum(Pmm)) #
+            Q = sum(Q) * 120,
+            Ptot = sum(Pavg)/30) # 2 minutes to hour
 
 base_hy <- all %>%
   ungroup() %>%
@@ -323,10 +346,10 @@ area_nbs <- scen_all_rel %>%
          description = str_replace(description, "_", " "))
 
 # save so table can be remade
-saveRDS(area_nbs, "documenten_en_literatuur/results/r_tables/area_nbs.rds")
+#saveRDS(area_nbs, "documenten_en_literatuur/results/r_tables/area_nbs.rds")
 
 # make and write flextable
-area_nbs <- readRDS("documenten_en_literatuur/results/r_tables/area_nbs.rds")
+#area_nbs <- readRDS("documenten_en_literatuur/results/r_tables/area_nbs.rds")
 
 # TODO change from per catch to per NBS!
 subc <- unique(area_nbs$description)
@@ -347,10 +370,12 @@ if (i != 7 & i != 11) {
 
 
 ft_area_list[[i]] <- flextable(t_area_nbs) %>%
-  style_ft()
+  style_ft() %>%
+  flextable::width(j = 1, width = 1.2) %>%
+  flextable::width(j = 2, width = 1.2)
 }
 
-ft_area_nbs[[1]]
+ft_area_list[[1]]
 
 ### Table xx : Results, normalised effects NBS area -----------------------------
 # table with effects per measure and per area
@@ -389,10 +414,10 @@ ef_norm <- effect_nbs %>%
 
 
 # save so table can be remade
-saveRDS(ef_norm, "documenten_en_literatuur/results/r_tables/ef_norm.rds")
+#saveRDS(ef_norm, "documenten_en_literatuur/results/r_tables/ef_norm.rds")
 
 # make and write flextable
-ef_norm <- readRDS("documenten_en_literatuur/results/r_tables/ef_norm.rds")
+#ef_norm <- readRDS("documenten_en_literatuur/results/r_tables/ef_norm.rds")
 
 ft_ef_norm <- flextable(ef_norm) %>%
   add_footer_row(
@@ -431,10 +456,10 @@ effect_nbs_vol <- scen_all_rel %>%
   rename("NBS" = "description")
   
 # save so table can be remade
-saveRDS(effect_nbs_vol, "documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
+#saveRDS(effect_nbs_vol, "documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
 
 # make and write flextable
-effect_nbs_vol <- readRDS("documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
+#effect_nbs_vol <- readRDS("documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
 
 ft_ef_vol <- flextable(effect_nbs_vol) %>%
   style_ft()
@@ -506,7 +531,6 @@ ggsave(paste0("images/results/nbs_report/", c, "_", o, ".png"), width = 6, heigh
   }
 }
 ### Figure xx: Results - NBS effects comparison ---------------------------------  
-# make some figures or tables
 
 dat <- scen_all_rel %>%
   mutate(catch = str_remove(catch, "_10m"))
@@ -525,26 +549,112 @@ ggplot(
   theme_bw(base_size = 9) +
   labs(
     x = NULL,
-    y = expression(Delta*Q~~"(mm)"),   # or "Qmm_base - Qmm (mm)"
+    y = "Totale reductie van afstroming (mm)",   # or "Qmm_base - Qmm (mm)"
     color = "Deelgebied"
   ) +
   theme(
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
     panel.spacing = unit(0.8, "lines"),
-    legend.position = c(0.92, 0.08),   # lower-right in plotting area
+    legend.position = c(0.92, 0.06),   # lower-right in plotting area
     legend.justification = c("right", "bottom"),
     legend.background = element_rect(fill = "white", color = "grey80"),
     legend.key.height = unit(0.35, "cm"),
     legend.key.width  = unit(0.55, "cm"),
     strip.text = element_text(size = 8)
   ) +
-  scale_color_manual(values = pal6)
-
+  fixed_color_scale
 
 ggsave(
   "images/results/nbs_report/nbs_effects_A4.png",
-  width = 210, height = 297, units = "mm", dpi = 300
+  width = 6.3, height = 9.7, dpi = 300)
+
+
+### Figure xx: Results - Discharge per catchment -------------------------------
+
+dat <- base_all %>%
+  mutate(catch = str_remove(catch, "_10m"))
+
+
+ggplot(dat) +
+  geom_point(aes(
+    x = factor(cond, levels = cond_order),
+    y = Qmm,
+    color = catch
+  ), size = 1.8, alpha = 0.9) +
+  geom_point(aes(
+    x = factor(cond, levels = cond_order),
+    y = Ptot, shape = "Neerslag volume"), size = 2) +
+  theme_bw(base_size = 9) +
+  labs(
+    x = NULL,
+    y = "Neerslag en afstroming (mm)"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = c(0.31, 0.66),   # lower-right in plotting area
+    legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.spacing.y = unit(0, "pt"), 
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(1, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  scale_color_manual(values = pal6) +
+  scale_shape_manual(values = c("Neerslag volume" = 2)) +
+  guides(
+    color = guide_legend(title = "Deelgebied", keywidth = unit(20, "pt")),
+    shape = guide_legend(title = NULL, keywidth = unit(23, "pt"))
+  )
+
+
+ggsave(
+  "images/results/nbs_report/base_runoff_subc.png",
+  width = 5, height = 5, dpi = 300
 )
+
+### Figure xx: Results - NBS normalised comparison -----------------------------  
+# change the lu number to make a figure for a specific NBS.
+
+
+dat <- scen_all_rel %>%
+  mutate(catch = str_remove(catch, "_10m")) %>%
+  filter(lu == 12) # filter(lu != 17 & lu != 21)
+
+
+ggplot(
+  dat,
+  aes(
+    x = factor(cond, levels = cond_order),
+    y = Q_area_diff * -1,
+    color = catch
+  )
+) +
+  geom_point(size = 1.8, alpha = 0.9) +
+  facet_wrap(~description, nrow = 4) +
+  theme_bw(base_size = 9) +
+  labs(
+    x = NULL,
+    y = "Genormaliseerde reductie (mm per m² NBS)",   # or "Qmm_base - Qmm (mm)"
+    color = "Deelgebied"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = "bottom",   # lower-right in plotting area
+    #legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(0.55, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  fixed_color_scale
+
+
+ggsave(
+  "images/results/nbs_report/nbs_effects_normalised_natuurlijk_hooiland.png",
+  width = 5, height = 5, dpi = 300)
+
 
 
 # 4. Catchment overview -------------------------------------------------------
@@ -657,6 +767,30 @@ doc <- doc %>%
   
   body_add_par(paste0("NBS area for ", subc[3]), style = "heading 2") %>%
   body_add_flextable(ft_area_list[[3]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[4]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[4]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[5]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[5]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[6]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[6]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[7]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[7]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[8]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[8]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[9]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[9]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[10]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[10]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[11]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[11]]) %>%
   
   body_add_par("Gebied overzicht", style = "heading 2") %>%
   body_add_flextable(ft_lu_area)
