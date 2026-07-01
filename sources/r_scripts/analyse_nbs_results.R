@@ -382,6 +382,7 @@ ft_area_list[[1]]
 
 # the multiplication with -1 is used to express the reduction as positive value
 effect_nbs <- scen_all_rel %>%
+  #filter(catch != "Bocholtz_10m") %>% # use to make the small table without Bocholtz data
   mutate(Qdiff = Qdiff / -1000) %>% # to m3
   group_by(lu, description, cond) %>%
   summarise(Qmm_red_av = mean((Qmm - Qmm_base) * -1),
@@ -428,6 +429,16 @@ ft_ef_norm <- flextable(ef_norm) %>%
   flextable::align(part = "footer", align = "left")
 
 ft_ef_norm
+
+# we make a table for graften en infiltratiestroken without the data from Bocholtz
+# to show the effect undisturbed effects of these measures.
+ef_no_boch <- ef_norm %>%
+  filter(NBS == "graften" | NBS == "infiltratiestroken")
+
+ft_ef_graf <- flextable(ef_no_boch) %>%
+  style_ft()
+
+ft_ef_graf
 # printing is done at the bottom of the script
 
 ### Table xx : Results, normalised effects NBS vol ------------------------------
@@ -619,7 +630,17 @@ ggsave(
 
 dat <- scen_all_rel %>%
   mutate(catch = str_remove(catch, "_10m")) %>%
-  filter(lu == 12) # filter(lu != 17 & lu != 21)
+  filter(lu == 21) # filter(lu != 17 & lu != 21)
+
+# for 17 = contourgreppels
+# and 21 = waterbuffer droogdal
+# adjust to volume per installed m3 NBS
+
+# cal 17 = Q_area_diff / 200
+# cal 21 = Q_area_diff / 1500
+
+# y title = "Berging per aangelegd volume (m3 per m3 NBS)"
+# y title org: "Genormaliseerde reductie (mm per m² NBS)"
 
 
 ggplot(
@@ -648,11 +669,11 @@ ggplot(
     legend.key.width  = unit(0.55, "cm"),
     strip.text = element_text(size = 8)
   ) +
-  fixed_color_scale
+  fixed_color_scale #+ ylim(c(0,1))
 
 
 ggsave(
-  "images/results/nbs_report/nbs_effects_normalised_natuurlijk_hooiland.png",
+  "images/results/nbs_report/nbs_effects_normalised_waterbuffers.png",
   width = 5, height = 5, dpi = 300)
 
 
@@ -752,6 +773,9 @@ doc <- doc %>%
   #table
   body_add_par("Neerslag en afstroming per conditie", style = "heading 2") %>%
   body_add_flextable(ft_base_qp) %>%
+  
+  body_add_par("Normalised effects NBS per area - without Bocholtz", style = "heading 2") %>%
+  body_add_flextable(ft_ef_graft) %>%
   
   body_add_par("Normalised effects NBS per area", style = "heading 2") %>%
   body_add_flextable(ft_ef_norm) %>%
