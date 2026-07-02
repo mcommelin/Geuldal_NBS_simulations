@@ -127,7 +127,7 @@ res_pcr <- bind_rows(a1, a2, a3, a4, a5, a6) %>%
 
 # save and load so whole analysis can be skippen
 saveRDS(res_pcr, "documenten_en_literatuur/results/r_tables/res_pcr.rds")
-res_pcr <- readRDS("documenten_en_literatuur/results/r_tables/res_pcr.rds")
+
 
 # 2. Hydrographs --------------------------------------------------------------
 
@@ -161,10 +161,14 @@ all_hy <- bind_rows(hydr_list) %>%
 
 # save and load so whole analysis can be skippen
 saveRDS(all_hy, "documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
-all_hy <- readRDS("documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
+
 
 
 # 3. Summarise results ---------------------------------------------------------
+
+# load results section 1 and 2
+res_pcr <- readRDS("documenten_en_literatuur/results/r_tables/res_pcr.rds")
+all_hy <- readRDS("documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
 
 ## helper settings -------------------------------------------------------------
 
@@ -242,14 +246,6 @@ scen_hy <- all %>%
   ungroup() %>%
   filter_out(str_detect(scen, "10m$")) %>%
   mutate(catch = str_extract(scen, "^.*10m"))
-
-
-# a2 <- all %>%
-#   ungroup() %>%
-#   group_by(R) %>%
-#   summarise(Qmax = mean(Qmax),
-#             Q = mean(Q))
-
 
 ## 3.2 Organise spatial data ---------------------------------------------------
 
@@ -345,13 +341,7 @@ area_nbs <- scen_all_rel %>%
          catch = str_remove(catch, "_10m"),
          description = str_replace(description, "_", " "))
 
-# save so table can be remade
-#saveRDS(area_nbs, "documenten_en_literatuur/results/r_tables/area_nbs.rds")
 
-# make and write flextable
-#area_nbs <- readRDS("documenten_en_literatuur/results/r_tables/area_nbs.rds")
-
-# TODO change from per catch to per NBS!
 subc <- unique(area_nbs$description)
 
 ft_area_list <- vector("list", length = length(subc))
@@ -380,9 +370,16 @@ ft_area_list[[1]]
 ### Table xx : Results, normalised effects NBS area -----------------------------
 # table with effects per measure and per area
 
+#' **
+#' The results for graften and infiltratiestroken are negative for Bocholts
+#' we believe that this is strange model behaviour and so we exclude this from
+#' the main table. 
+#' comment out the line with the ** to make a smaller table that does include 
+#' the data to show the effect in a lower section of the report.
+
 # the multiplication with -1 is used to express the reduction as positive value
 effect_nbs <- scen_all_rel %>%
-  #filter(catch != "Bocholtz_10m") %>% # use to make the small table without Bocholtz data
+  filter_out(lu %in% c(19, 20) & catch == "Bocholtz_10m") %>% # **
   mutate(Qdiff = Qdiff / -1000) %>% # to m3
   group_by(lu, description, cond) %>%
   summarise(Qmm_red_av = mean((Qmm - Qmm_base) * -1),
@@ -409,20 +406,15 @@ ef_norm <- effect_nbs %>%
   select(-Q_red) %>%
   pivot_wider(names_from = cond, values_from = Qar_red) %>%
   rename("NBS" = "description") %>%
-  mutate(NBS = if_else(NBS == "omvorming naaldbos", paste0(NBS, "*"), NBS)) %>%
+  mutate(NBS = if_else(NBS == "omvorming naaldbos", paste0(NBS, "¹"), NBS),
+         NBS = if_else(NBS == "graften" | NBS == "infiltratiestroken", paste0(NBS, "²"), NBS)) %>%
   ungroup() %>%
   select(-lu)
 
-
-# save so table can be remade
-#saveRDS(ef_norm, "documenten_en_literatuur/results/r_tables/ef_norm.rds")
-
-# make and write flextable
-#ef_norm <- readRDS("documenten_en_literatuur/results/r_tables/ef_norm.rds")
-
 ft_ef_norm <- flextable(ef_norm) %>%
   add_footer_row(
-    values = "* Voor omvorming naaldbos is alleen Bildchen gebruikt, waardoor geen standaard deviatie kan worden berekent.",
+    values = "¹ Voor omvorming naaldbos is alleen Bildchen gebruikt, waardoor geen standaard deviatie kan worden berekent.
+    ² De resultaten van Bocholtz zijn voor deze maatregelen niet meegenomen, zie sectie xx voor verdere uitleg.",
     colwidths = ncol(ef_norm)
   ) %>%
   style_ft() %>%
@@ -430,12 +422,12 @@ ft_ef_norm <- flextable(ef_norm) %>%
 
 ft_ef_norm
 
-# we make a table for graften en infiltratiestroken without the data from Bocholtz
-# to show the effect undisturbed effects of these measures.
-ef_no_boch <- ef_norm %>%
+# we make a table for graften en infiltratiestroken including the data from Bocholtz
+# to show the effect including the strange results for these measures.
+ef_boch <- ef_norm %>%
   filter(NBS == "graften" | NBS == "infiltratiestroken")
 
-ft_ef_graf <- flextable(ef_no_boch) %>%
+ft_ef_graf <- flextable(ef_boch) %>%
   style_ft()
 
 ft_ef_graf
@@ -466,12 +458,6 @@ effect_nbs_vol <- scen_all_rel %>%
   pivot_wider(names_from = cond, values_from = vol_red) %>%
   rename("NBS" = "description")
   
-# save so table can be remade
-#saveRDS(effect_nbs_vol, "documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
-
-# make and write flextable
-#effect_nbs_vol <- readRDS("documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
-
 ft_ef_vol <- flextable(effect_nbs_vol) %>%
   style_ft()
  
@@ -676,6 +662,148 @@ ggsave(
   "images/results/nbs_report/nbs_effects_normalised_waterbuffers.png",
   width = 5, height = 5, dpi = 300)
 
+### Figure xx: Results - compare NBS - base hydrographs ------------------------
+
+subc <- unique(base_all$catch) # all base scnearios
+scens <- unique(all$scen)
+scens <- scens[!scens %in% subc] # all nbs scenarios
+
+for (i in seq_along(subc)) {
+  for (j in seq_along(cond_order)) {
+    
+    base_scens <- scens[str_detect(scens, subc[i])]
+    
+    c <- subc[i]
+    o <- cond_order[j]
+    
+    # plot
+    q_ev <- all_hy %>%
+      filter(scen == c &
+               cond == o) %>%
+      mutate( t_min = Time * 24 * 60,                 # minutes since start
+              t_bin = floor(t_min / 2) * 2) %>%     
+      group_by(t_bin) %>%
+      summarise(Q = mean(Q),
+                Pavg = mean(Pavg)) %>%
+      mutate(
+        Time = as.POSIXct("2000-01-01 00:00:00", tz = "UTC") + t_bin * 60
+      )
+    
+    
+    for (k in seq_along(base_scens)) {
+      
+      s <- base_scens[k]
+      
+    q_scen <- all_hy %>%
+      filter(scen == s &
+               cond == o) %>%
+      mutate( t_min = Time * 24 * 60,                 # minutes since start
+              t_bin = floor(t_min / 2) * 2) %>%     
+      group_by(t_bin) %>%
+      summarise(Q = mean(Q),
+                Pavg = mean(Pavg)) %>%
+      mutate(
+        Time = as.POSIXct("2000-01-01 00:00:00", tz = "UTC") + t_bin * 60
+      )
+    
+    s <- str_remove(s, "_10m")
+    titel <- paste0("Afvoer en neerslag voor ", s, " met conditie: ", 
+                    o)
+    
+    # plot
+    # axis constants
+    q_max_round <- ceiling(max(c(q_scen$Q, q_ev$Q), na.rm = TRUE))
+    p_max       <- max(q_scen$Pavg, na.rm = TRUE)
+    k           <- q_max_round / (p_max * 1.2)
+    y_top       <- q_max_round * 2
+    
+    # plot regular and inverted y-axis
+    ggplot() +
+      geom_linerange(data = q_ev, aes(x = Time, ymin = y_top,
+                         ymax = y_top - Pavg * k), color = "grey") +
+      geom_line(data = q_ev, aes(x = Time, y = Q, color = "basis"), linewidth = 0.3) +
+      geom_line(data = q_scen, aes(x = Time, y = Q, color = "nbs"), linewidth = 0.3) +
+      scale_y_continuous(
+        name     = "Debiet (L s⁻¹)",
+        limits   = c(0, y_top),
+        sec.axis = sec_axis(
+          ~ (y_top - .) / k,
+          name = "Neerslag (mm h⁻¹)"
+        ),
+        expand = c(0,0)) +
+      scale_x_datetime(
+        date_labels = "%H:%M",
+        date_breaks = "2 hours"
+      ) +
+      labs(title = titel, x = "Tijd") +
+      theme_bw() +
+      theme(plot.title = element_text(size = 10), 
+            panel.grid.minor = element_blank(),
+        legend.position = c(0.95, 0.85),   # lower-right in plotting area
+        legend.justification = c("right", "bottom"),
+        legend.background = element_rect(fill = "white", color = "grey80"),
+        legend.key.height = unit(0.35, "cm"),
+        legend.key.width  = unit(0.55, "cm"),
+        strip.text = element_text(size = 8)
+      ) +
+      scale_color_manual(name = NULL,
+                         values = c("basis" = "black",
+                                    "nbs" = "blue"))
+    
+    
+    ggsave(paste0("images/results/nbs_scenarios_hydrographs/", s, "_", o, ".png"), width = 6, height = 4)
+    }
+  }
+}
+
+### Figure xx: Results - Qpeak reduction ---------------------------------------  
+
+base_qmax <- base_all |>
+  select(catch, cond, Qmax) |>
+  rename("Qmax_base" = "Qmax")
+
+
+dat <- scen_all_rel |>
+  left_join(base_qmax, by = c("catch", "cond")) |>
+  mutate(catch = str_remove(catch, "_10m"),
+         Qpeak_red = (1 - (Qmax / Qmax_base)) * 100)
+
+
+ggplot(
+  dat,
+  aes(
+    x = factor(cond, levels = cond_order),
+    y = Qpeak_red,
+    color = catch
+  )
+) +
+  geom_point(size = 1.8, alpha = 0.9) +
+  facet_wrap(~description, nrow = 4) +
+  theme_bw(base_size = 9)  +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = c(0.92, 0.06),   # lower-right in plotting area
+    legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(0.55, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  labs(
+    x = NULL,
+    y = "Relatieve afname piek afstroming (%)"
+  ) +
+  scale_color_manual(
+    name = "Deelgebied",
+    values = pal6_catch,                    # your named palette
+    drop = FALSE                      # keep all levels even if not in data
+  )
+
+ggsave(
+  "images/results/nbs_report/nbs_peak_reduction.png",
+  width = 6.3, height = 9.7, dpi = 300)
+
 
 
 # 4. Catchment overview -------------------------------------------------------
@@ -775,7 +903,7 @@ doc <- doc %>%
   body_add_flextable(ft_base_qp) %>%
   
   body_add_par("Normalised effects NBS per area - without Bocholtz", style = "heading 2") %>%
-  body_add_flextable(ft_ef_graft) %>%
+  body_add_flextable(ft_ef_graf) %>%
   
   body_add_par("Normalised effects NBS per area", style = "heading 2") %>%
   body_add_flextable(ft_ef_norm) %>%
