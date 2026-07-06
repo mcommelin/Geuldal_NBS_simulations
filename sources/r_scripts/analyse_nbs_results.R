@@ -804,7 +804,45 @@ ggsave(
   "images/results/nbs_report/nbs_peak_reduction.png",
   width = 6.3, height = 9.7, dpi = 300)
 
+### Figure xx: Results - Qpeak base per catchment -------------------------------
 
+dat <- base_all %>%
+  mutate(catch = str_remove(catch, "_10m"))
+
+
+ggplot(dat) +
+  geom_point(aes(
+    x = factor(cond, levels = cond_order),
+    y = Qmax / 1000,
+    color = catch
+  ), size = 1.8, alpha = 0.9) +
+  theme_bw(base_size = 9) +
+  labs(
+    x = NULL,
+    y = "Maximale afstroming m³ sec⁻¹"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = c(0.31, 0.72),   # lower-right in plotting area
+    legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.spacing.y = unit(0, "pt"), 
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(1, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  scale_color_manual(values = pal6) +
+  guides(
+    color = guide_legend(title = "Deelgebied", keywidth = unit(20, "pt")),
+    shape = guide_legend(title = NULL, keywidth = unit(23, "pt"))
+  )
+
+
+ggsave(
+  "images/results/nbs_report/base_qmax_subc.png",
+  width = 5, height = 5, dpi = 300
+)
 
 # 4. Catchment overview -------------------------------------------------------
 
@@ -902,7 +940,7 @@ doc <- doc %>%
   body_add_par("Neerslag en afstroming per conditie", style = "heading 2") %>%
   body_add_flextable(ft_base_qp) %>%
   
-  body_add_par("Normalised effects NBS per area - without Bocholtz", style = "heading 2") %>%
+  body_add_par("Normalised effects NBS per area - with Bocholtz", style = "heading 2") %>%
   body_add_flextable(ft_ef_graf) %>%
   
   body_add_par("Normalised effects NBS per area", style = "heading 2") %>%
