@@ -1,12 +1,12 @@
 # full workflow for lisem simulations in the Geul catchment.
 # select lines and execute these with Ctrl + Enter
 
-#=======================================================================#
+#_______________________________________________________________________#
 #       To run the code below you need the folder spatial_data          #
-#=======================================================================#
+#_______________________________________________________________________#
 #First download all maps from Sharepoint - Geuldal spatial data         #  
 # 1. place the content inside this cloned repository in ./spatial_data  #
-#=======================================================================#
+#_______________________________________________________________________#
 
 # Initialization ---------------------------------------------------------------
 

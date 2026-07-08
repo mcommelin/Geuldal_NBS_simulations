@@ -487,7 +487,8 @@ q_ev <- all_hy %>%
   summarise(Q = mean(Q),
             Pavg = mean(Pavg)) %>%
   mutate(
-    Time = as.POSIXct("2000-01-01 00:00:00", tz = "UTC") + t_bin * 60
+    Time = as.POSIXct("2000-01-01 00:00:00", tz = "UTC") + t_bin * 60,
+    thour = t_bin / 60
   )
 
 c <- str_remove(c, "_10m")
@@ -517,14 +518,15 @@ ggplot(q_ev) +
     expand = c(0,0)) +
   scale_x_datetime(
     date_labels = "%H:%M",
-    date_breaks = "2 hours"
+    date_breaks = "4 hours"
   ) +
-  labs(title = titel, x = "Tijd") +
+  labs(x = "Tijd") +
   theme_bw() +
-  theme(plot.title = element_text(size = 10), panel.grid.minor = element_blank())
+  theme(plot.title = element_text(size = 10), panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
   
 
-ggsave(paste0("images/results/nbs_report/", c, "_", o, ".png"), width = 6, height = 4)
+ggsave(paste0("images/results/nbs_report/", c, "_", o, ".png"), width = 3, height = 3)
   }
 }
 ### Figure xx: Results - NBS effects comparison ---------------------------------  
@@ -616,8 +618,8 @@ ggsave(
 
 dat <- scen_all_rel %>%
   mutate(catch = str_remove(catch, "_10m")) %>%
-  filter(lu == 21) # filter(lu != 17 & lu != 21)
-
+  filter(lu == 20) # filter(lu != 17 & lu != 21)
+  
 # for 17 = contourgreppels
 # and 21 = waterbuffer droogdal
 # adjust to volume per installed m3 NBS
@@ -642,25 +644,38 @@ ggplot(
   theme_bw(base_size = 9) +
   labs(
     x = NULL,
-    y = "Genormaliseerde reductie (mm per m² NBS)",   # or "Qmm_base - Qmm (mm)"
+    y = "Genormaliseerde reductie \n(mm per m² NBS)",   # or "Qmm_base - Qmm (mm)"
     color = "Deelgebied"
+  ) +
+  guides(
+    color = guide_legend(
+      nrow = 2,           # or 3
+      byrow = TRUE,
+      override.aes = list(size = 2)
+    )
   ) +
   theme(
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
     panel.spacing = unit(0.8, "lines"),
     legend.position = "bottom",   # lower-right in plotting area
-    #legend.justification = c("right", "bottom"),
-    legend.background = element_rect(fill = "white", color = "grey80"),
-    legend.key.height = unit(0.35, "cm"),
-    legend.key.width  = unit(0.55, "cm"),
+    legend.justification = "left",  
+    legend.box.just = "left",
+    legend.margin = margin(t = 0, r = 0, b = 0, l = -30),
+    legend.direction = "horizontal",
+    legend.box = "horizontal",
+    legend.title = element_text(size = 7),
+    legend.text = element_text(size = 6.5),   # smaller text
+    legend.key.height = unit(0.25, "cm"),
+    legend.key.width  = unit(0.4, "cm"),
+    legend.spacing.x = unit(0.1, "cm"),
     strip.text = element_text(size = 8)
   ) +
-  fixed_color_scale #+ ylim(c(0,1))
+  fixed_color_scale #+ ylim(c(0,10))
 
 
 ggsave(
-  "images/results/nbs_report/nbs_effects_normalised_waterbuffers.png",
-  width = 5, height = 5, dpi = 300)
+  "images/results/nbs_report/nbs_effects_infiltratiestroken.png",
+  width = 3, height = 3.5, dpi = 300)
 
 ### Figure xx: Results - compare NBS - base hydrographs ------------------------
 
@@ -733,25 +748,26 @@ for (i in seq_along(subc)) {
         expand = c(0,0)) +
       scale_x_datetime(
         date_labels = "%H:%M",
-        date_breaks = "2 hours"
+        date_breaks = "4 hours"
       ) +
-      labs(title = titel, x = "Tijd") +
+      labs(x = "Tijd") + #title = titel, 
       theme_bw() +
       theme(plot.title = element_text(size = 10), 
             panel.grid.minor = element_blank(),
-        legend.position = c(0.95, 0.85),   # lower-right in plotting area
+        legend.position = c(0.95, 0.75),   # lower-right in plotting area
         legend.justification = c("right", "bottom"),
         legend.background = element_rect(fill = "white", color = "grey80"),
         legend.key.height = unit(0.35, "cm"),
         legend.key.width  = unit(0.55, "cm"),
-        strip.text = element_text(size = 8)
+        strip.text = element_text(size = 8),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
       ) +
       scale_color_manual(name = NULL,
                          values = c("basis" = "black",
                                     "nbs" = "blue"))
     
     
-    ggsave(paste0("images/results/nbs_scenarios_hydrographs/", s, "_", o, ".png"), width = 6, height = 4)
+    ggsave(paste0("images/results/nbs_scenarios_hydrographs/", s, "_", o, ".png"), width = 3, height = 3)
     }
   }
 }
@@ -766,7 +782,8 @@ base_qmax <- base_all |>
 dat <- scen_all_rel |>
   left_join(base_qmax, by = c("catch", "cond")) |>
   mutate(catch = str_remove(catch, "_10m"),
-         Qpeak_red = (1 - (Qmax / Qmax_base)) * 100)
+         Qpeak_red = (1 - (Qmax / Qmax_base)) * 100,
+         description = if_else(description == "graften", "graften ¹", description))
 
 
 ggplot(
@@ -798,7 +815,8 @@ ggplot(
     name = "Deelgebied",
     values = pal6_catch,                    # your named palette
     drop = FALSE                      # keep all levels even if not in data
-  )
+  ) +
+  ylim(c(-13, 100))
 
 ggsave(
   "images/results/nbs_report/nbs_peak_reduction.png",
