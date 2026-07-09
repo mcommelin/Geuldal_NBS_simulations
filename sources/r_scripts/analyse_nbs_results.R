@@ -526,7 +526,7 @@ ggplot(q_ev) +
         axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
   
 
-ggsave(paste0("images/results/nbs_report/", c, "_", o, ".png"), width = 3, height = 3)
+ggsave(paste0("images/results/nbs_base_hydrographs/", c, "_", o, ".png"), width = 3, height = 3)
   }
 }
 ### Figure xx: Results - NBS effects comparison ---------------------------------  
@@ -618,7 +618,7 @@ ggsave(
 
 dat <- scen_all_rel %>%
   mutate(catch = str_remove(catch, "_10m")) %>%
-  filter(lu == 20) # filter(lu != 17 & lu != 21)
+  filter(lu == 13) # filter(lu != 17 & lu != 21)
   
 # for 17 = contourgreppels
 # and 21 = waterbuffer droogdal
@@ -670,11 +670,11 @@ ggplot(
     legend.spacing.x = unit(0.1, "cm"),
     strip.text = element_text(size = 8)
   ) +
-  fixed_color_scale #+ ylim(c(0,10))
+  fixed_color_scale #+ ylim(c(0,16))
 
 
 ggsave(
-  "images/results/nbs_report/nbs_effects_infiltratiestroken.png",
+  "images/results/nbs_report/nbs_effects_productie_grasland.png",
   width = 3, height = 3.5, dpi = 300)
 
 ### Figure xx: Results - compare NBS - base hydrographs ------------------------
@@ -750,7 +750,7 @@ for (i in seq_along(subc)) {
         date_labels = "%H:%M",
         date_breaks = "4 hours"
       ) +
-      labs(x = "Tijd") + #title = titel, 
+      labs(x = "Tijd") + # title = titel,
       theme_bw() +
       theme(plot.title = element_text(size = 10), 
             panel.grid.minor = element_blank(),
