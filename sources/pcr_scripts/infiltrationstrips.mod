@@ -13,10 +13,16 @@ dem = dem.map;
 strips = nbs.map;
 buffers = buffermask.map;
 
+# single nbs (1) or scenario with multiple measures (0)? 
+single = ${1};
 
 initial
 # some aux maps
 area = dem * 0 + 1;
+
+# in maps based on the single measures (by Stroming) strips have value 2.
+# in input maps with the full scenarios, strips get their lu_nr which is 20.
+strip_num = if(single eq 1, 2, 20); 
 
 # remove strips where buffers are applied
 buffers = cover(buffers, 0);
@@ -27,4 +33,4 @@ st_clump = clump(nominal(strips * area));
 st_mean_h = areaaverage(dem, st_clump);
 
 #make adjusted dem with strip = mean strip height
-report dem = if(strips eq 2, st_mean_h, dem);
+report dem = if(strips eq strip_num, st_mean_h, dem);

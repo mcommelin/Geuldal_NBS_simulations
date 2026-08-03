@@ -352,9 +352,20 @@ for (i in seq_along(points_id)) {
 # lu numbers according to lu_NBS_tbl.csv
 # change the use of NBSnum - does not work with combinations.
 # if combined - loop over all NBS nums, and execute accordingly?
-# NBSnum = 99 = combined scenario?
+# NBSnum > 100 = combined scenario?
+# TODO add code to transform WRL formatten VKV maps to fit this workflow
 
 
+# for testing
+create_lisem_run(
+  resolution = 10,
+  catch_num = 52,
+  swatre_file = swatre_nbs_file,
+  run_type = "base",
+  do_runfile = T,
+  NBS_num = 101,
+  cpu_cores = 8
+)
 
 # 4. HPC runs full Geuldal -----------------------------------------------------
 

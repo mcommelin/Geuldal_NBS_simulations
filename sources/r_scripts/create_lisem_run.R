@@ -47,9 +47,9 @@ make_runfile_lisem <- function(work_dir = NULL,
     # set correct inithead for event
     evdate <- str_remove_all(as.character(evdate), "-")
   }
-
+  
   res <- paste0("res_", evdate)
-
+  
   run_temp <- str_replace_all(run_temp, "^Result Directory=<<res_dir>>", 
                               paste0("Result Directory=", proj_wd, "/", work_dir, res, "/"))
   # rain files
@@ -84,14 +84,14 @@ make_runfile_lisem <- function(work_dir = NULL,
     if (theta_cal > 90) {
       # use precalculated initial head values, heterogeneous over the catchment
       # can stille be calibrated with an homogeneous factor.
-    # set correct inithead for event
-    ih_ev <- str_remove(runname, "^\\d\\d")
-    
-    run_temp <- str_replace_all(run_temp, "<<ih>>", 
-                                paste0("ih", ih_ev))
-    # correct theta_cal
-    theta_cal <- theta_cal - 100
-    
+      # set correct inithead for event
+      ih_ev <- str_remove(runname, "^\\d\\d")
+      
+      run_temp <- str_replace_all(run_temp, "<<ih>>", 
+                                  paste0("ih", ih_ev))
+      # correct theta_cal
+      theta_cal <- theta_cal - 100
+      
     } else {
       # use 1 homogeneous initial head value for the whole catchment.
       # we fill -100 always, with the calibration factor this can be tuned the 
@@ -120,14 +120,14 @@ make_runfile_lisem <- function(work_dir = NULL,
   # based on testing currently we don't use MUSCL flow solutions - 20260408
   # line below switches MUSCL on:
   #  run_temp <- str_replace_all(run_temp, "Flood solution=0", "Flood solution=1")
-    
+  
   # set timestep
   if (resolution < 10)
     dt = 5 
   else    
     dt = 10 # same timestep for 10 and 20 meter resolution. why?- MC
   
-ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
+  ts <- str_pad(as.character(dt), width = 3, side = "left", pad = "0")
   run_temp <- str_replace_all(run_temp, "<<dt>>", paste0(ts, ".0"))
   # set start time
   run_temp <- str_replace_all(run_temp, "<<start_time>>", paste0(start_time)) # 
@@ -260,14 +260,9 @@ create_lisem_run <- function(
     
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
-      # adjust to include vkv
-      if (NBS_num == 99) {
-        NBS_name <- "vkv_test"
-      } else {
-        NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
-          filter(lu_nr == NBS_num)
-        NBS_name <- NBS_desc$description
-      }
+      NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
+        filter(lu_nr == NBS_num)
+      NBS_name <- NBS_desc$description
       catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
                           "m_", NBS_name, "/")
     } 
@@ -281,14 +276,9 @@ create_lisem_run <- function(
     
     #adjust folder name when simulating NBS
     if (NBS_num != 0) {
-      # adjust to include vkv
-      if (NBS_num > 99) {
-        NBS_name <- "vkv_test"
-      } else {
       NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
         filter(lu_nr == NBS_num)
       NBS_name <- NBS_desc$description
-      }
       catch_dir <- paste0(catch_num, "_", resolution, "m_", NBS_name, "/")
     } 
     run_dir <- paste0("LISEM_runs/hpc_runs/", dir_name, catch_dir)
@@ -303,7 +293,7 @@ create_lisem_run <- function(
     dir.create(run_dir, recursive = TRUE)
   }
   
-  # create the following folders in the run_dir: maps, rain, runfiles
+  # create the following folders in the run_dir: maps, swatre, runfiles
   dirs <- c("maps", "swatre", "runfiles")
   for (dir in dirs) {
     dir_path <- paste0(run_dir, dir)
@@ -372,25 +362,52 @@ create_lisem_run <- function(
   # update the landuse map and DEM, to include the NBS
   # TODO extend code to allow for multiple NBS in the same simulation
   
-  if (NBS_num != 0) {
-    # rename the map, for easier coding
-    file.rename(paste0(subdir, nbs_map), paste0(subdir, "nbs.map"))
+  
+    # rename the NBS map, for easier coding
+    file.copy(paste0(subdir, nbs_map), paste0(subdir, "nbs.map"), overwrite = T)
+    
     # keep the original landuse map
     file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"),
-              overwrite = TRUE)
+              overwrite = TRUE)  
     
-    # adjust landuse map
+  if (NBS_num != 0) {
+    # check if we deal with a multiple NBS scenario
+    if (NBS_num > 100) (single_nbs = FALSE) else (single_nbs = TRUE)
     
-    # check if the input map contains Landscape elements
-    # if yes, the value in the input maps that needs to be changed is not
-    # 1 but 2, this is done in the pcraster script.
-    do_LE <- if(NBS_desc$do_LE == TRUE) 1 else 0
+    if (single_nbs == FALSE) {
+      # find which NBS numbers are included in the scenario
+      # load map with terra
+      map <- rast(paste0(subdir, nbs_map))
+      # make matrix
+      mat <- as.matrix(map)
+      # find unique values
+      nums <- unique(mat)
+      nums <- c(nums[!is.nan(nums)])
+      
+      # save the scenario map as landuse map
+      file.copy(paste0(subdir, "nbs.map"), paste0(subdir, "landuse.map"),
+                overwrite = TRUE)  
+      
+    }
     
-    pcr_script(
-      script = paste0("prepare_nbs.mod ", NBS_num, " ", do_LE),
-      script_dir = "sources/pcr_scripts",
-      work_dir = subdir
-    )
+    if (single_nbs == TRUE) {
+      # adjust landuse map
+      
+      # check if the input map contains Landscape elements
+      # if yes, the value in the input maps that needs to be changed is not
+      # 1 but 2, this is done in the pcraster script.
+      do_LE <- if(NBS_desc$do_LE == TRUE) 1 else 0
+      
+      pcr_script(
+        script = paste0("prepare_nbs.mod ", NBS_num, " ", do_LE),
+        script_dir = "sources/pcr_scripts",
+        work_dir = subdir
+      )
+      
+      # also fill nums with just 1 number in case of single_nbs
+      nums <- NBS_num
+      
+    }
     
     # adjust the DEM for landscape elements
     # keep the original dem
@@ -400,84 +417,107 @@ create_lisem_run <- function(
     # load the file with NBS properties for LE elements
     nbs_prop <- read_csv("sources/setup/tables/nbs_properties.csv")
     
-    # swales - 17
-    if (NBS_num == 17) {
-      # find properties from table
-      prop <- nbs_prop %>%
-        filter(lu_nr == NBS_num)
+    # in case of multiple follow the correct order
+    for (i in seq_along(nums)) {
+      n = nums[i]
       
-    swale_width <- filter(prop, property == "swale_width")$value # [m] give the width in meters of the ditch of the swale
-    swale_depth <- filter(prop, property == "swale_depth")$value # [m] the difference between the top of the dike and deepest
-                       # point of the ditch
-     pcr_script(
-      script = paste0("swales.mod ", swale_depth, " ", swale_width),
-      script_dir = "sources/pcr_scripts",
-      work_dir = subdir
-    )
+      # swales - 17
+      if (n == 17) {
+        # find properties from table
+        prop <- nbs_prop %>%
+          filter(lu_nr == n)
+        
+        swale_width <- filter(prop, property == "swale_width")$value # [m] give the width in meters of the ditch of the swale
+        swale_depth <- filter(prop, property == "swale_depth")$value # [m] the difference between the top of the dike and deepest
+        
+        # adjust pcraster script if this is a scenario of single nbs simulation
+        if(single_nbs == TRUE) single <- 1 else single = 0
+        
+        # point of the ditch
+        pcr_script(
+          script = paste0("swales.mod ", swale_depth, " ", swale_width, " ", single),
+          script_dir = "sources/pcr_scripts",
+          work_dir = subdir
+        )
+      }
+      
+      # terraces / graften - 19
+      if (n == 19) {
+        if (single_nbs == TRUE) { # graften cannot be implemented based on only the
+          # location. In the stroming maps also the field in which they are applied
+          # get identified, in the GIS process this information is needed!
+          # probably the best solution in a scenario with multiple NBS is to produce
+          # the map with fields and graften locations first, and have that as separate map
+          # along side the full scenario tif file.
+          
+        # find properties from table
+        prop <- nbs_prop %>%
+          filter(lu_nr == n)
+        
+        terrace_spacing <- filter(prop, property == "terrace_spacing")$value 
+        # [m] the contour elevation spacing of the designed terraces
+        # this should correspond to the input map
+        desired_slope <- filter(prop, property == "desired_slope")$value  
+        # [%] the desired slope of the 'flat' sections 
+        
+        slope_deg <- (atan(desired_slope/100) * 180) / pi
+        pcr_script(
+          script = paste0("terraces.mod ", terrace_spacing, " ", desired_slope),
+          script_dir = "sources/pcr_scripts",
+          work_dir = subdir
+        )
+        # use SAGA GIS fill_sinks (wang & liu) to smooth the terraces!
+        gdal_translate(paste0(subdir, "ter_dem_part.map"), paste0(subdir, "ter_dem_part.sdat"), of = "SAGA")
+        RSAGA::rsaga.fill.sinks(in.dem = paste0(subdir, "ter_dem_part.sgrd"), 
+                                out.dem = paste0(subdir, "ter_dem_part_filled.sgrd"),
+                                minslope = slope_deg,
+                                method = "wang.liu.2006")
+        gdal_translate(src_dataset = paste0(subdir, "ter_dem_part_filled.sdat"), 
+                       dst_dataset = paste0(subdir, "ter_dem_part_filled.map"), 
+                       of = "PCRASTER", oo = "PCRASTER_VALUESCALE=VS_SCALAR")
+        
+        # in pcraster combine adjusted dem with original dem
+        pcrcalc(options = "dem.map=cover(if(terrace.map > 0 and ter_dem_part_filled.map > 0, ter_dem_part_filled.map, dem_base.map), dem_base.map)", 
+                work_dir = subdir)
+        }
+      }
+      
+      # infiltratiestroken - 20
+      if (n == 20) {
+        # adjust pcraster script if this is a scenario of single nbs simulation
+        if(single_nbs == TRUE) single <- 1 else single = 0
+        
+        pcr_script(
+          script = paste0("infiltrationstrips.mod ", single),
+          script_dir = "sources/pcr_scripts",
+          work_dir = subdir)
+      }
+      
+      
+      # waterbuffers - 21
+      if (n == 21) {
+        # find properties from table
+        prop <- nbs_prop %>%
+          filter(lu_nr == n)
+        
+        pond_volume  <- filter(prop, property == "pond_volume")$value 
+        # [m3] give the design volume of the ponds
+        
+        # adjust pcraster script if this is a scenario of single nbs simulation
+        if(single_nbs == TRUE) single <- 1 else single = 0
+        
+        # point of the ditch
+        pcr_script(
+          script = paste0("retentionponds.mod ", pond_volume, " ", single),
+          script_dir = "sources/pcr_scripts",
+          work_dir = subdir)
+        
+      }    
+      
     }
-    
-    # terraces / graften - 19
-    if (NBS_num == 19) {
-      
-      # find properties from table
-      prop <- nbs_prop %>%
-        filter(lu_nr == NBS_num)
-      
-      terrace_spacing <- filter(prop, property == "terrace_spacing")$value 
-                # [m] the contour elevation spacing of the designed terraces
-                # this should correspond to the input map
-     desired_slope <- filter(prop, property == "desired_slope")$value  
-                # [%] the desired slope of the 'flat' sections 
-     
-     slope_deg <- (atan(desired_slope/100) * 180) / pi
-     pcr_script(
-       script = paste0("terraces.mod ", terrace_spacing, " ", desired_slope),
-       script_dir = "sources/pcr_scripts",
-       work_dir = subdir
-     )
-     # use SAGA GIS fill_sinks (wang & liu) to smooth the terraces!
-     gdal_translate(paste0(subdir, "ter_dem_part.map"), paste0(subdir, "ter_dem_part.sdat"), of = "SAGA")
-     RSAGA::rsaga.fill.sinks(in.dem = paste0(subdir, "ter_dem_part.sgrd"), 
-                             out.dem = paste0(subdir, "ter_dem_part_filled.sgrd"),
-                             minslope = slope_deg,
-                             method = "wang.liu.2006")
-     gdal_translate(src_dataset = paste0(subdir, "ter_dem_part_filled.sdat"), 
-                    dst_dataset = paste0(subdir, "ter_dem_part_filled.map"), 
-                    of = "PCRASTER", oo = "PCRASTER_VALUESCALE=VS_SCALAR")
-     
-     # in pcraster combine adjusted dem with original dem
-     pcrcalc(options = "dem.map=cover(if(terrace.map > 0 and ter_dem_part_filled.map > 0, ter_dem_part_filled.map, dem_base.map), dem_base.map)", 
-             work_dir = subdir)
-     
-    }
-    
-    # infiltratiestroken - 20
-    if (NBS_num == 20) {
-      pcr_script(
-        script = paste0("infiltrationstrips.mod"),
-        script_dir = "sources/pcr_scripts",
-        work_dir = subdir)
-    }
-     
-     
-    # waterbuffers - 21
-    if (NBS_num == 21) {
-      # find properties from table
-      prop <- nbs_prop %>%
-        filter(lu_nr == NBS_num)
-      
-      pond_volume  <- filter(prop, property == "pond_volume")$value 
-                          # [m3] give the design volume of the ponds
-
-      # point of the ditch
-      pcr_script(
-        script = paste0("retentionponds.mod ", pond_volume),
-        script_dir = "sources/pcr_scripts",
-        work_dir = subdir)
-     
-    }    
-    
-    file.rename(paste0(subdir, "nbs.map"), paste0(subdir, nbs_map))
+  
+  # clean up  
+  file.remove(paste0(subdir, "nbs.map"))
   }
   
   # run pcraster script to finalize run database.
@@ -548,7 +588,7 @@ create_lisem_run <- function(
                                       side = "left", pad = "0"), ":",
                               str_pad(as.character(hour(ts_end) * 60 + minute(ts_end)), width = 4,
                                       side = "left", pad = "0")))
-
+    
     for (i in seq_along(events$event_start)) {
       #make baseflow
       date_event <- str_remove_all(as.character(date(events$ts_start[i])), "-")
@@ -567,17 +607,17 @@ create_lisem_run <- function(
         script_dir = "sources/pcr_scripts",
         work_dir = subdir
       )
-    
+      
       file.rename(paste0(subdir, "baseflow.map"),
                   paste0(subdir, "baseflow_", date_event, ".map"))
       
       #make an additional results directory for each standard event
       dir <- paste0("res_", date_event)
-        dir_path <- paste0(run_dir, dir)
-        if (!dir.exists(dir_path)) {
-          dir.create(dir_path)
-        }
-
+      dir_path <- paste0(run_dir, dir)
+      if (!dir.exists(dir_path)) {
+        dir.create(dir_path)
+      }
+      
       # make runfile  
       if (do_runfile == TRUE) {
         
