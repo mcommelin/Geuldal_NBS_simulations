@@ -211,3 +211,8 @@ file.copy(list.files("./spatial_data/prepared/LISEM_data", full.names = T),
 file.copy(list.files("./spatial_data/prepared/rain", full.names = T),
           "./LISEM_runs/rain", recursive = T)
 }
+
+
+load_scenario_maps <- function() {
+  # function to load a scenario map
+}

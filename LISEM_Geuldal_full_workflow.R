@@ -320,7 +320,7 @@ source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
 # see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
-nbs_ids <- c(0, 14, 19) # 0 = base run without NBS
+nbs_ids <- c(0, 11, 14, 17, 19, 20, 21) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
@@ -350,11 +350,15 @@ for (i in seq_along(points_id)) {
 
 # load NBS scenario map:
 # lu numbers according to lu_NBS_tbl.csv
-# change the use of NBSnum - does not work with combinations.
-# if combined - loop over all NBS nums, and execute accordingly?
-# NBSnum > 100 = combined scenario?
+
 # TODO add code to transform WRL formatten VKV maps to fit this workflow
 
+# define location and format to deliver input maps
+# load the maps
+# adjust landuse numbers to landuse codes used in this workflow
+# fill all landuse types that are not available in this workflow with
+#     the original landuse types - save this map
+# from this point the maps should follow the workflow and can be run.
 
 # for testing
 create_lisem_run(

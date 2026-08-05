@@ -361,7 +361,7 @@ create_lisem_run <- function(
   ### start running scripts
   # update the landuse map and DEM, to include the NBS
   # TODO extend code to allow for multiple NBS in the same simulation
-  
+  if (NBS_num != 0) {
   
     # rename the NBS map, for easier coding
     file.copy(paste0(subdir, nbs_map), paste0(subdir, "nbs.map"), overwrite = T)
@@ -370,7 +370,7 @@ create_lisem_run <- function(
     file.copy(paste0(subdir, "landuse.map"), paste0(subdir, "landuse_base.map"),
               overwrite = TRUE)  
     
-  if (NBS_num != 0) {
+
     # check if we deal with a multiple NBS scenario
     if (NBS_num > 100) (single_nbs = FALSE) else (single_nbs = TRUE)
     
