@@ -252,6 +252,11 @@ load_scenario_maps <- function(scen_num = NULL,
     map_out <- paste0(res_dir, "scen_graften.map")
     writeRaster(map_res, map_out , filetype = "PCRaster", NAflag = -9999,
                 overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+  } else {
+    # make a dummy graften map to prevent PCRaster errors
+    map_out <- paste0(res_dir, "scen_graften.map")
+    writeRaster(mask, map_out , filetype = "PCRaster", NAflag = -9999,
+                overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
   }
   
   # save the scenario map as pcraster
@@ -260,6 +265,8 @@ load_scenario_maps <- function(scen_num = NULL,
   map_out <- paste0(res_dir, "scen.map")
   writeRaster(map_res, map_out , filetype = "PCRaster", NAflag = -9999,
               overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+  
+  scen_name <- str_remove(scen_map, ".tif")
   
   # for the scenario maps we allow two different land use classifications
   # 'def' = default, the classification as used in this workflow
@@ -270,6 +277,8 @@ load_scenario_maps <- function(scen_num = NULL,
   
   if (lu_classes == "wrl") {
     lu_transform <- 1
+  }
+    # always make the lu table, to prevent errors by PCRaster
     lu_table <-  read_csv("sources/setup/tables/transform_wrl_lu_classes.csv") %>%
       mutate(lu_nr = if_else(is.na(lu_nr), -99.9, lu_nr)) %>%
       select(-beschrijving)
@@ -282,20 +291,20 @@ load_scenario_maps <- function(scen_num = NULL,
                 sep = " ", row.names = FALSE,
                 quote = FALSE)
     
-  }
+  
   
   #' now we have all data in PCRaster format in the correct LISEM_data
   #' directory, we can run the PCraster script, to make the final map for
   #' the rest of the workflow.
-  
+  pcr_script(script = paste0("prepare_scenario_maps.mod ", lu_transform, " ", incl_graften), 
+             script_dir = "sources/pcr_scripts/",
+             work_dir = res_dir)
 
-  
-  # adjust landuse numbers to landuse codes used in this workflow
-  
-  # fill all landuse types that are not available in this workflow with
-  #     the original landuse types - save this map
-  
-  # rename the scen.map, to the correct name!
+  # rename the scen.map, to the correct name! and cleanup
+  file.rename(paste0(res_dir, "scen_prep.map"), paste0(res_dir, scen_name, ".map"))
+  file.remove(paste0(res_dir, "scen.map"))
+  file.remove(paste0(res_dir, "lu_classes.tbl"))
+  file.remove(paste0(res_dir, "scen_graften.map"))
 }
 
 

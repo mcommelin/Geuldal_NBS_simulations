@@ -3,6 +3,7 @@
 # Adjust DEM for terraces	               #
 # Date: 14-04-2026                         #
 # Author: Meindert Commelin                #
+# This script is part of an R-code workflow #
 ############################################
 
 
@@ -23,11 +24,20 @@ channels = chanmask.map;
 terrace_spacing = ${1}; # [m]
 # the desired slope of the 'flat' sections 
 desired_slope_p = ${2}; #[%]
+# single nbs (1) or scenario with multiple measures (0)? 
+single = ${3};
 
 #adjusted dem
 ter_dem = ter_dem.map; 
 
 initial
+# there are two cases in which this script can be used.
+# 1. as single measure
+# 2. as part of a scenario with multiple measures
+# in the second case, some maps have to be adjusted to make the terraces well
+# but also to implement the other measures correctly.
+
+
 # some aux maps
 area = dem * 0 + 1;
 
@@ -35,6 +45,16 @@ area = dem * 0 + 1;
 buffers = cover(buffers, 0);
 roads = cover(roads, 0);
 channels =cover(channels, 0);
+
+# adjust for single measures
+report nbs_lu.map = if(terrace > 1000, terrace - 1000, terrace);
+
+
+
+
+
+
+
 
 terrace = cover(if(buffers ne 0 or roads ne 0 or channels ne 0, 0, terrace), 0) * area;
 report terrace.map = terrace;

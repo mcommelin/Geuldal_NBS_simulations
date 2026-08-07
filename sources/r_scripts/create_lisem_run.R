@@ -259,13 +259,18 @@ create_lisem_run <- function(
     
     
     #adjust folder name when simulating NBS
-    if (NBS_num != 0) {
+    if (NBS_num > 0 && NBS_num < 100) {
       NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
         filter(lu_nr == NBS_num)
       NBS_name <- NBS_desc$description
       catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
                           "m_", NBS_name, "/")
-    } 
+    } else if (NBS_num > 100) {
+      scen_map <- dir(paste0(base_dir, "maps/"), paste0("^", NBS_num))
+      NBS_name <- str_remove(scen_map, ".map")
+      catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, 
+                          "m_", NBS_name, "/")
+    }
     
     run_dir <- paste0("LISEM_runs/", catch_dir)
     
@@ -275,13 +280,18 @@ create_lisem_run <- function(
     base_dir <- paste0("LISEM_data/hpc_subcatchments/", catch_dir)
     
     #adjust folder name when simulating NBS
-    if (NBS_num != 0) {
+    if (NBS_num > 0 && NBS_num < 100) {
       NBS_desc <- read_csv("sources/setup/tables/lu_NBS_tbl.csv") %>%
         filter(lu_nr == NBS_num)
       NBS_name <- NBS_desc$description
       catch_dir <- paste0(catch_num, "_", resolution, "m_", NBS_name, "/")
-    } 
-    run_dir <- paste0("LISEM_runs/hpc_runs/", dir_name, catch_dir)
+    } else if (NBS_num > 100) {
+      scen_map <- dir(paste0(base_dir, "maps/"), paste0("^", NBS_num))
+      NBS_name <- str_remove(scen_map, ".map")
+      catch_dir <- paste0(catch_num, "_", resolution, "m_", NBS_name, "/")
+    }
+    
+        run_dir <- paste0("LISEM_runs/hpc_runs/", dir_name, catch_dir)
     
   } else {
     print("ERROR: set do_hpc to TRUE or FALSE")
@@ -418,6 +428,10 @@ create_lisem_run <- function(
     nbs_prop <- read_csv("sources/setup/tables/nbs_properties.csv")
     
     # in case of multiple follow the correct order
+    # filter the numbers from nums that need to be executed
+    measures <- c(19, 17, 20, 21) # specific order of adding the measures
+    nums <- measures[measures %in% nums]
+    
     for (i in seq_along(nums)) {
       n = nums[i]
       
@@ -443,13 +457,9 @@ create_lisem_run <- function(
       
       # terraces / graften - 19
       if (n == 19) {
-        if (single_nbs == TRUE) { # graften cannot be implemented based on only the
-          # location. In the stroming maps also the field in which they are applied
-          # get identified, in the GIS process this information is needed!
-          # probably the best solution in a scenario with multiple NBS is to produce
-          # the map with fields and graften locations first, and have that as separate map
-          # along side the full scenario tif file.
-          
+        # adjust pcraster script if this is a scenario of single nbs simulation
+        if(single_nbs == TRUE) single <- 1 else single = 0
+
         # find properties from table
         prop <- nbs_prop %>%
           filter(lu_nr == n)
@@ -462,7 +472,7 @@ create_lisem_run <- function(
         
         slope_deg <- (atan(desired_slope/100) * 180) / pi
         pcr_script(
-          script = paste0("terraces.mod ", terrace_spacing, " ", desired_slope),
+          script = paste0("terraces.mod ", terrace_spacing, " ", desired_slope, " ", single),
           script_dir = "sources/pcr_scripts",
           work_dir = subdir
         )
@@ -479,7 +489,17 @@ create_lisem_run <- function(
         # in pcraster combine adjusted dem with original dem
         pcrcalc(options = "dem.map=cover(if(terrace.map > 0 and ter_dem_part_filled.map > 0, ter_dem_part_filled.map, dem_base.map), dem_base.map)", 
                 work_dir = subdir)
+        
+        
+        if (single_nbs == FALSE) {
+          # restore the nbs.map for further computations
+          file.remove(paste0(subdir, "nbs.map"))
+          file.rename(paste0(subdir, "nbs_lu.map"), paste0(subdir, "nbs.map"))
+          # adjust the landuse.map to not have the high graften values
+          file.copy(paste0(subdir, "nbs.map"), paste0(subdir, "landuse.map"),
+                    overwrite = TRUE)  
         }
+        
       }
       
       # infiltratiestroken - 20

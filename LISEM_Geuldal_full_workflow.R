@@ -272,8 +272,10 @@ create_lisem_run(resolution = 10, catch_num = 54, swatre_file = swatre_file,
 # The map should have the following values: 1 = location for measure, 0 = original landuse
 # In case of a Landscape Element NBS 1 = area where measure can be placed and
 # 2 = actual physical location of NBS, according to maps provided by Stroming.
-# Alternative (not yet implemented): map should have landuse number of 
+
+# Alternative: map should have landuse number of 
 # NBS already in the map, this can be used for scenarios with multiple measures.
+# see section 3.4
 
 source("sources/r_scripts/source_to_base_maps.R")
 spatial_data_to_pcr(only_NBS = TRUE) # assuming section 1.1 was already run. 
@@ -348,17 +350,53 @@ for (i in seq_along(points_id)) {
 
 ## 3.4 combined NBS scenarios --------------------------------------------
 
-# load NBS scenario map:
-# lu numbers according to lu_NBS_tbl.csv
+# Make sure section 1 is executed!
+# update data to include NBS information
+# update landuse table, this works for all NBS solutions.
+source("sources/r_scripts/prepare_landuse_table.R")
+landuse_table_nbs()
 
-# TODO add code to transform WRL formatten VKV maps to fit this workflow
+# make a new swatre file, this works for all NBS solutions.
+source("sources/r_scripts/swatre_input.R")
+swatre_nbs_file <- "swatre_NBS.csv"
+soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
+                       swatre_out = paste0("sources/setup/calibration/", swatre_nbs_file),
+                       do_NBS = TRUE
+)
 
-# define location and format to deliver input maps
-# load the maps
-# adjust landuse numbers to landuse codes used in this workflow
-# fill all landuse types that are not available in this workflow with
-#     the original landuse types - save this map
+# load the scenario based in input maps in ./spatial_data
+source("sources/r_scripts/source_to_base_maps.R")
+
+# scen_num: > 100, the number of the scenario
+# lu_classes: "wrl" or "def"
+# res: 5, 10 or 20.
+load_scenario_maps(scen_num = 101,
+                   lu_classes = "def",
+                   res = 10)
+
+# update your subcatchment database with the NBS scenario maps
+# the function will find any NBS maps in the base dataset and include them in 
+# the subcatchments.
+points_id <- c(52)# use if you want to change catchment
+reso <- c(10)
+
+# load the function for subcatchment preparation
+source("sources/r_scripts/create_subcatch_db.R")
+
+# run for both resolutions and all selected subcatchments
+for (i in seq_along(points_id)) {
+  for (j in seq_along(reso)) {
+    base_maps_subcatchment(
+      cell_size = reso[j],
+      sub_catch_number = points_id[i],
+      run_type = "base",  # for NBS use "base"
+      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
+    )
+  }
+}
+
 # from this point the maps should follow the workflow and can be run.
+source("sources/r_scripts/create_lisem_run.R")
 
 # for testing
 create_lisem_run(
