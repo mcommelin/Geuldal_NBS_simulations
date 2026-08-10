@@ -34,7 +34,7 @@ initial
 # there are two cases in which this script can be used.
 # 1. as single measure
 # 2. as part of a scenario with multiple measures
-# in the second case, some maps have to be adjusted to make the terraces well
+# in the second case, some maps have to be adjusted to make the terraces
 # but also to implement the other measures correctly.
 
 
@@ -46,13 +46,16 @@ buffers = cover(buffers, 0);
 roads = cover(roads, 0);
 channels =cover(channels, 0);
 
-# adjust for single measures
+# adapt nbs.map for other measures in case of multiple nbs scenario
 report nbs_lu.map = if(terrace > 1000, terrace - 1000, terrace);
 
-
-
-
-
+# in case of single = 0, do soem map adjustments so that the terrace map
+# is the same as described in the binding section 
+ter_adj = if(terrace eq 19, 10000, terrace);
+ter_adj = if(ter_adj < 1000, 0, ter_adj);
+ter_adj = if(ter_adj > 0 and ter_adj < 10000, 1, ter_adj);
+ter_adj = if(ter_adj > 1, 2, ter_adj);
+terrace = if(single eq 0, ter_adj, terrace);
 
 
 
