@@ -366,7 +366,6 @@ ft_area_nbs[[1]]
 ## Table xx : Results, normalised effects NBS area -----------------------------
 # table with effects per measure and per area
 
-# TODO adjust to flextable
 # the multiplication with -1 is used to express the reduction as positive value
 effect_nbs <- scen_all_rel %>%
   mutate(Qdiff = Qdiff / -1000) %>% # to m3

@@ -370,7 +370,6 @@ create_lisem_run <- function(
   
   ### start running scripts
   # update the landuse map and DEM, to include the NBS
-  # TODO extend code to allow for multiple NBS in the same simulation
   if (NBS_num != 0) {
   
     # rename the NBS map, for easier coding

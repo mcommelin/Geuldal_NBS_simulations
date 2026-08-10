@@ -350,13 +350,18 @@ for (i in seq_along(points_id)) {
 
 ## 3.4 combined NBS scenarios --------------------------------------------
 
-# Make sure section 1 is executed!
-# update data to include NBS information
-# update landuse table, this works for all NBS solutions.
+# Beside simulation with 1 specific NBS added to the catchment, we are also
+# interested in how scenarios with multiple NBS influence runoff and flooding.
+# In the section below we test three scenario's to check if the code works.
+# in the document xxxx/xxx you can find explanation how to add other scenarios.
+# TODO add reference to workflow manual.
+
+# Make sure section 1 of the workflow is executed!
+# update landuse table, this works for all NBS.
 source("sources/r_scripts/prepare_landuse_table.R")
 landuse_table_nbs()
 
-# make a new swatre file, this works for all NBS solutions.
+# make a new swatre file, this works for all NBS.
 source("sources/r_scripts/swatre_input.R")
 swatre_nbs_file <- "swatre_NBS.csv"
 soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
@@ -364,7 +369,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        do_NBS = TRUE
 )
 
-# load the scenario based in input maps in ./spatial_data
+# load the scenario based on input maps in ./spatial_data
 source("sources/r_scripts/source_to_base_maps.R")
 
 # scen_num: > 100, the number of the scenario
@@ -390,15 +395,17 @@ for (i in seq_along(points_id)) {
       cell_size = reso[j],
       sub_catch_number = points_id[i],
       run_type = "base",  # for NBS use "base"
-      calc_ldd = T  # only recalculate ldd if first time or dem is changed, takes some time!!
+      calc_ldd = T  # only recalculate ldd if first time or dem is changed, can take some time!!
     )
   }
 }
 
-# from this point the maps should follow the workflow and can be run.
+# now create a lisem simulation for a specific scenario
+# the scenario number is inserted under NBS_num
 source("sources/r_scripts/create_lisem_run.R")
 
-# for testing
+# possible to change this to the loop as in section 3.2 then multiple scenarios
+# and catchments can be produced fast.
 create_lisem_run(
   resolution = 10,
   catch_num = 52,

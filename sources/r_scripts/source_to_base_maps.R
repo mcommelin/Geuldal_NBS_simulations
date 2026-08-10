@@ -214,7 +214,24 @@ file.copy(list.files("./spatial_data/prepared/rain", full.names = T),
 
 
 
-# TODO add description etc
+
+
+#' Load scenario Maps
+#'
+#' @param scen_num The number of the scenario which should be loaded. > 100 This
+#' number should correspond with the numbers of the map names for this scenario
+#' in ./spatial_data/NBS_maps/scenarios/
+#' @param lu_classes  Either 'def' or 'wrl' . For the scenario maps we allow two d
+#' ifferent land use classifications:
+# 'def' = default, the classification as used in this workflow
+# 'wrl' = the classification as used in the WRL project, this does not fully 
+#         align any more so we adjust it here.
+# the lookup table combining the two classes can be found at:
+# ./sources/tables/transform_wrl_lu_classes.csv
+#' @param res resolution 5 or 10 or 20 meter.
+#'
+#' @returns converts a tif raster scenario input map, to usable PCRaster
+#' maps for the workflow.
 
 load_scenario_maps <- function(scen_num = NULL,
                                lu_classes = "def",
