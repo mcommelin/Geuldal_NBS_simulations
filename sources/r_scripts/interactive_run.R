@@ -3,9 +3,9 @@
 # Purpose:
 #   Interactive guided entry point for the LISEM Geuldal manual workflow.
 #   Run this script in an RStudio session to be guided through all major
-#   settings via a series of questions. It reads/writes ./config.yaml,
-#   then executes exactly the same functions as LISEM_Geuldal_full_workflow.R
-#   based on your answers.
+#   settings via a series of questions. It always rebuilds ./config.yaml
+#   from config_template.yaml, then executes exactly the same functions as
+#   LISEM_Geuldal_full_workflow.R based on your answers.
 #
 # How to run:
 #   Open the project in RStudio and execute:
@@ -13,7 +13,7 @@
 #   Or open the file and press Ctrl+Shift+Enter to source it.
 #
 #   The script also works non-interactively (Rscript --vanilla), but in that
-#   case all prompts will use the defaults from config.yaml without asking.
+#   case all prompts will use the template defaults without asking.
 #
 # Depends on:
 #   yaml (already used elsewhere in the project), base R only.
@@ -48,30 +48,20 @@ library(yaml)
 }
 
 # ---------------------------------------------------------------------------- #
-# 1. Config file handling                                                       #
+# 1. Config file handling – always build fresh from template                   #
 # ---------------------------------------------------------------------------- #
 
 config_path   <- "config.yaml"
 template_path <- "config_template.yaml"
 
-if (!file.exists(config_path)) {
-  if (!file.exists(template_path)) {
-    stop("Neither config.yaml nor config_template.yaml found. ",
-         "Make sure you are running from the project root directory.")
-  }
-  message("config.yaml not found – copying from config_template.yaml ...")
-  file.copy(template_path, config_path)
-  message("config.yaml created. Please review it later if needed.\n")
+if (!file.exists(template_path)) {
+  stop("config_template.yaml not found. ",
+       "Make sure you are running from the project root directory.")
 }
 
+# Always start from the template so all fields (including new ones) are present.
+file.copy(template_path, config_path, overwrite = TRUE)
 config <- yaml.load_file(config_path)
-
-# set safe defaults for new fields that may not exist in an older config.yaml
-if (is.null(config$run_type))  config$run_type  <- "cal"
-if (is.null(config$NBS_num))   config$NBS_num   <- 0
-if (is.null(config$dir_name))  config$dir_name  <- ""
-if (is.null(config$inithcal))  config$inithcal  <- 1.0
-if (is.null(config$calc_ldd))  config$calc_ldd  <- "N"
 
 # ---------------------------------------------------------------------------- #
 # 2. Interactive question flow                                                  #
@@ -251,26 +241,8 @@ if (run_mode_label %in% c("nbs", "scenario")) {
   }
 }
 
-# --- Q5: Recalculate LDD? ----------------------------------------------------
-cat("\n-- Step 5: LDD recalculation --\n")
-cat("  WARNING: recalculating the LDD for the whole catchment can take a very\n")
-cat("  long time (15-30+ minutes). Only set to Y if the DEM has changed.\n")
-default_ldd <- toupper(config$calc_ldd)
-
-repeat {
-  raw <- .ask(sprintf("  Recalculate LDD? (Y/N) [%s]: ", default_ldd),
-              default = default_ldd)
-  calc_ldd_input <- toupper(trimws(raw))
-  if (!calc_ldd_input %in% c("Y", "N")) {
-    cat("  Please enter Y or N.\n")
-    next
-  }
-  break
-}
-calc_ldd_bool <- calc_ldd_input == "Y"
-
-# --- Q6: CPU cores -----------------------------------------------------------
-cat("\n-- Step 6: CPU cores for LISEM --\n")
+# --- Q5: CPU cores -----------------------------------------------------------
+cat("\n-- Step 5: CPU cores for LISEM --\n")
 default_cpu <- as.character(config$cpu_cores)
 
 repeat {
@@ -285,11 +257,11 @@ repeat {
   break
 }
 
-# --- Q7: inith_cal – only for calibration runs ------------------------------
+# --- Q6: inith_cal – only for calibration runs ------------------------------
 inith_cal <- as.numeric(config$inithcal)
 
 if (run_mode_label == "cal") {
-  cat("\n-- Step 7: Initial soil moisture calibration factor --\n")
+  cat("\n-- Step 6: Initial soil moisture calibration factor --\n")
   default_inith <- as.character(config$inithcal)
 
   repeat {
@@ -311,7 +283,6 @@ if (run_mode_label == "cal") {
 config$subcatchments <- as.list(points_id)
 config$resolution    <- as.list(reso)
 config$cpu_cores     <- ncpu
-config$calc_ldd      <- calc_ldd_input
 config$inithcal      <- inith_cal
 
 # run_type and NBS_num: derive from run mode
@@ -350,7 +321,6 @@ if (run_mode_label == "scenario") {
   cat(sprintf("  Scenario number  : %d\n", scen_num))
   cat(sprintf("  lu_classes       : %s\n", lu_classes))
 }
-cat(sprintf("  Recalculate LDD  : %s\n", calc_ldd_input))
 cat(sprintf("  CPU cores        : %d\n", ncpu))
 if (run_mode_label == "cal") {
   cat(sprintf("  inith_cal        : %.4f\n", inith_cal))
@@ -382,22 +352,45 @@ points_id  <- pts_vec       # subcatchments chosen above
 reso       <- res_vec       # resolutions chosen above
 
 # 5.1 Data preparation -------------------------------------------------------
-message("\n--- Step 1: Data preparation ---")
+# Check whether base maps for 10 m resolution already exist; if so offer to
+# skip this time-consuming step (it only needs to be done once).
+skip_data_prep <- FALSE
 
-source("sources/r_scripts/source_to_base_maps.R")
+data_prep_dir   <- "LISEM_data/Geul_10m/maps"
+data_prep_ready <- dir.exists(data_prep_dir) &&
+                   length(list.files(data_prep_dir, pattern = "\\.map$")) > 0
 
-# copy relevant spatial data files into the folder structure
-copy_spatial_data()
+if (data_prep_ready) {
+  cat("\n-- Data preparation check --\n")
+  cat(sprintf("  The folder '%s' already exists and contains map files.\n",
+              data_prep_dir))
+  skip_choice <- .menu(
+    choices = c("Skip data preparation (use existing maps)",
+                "Re-run data preparation (overwrites existing maps)"),
+    title   = "Data preparation appears to be complete."
+  )
+  skip_data_prep <- (skip_choice == 1)
+}
 
-# build catchment maps for all configured resolutions
-catch_maps_res()
+if (!skip_data_prep) {
+  message("\n--- Step 1: Data preparation ---")
 
-# convert spatial data to PCRaster format for selected resolution(s)
-spatial_data_to_pcr(res = reso)
+  source("sources/r_scripts/source_to_base_maps.R")
 
-# calculate local drain direction and subcatchment masks
-# NOTE: force_ldd = TRUE triggers a full LDD recalculation which can take 15-30 min
-ldd_subcatch(force_ldd = calc_ldd_bool, res = reso)
+  # copy relevant spatial data files into the folder structure
+  copy_spatial_data()
+
+  # build catchment maps for all configured resolutions
+  catch_maps_res()
+
+  # convert spatial data to PCRaster format for selected resolution(s)
+  spatial_data_to_pcr(res = reso)
+
+  # calculate local drain direction and subcatchment masks
+  ldd_subcatch(force_ldd = FALSE, res = reso)
+} else {
+  message("\n--- Step 1: Data preparation skipped (existing maps retained) ---")
+}
 
 if (run_mode_label == "data_prep") {
   message("\nData preparation complete. Stopping here as requested.")
@@ -461,8 +454,7 @@ for (i in seq_along(points_id)) {
     base_maps_subcatchment(
       cell_size        = reso[j],
       sub_catch_number = points_id[i],
-      run_type         = run_type,
-      calc_ldd         = calc_ldd_bool
+      run_type         = run_type
     )
   }
 }
