@@ -59,8 +59,12 @@ DEBUGm = if (config$debug_messages == "Y") {TRUE} else {FALSE}
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
+conflicts_prefer(dplyr::mutate)
+conflicts_prefer(dplyr::summarise)
+conflicts_prefer(dplyr::arrange)
+conflicts_prefer(dplyr::rename)
 
-# unload RSAGA gives function confilcts
+# unload RSAGA gives function conflicts
 unloadNamespace("RSAGA")
 unloadNamespace("plyr")
 
