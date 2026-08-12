@@ -56,7 +56,9 @@ library(rosettaPTF)
 
 
 # load configuration
-DEBUGm = if (config$debug_messages == "Y") {TRUE} else {FALSE}
+DEBUGm = if(config$debug_messages == "Y") {TRUE} else {FALSE}
+assign("DEBUGm", DEBUGm,envir=parent.env(environment()))
+
 
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
@@ -82,13 +84,17 @@ source("sources/r_scripts/aux_functions.R")
 
 #! Always load the following data - adjust if needed for custom settings
 points_id <- config$subcatchments 
+assign("points_id", points_id,envir=parent.env(environment()))
 reso <- config$resolution
+assign("reso", reso,envir=parent.env(environment()))
 
 # load subcatchment points csv file
 points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
+assign("points", points,envir=parent.env(environment()))
 
 # swatre file
 swatre_file <- "cal_OM_swatre.csv"
+assign("swatre_file", swatre_file, envir=parent.env(environment()))
 
 # cpu cores
 #TODO this doesn't work well - solve
@@ -96,6 +102,6 @@ ncpu <- config$cpu_cores
 if (ncpu == -1) {
   ncpu <- floor(num_cores() / 2)
 }
- 
+assign("ncpu", ncpu,envir=parent.env(environment()))
 }
 
