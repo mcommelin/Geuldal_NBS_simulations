@@ -272,6 +272,10 @@ create_lisem_run <- function(
                           "m_", NBS_name, "/")
     }
     
+    if (run_type == "cal") {
+      catch_dir <- paste0(catch_info$subcatch_name, "_", catch_info$cell_size, "m_cal/")
+    }
+    
     run_dir <- paste0("LISEM_runs/", catch_dir)
     
   } else if (do_hpc == TRUE) {

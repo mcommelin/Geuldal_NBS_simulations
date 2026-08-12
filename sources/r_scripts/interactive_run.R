@@ -106,6 +106,7 @@ cat("# ------------------------------------------------------------------- #\n")
 cat("#          LISEM Geuldal - Interactive workflow setup                  #\n")
 cat("# ------------------------------------------------------------------- #\n")
 cat("Press Enter to accept the default value shown in [brackets].\n\n")
+cat("Enter the number of the option you want to execute")
 
 # --- Q1: install packages ---------------------------------------------------
 cat("-- Step 1: Package installation --\n")
@@ -121,7 +122,7 @@ template_lines   <- .set_scalar(template_lines, "install_packages", install_pack
 cat("\n-- Step 2: Debug messages --\n")
 debug_choice <- .menu(
   choices = c("Y - show debug messages during execution",
-              "N - suppress debug messages"),
+              "N - nu messages - less output on the console"),
   title   = "Do you want debug messages during execution of functions?"
 )
 debug_messages <- if (debug_choice == 2) "N" else "Y"
@@ -185,7 +186,7 @@ valid_nbs <- if (!is.null(nbs_tbl)) nbs_tbl$lu_nr else NULL
 
 .show_nbs_list <- function() {
   if (!is.null(nbs_tbl)) {
-    cat("  Available NBS land-use numbers:\n")
+    cat("  Available NBS numbers:\n")
     for (i in seq_len(nrow(nbs_tbl))) {
       cat(sprintf("    %3d  %s\n", nbs_tbl$lu_nr[i], nbs_tbl$description[i]))
     }
@@ -284,12 +285,12 @@ repeat {
   cat("-- Run mode --\n")
   run_mode <- .menu(
     choices = c(
-      "Data preparation only  (base catchment maps, no LISEM run)",
-      "Calibration run        (run_type = 'cal')",
-      "NBS run                (run_type = 'base', NBS_num <= 100)",
-      "NBS scenario run       (run_type = 'base', NBS_num > 100)"
+      "Data preparation only  (make base catchment maps, no LISEM run)",
+      "Calibration run        (database for 3 selected rainfall events)",
+      "NBS/base run           (simulations of single NBS, or base run)",
+      "NBS scenario run       (simulations of scenarios of NBS)"
     ),
-    title = "Which workflow steps do you want to execute?"
+    title = "What type of LISEM simulation do you want to prepare"
   )
 
   if (run_mode == 0) stop("No selection made - aborting.")
@@ -304,6 +305,8 @@ repeat {
 
   # ---- Q6: Subcatchment number(s) ----------------------------------------- #
   cat("\n-- Subcatchment(s) --\n")
+  cat("Which subcatchments do you want to simulate?")
+  cat("\nEnter the number(s) of the subcatchments or type 'list' for options")
   default_pts <- paste(config$subcatchments, collapse = ", ")
 
   repeat {
@@ -328,6 +331,8 @@ repeat {
 
   # ---- Q7: Resolution ------------------------------------------------------ #
   cat("\n-- Resolution --\n")
+  cat("Which resolution do you want to run the simulations?")
+  cat("\nChoose from 5, 10, 20 m, default = 10")
   default_res <- paste(config$resolution, collapse = ", ")
 
   repeat {
@@ -355,6 +360,8 @@ repeat {
 
     if (run_mode_label == "nbs") {
       cat("\n-- NBS number(s) --\n")
+      cat("Which NBS do you want to simulate?")
+      cat("\n  Enter integer(s), or type 'list' for options.\n")
       default_nbs <- paste(config$NBS_num, collapse = ", ")
 
       repeat {
@@ -394,6 +401,7 @@ repeat {
       }
 
       repeat {
+        cat("  What is the lu_class of the added scenario? \n  See manual for explanation.")
         raw        <- .ask("  Enter lu_classes ('wrl' or 'def') [def]: ", default = "def")
         lu_classes <- tolower(trimws(raw))
         if (!lu_classes %in% c("wrl", "def")) {
@@ -411,7 +419,7 @@ repeat {
   default_cpu <- as.character(config$cpu_cores)
 
   repeat {
-    raw  <- .ask(sprintf("  Number of CPU cores (-1 = 50%%, 0 = all) [%s]: ",
+    raw  <- .ask(sprintf("  Number of CPU cores (0 = all) [%s]: ",
                          default_cpu),
                  default = default_cpu)
     ncpu <- suppressWarnings(as.integer(trimws(raw)))
@@ -510,7 +518,7 @@ repeat {
   }
 
   # 5.3 Load combined NBS scenario maps when any selected NBS_num > 100
-  if (run_mode_label %in% c("nbs", "scenario") && any(NBS_num > 100)) {
+  if (run_mode_label %in% c("scenario") && any(NBS_num > 100)) {
     message("\n--- Loading NBS scenario maps ---")
     source("sources/r_scripts/source_to_base_maps.R")
     for (j in seq_along(reso)) {
@@ -587,7 +595,7 @@ repeat {
   message("\n# ------------------------------------------------------------------- #")
   message("#  Run complete!                                                       #")
   message("#  Run files are stored in: LISEM_runs/                               #")
-  message("#  Open the .run files with the OpenLISEM GUI or run in batch mode.   #")
+  message("#  Open the .run files with the OpenLISEM GUI.                        #")
   message("# ------------------------------------------------------------------- #\n")
 
 }  # end repeat (run loop)
