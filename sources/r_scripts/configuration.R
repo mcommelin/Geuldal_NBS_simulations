@@ -1,12 +1,14 @@
 # configuration
 
+configuration <- function(file = "config.yaml") {
+
 if (exists("do_hpc")) {
 if (do_hpc == TRUE) {
   config <- ini
 }} else {
   if (!require("yaml")) install.packages("yaml", repos='https://cloud.r-project.org')
   library(yaml)
-config <- yaml.load_file("config.yaml")
+config <- yaml.load_file(file)
 }
 ins <- config$install_packages
 
@@ -95,5 +97,5 @@ if (ncpu == -1) {
   ncpu <- floor(num_cores() / 2)
 }
  
-
+}
 
