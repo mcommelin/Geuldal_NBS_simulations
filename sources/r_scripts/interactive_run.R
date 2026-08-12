@@ -469,6 +469,7 @@ if (run_mode_label %in% c("nbs", "scenario")) {
     do_NBS     = TRUE
   )
 } else {
+  # swatre_file is set to "cal_OM_swatre.csv" by configuration() in step 5.0
   soil_landuse_to_swatre(
     file       = "sources/setup/swatre/UBC_texture.csv",
     swatre_out = paste0("sources/setup/calibration/", swatre_file)
