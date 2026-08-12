@@ -59,9 +59,19 @@ if (!file.exists(template_path)) {
        "Make sure you are running from the project root directory.")
 }
 
-# Read template lines (for comment-preserving write-back) and parsed values.
+# Read template lines (for comment-preserving write-back).
+# The template is always used as the structural base for writing config.yaml,
+# so that comments are preserved.  Default values shown to the user, however,
+# are taken from an existing config.yaml when one is present, so that previous
+# session choices are remembered.
 template_lines <- readLines(template_path)
-config         <- yaml.load_file(template_path)
+if (file.exists(config_path)) {
+  config <- yaml.load_file(config_path)
+  message("Using existing config.yaml as default values.")
+} else {
+  config <- yaml.load_file(template_path)
+  message("No config.yaml found – using config_template.yaml defaults.")
+}
 
 # Helper: update a scalar key's value in the template lines, preserving comments.
 .set_scalar <- function(lines, key, value) {
