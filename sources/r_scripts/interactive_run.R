@@ -167,7 +167,12 @@ nbs_tbl <- tryCatch(
   error = function(e) NULL
 )
 valid_pts <- if (!is.null(points_tbl)) unique(points_tbl$point) else NULL
-valid_nbs <- if (!is.null(nbs_tbl)) nbs_tbl$lu_nr else NULL
+nbs_options_tbl <- if (!is.null(nbs_tbl)) {
+  subset(nbs_tbl, !is.na(lu_nr) & lu_nr >= 10)
+} else {
+  NULL
+}
+valid_nbs <- if (!is.null(nbs_options_tbl)) nbs_options_tbl$lu_nr else NULL
 
 .show_subcatch_list <- function() {
   if (!is.null(points_tbl)) {
@@ -185,10 +190,11 @@ valid_nbs <- if (!is.null(nbs_tbl)) nbs_tbl$lu_nr else NULL
 }
 
 .show_nbs_list <- function() {
-  if (!is.null(nbs_tbl)) {
+  if (!is.null(nbs_options_tbl)) {
     cat("  Available NBS numbers:\n")
-    for (i in seq_len(nrow(nbs_tbl))) {
-      cat(sprintf("    %3d  %s\n", nbs_tbl$lu_nr[i], nbs_tbl$description[i]))
+    for (i in seq_len(nrow(nbs_options_tbl))) {
+      cat(sprintf("    %3d  %s\n",
+                  nbs_options_tbl$lu_nr[i], nbs_options_tbl$description[i]))
     }
     cat("    0    no NBS (base run)\n")
   } else {
@@ -200,33 +206,26 @@ valid_nbs <- if (!is.null(nbs_tbl)) nbs_tbl$lu_nr else NULL
 # 4. Data preparation (runs once per session)                                  #
 # ---------------------------------------------------------------------------- #
 
-skip_data_prep <- FALSE
+.available_resolutions <- c(5L, 10L, 20L)
 
-data_prep_dir   <- "LISEM_data/Geul_10m/maps"
-data_prep_ready <- dir.exists(data_prep_dir) &&
-                   length(list.files(data_prep_dir, pattern = "\\.map$")) > 0
-
-if (data_prep_ready) {
-  cat("\n-- Data preparation check --\n")
-  cat(sprintf("  The folder '%s' already exists and contains map files.\n",
-              data_prep_dir))
-  skip_choice <- .menu(
-    choices = c("Skip data preparation (use existing maps)",
-                "Re-run data preparation (overwrites existing maps)"),
-    title   = "Data preparation appears to be complete."
-  )
-  skip_data_prep <- (skip_choice == 1)
+.prepared_resolutions <- function(resolutions = .available_resolutions) {
+  prepared <- integer(0)
+  for (r in resolutions) {
+    data_prep_dir <- sprintf("LISEM_data/Geul_%dm/maps", r)
+    ready <- dir.exists(data_prep_dir) &&
+      length(list.files(data_prep_dir, pattern = "\\.map$")) > 0
+    if (ready) prepared <- c(prepared, r)
+  }
+  unique(prepared)
 }
 
-if (!skip_data_prep) {
+.run_data_prep <- function(resolutions) {
   message("\n--- Step 1: Data preparation ---")
   source("sources/r_scripts/source_to_base_maps.R")
   copy_spatial_data()
   catch_maps_res()
-  spatial_data_to_pcr(res = reso)
-  ldd_subcatch(force_ldd = FALSE, res = reso)
-} else {
-  message("\n--- Step 1: Data preparation skipped (existing maps retained) ---")
+  spatial_data_to_pcr(res = resolutions)
+  ldd_subcatch(force_ldd = FALSE, res = resolutions)
 }
 
 # ---------------------------------------------------------------------------- #
@@ -297,12 +296,6 @@ repeat {
 
   run_mode_label <- c("data_prep", "cal", "nbs", "scenario")[run_mode]
 
-  if (run_mode_label == "data_prep") {
-    message("\nData preparation was already handled. Stopping here as requested.")
-    message("Results are stored in LISEM_data/Geul_<res>m/maps/")
-    next   # back to the between-run menu
-  }
-
   # ---- Q6: Subcatchment number(s) ----------------------------------------- #
   cat("\n-- Subcatchment(s) --\n")
   cat("Which subcatchments do you want to simulate?")
@@ -349,6 +342,89 @@ repeat {
   }
   reso           <- res_vec
   template_lines <- .set_list(template_lines, "resolution", reso)
+
+  # ---- Data preparation for selected resolution(s) ------------------------- #
+  cat("\n-- Data preparation check --\n")
+  prepared_res <- .prepared_resolutions()
+
+  if (length(prepared_res) > 0) {
+    cat(sprintf("  Found prepared dataset for resolution(s): %s m\n",
+                paste(prepared_res, collapse = ", ")))
+  } else {
+    cat("  No prepared datasets found yet.\n")
+  }
+
+  missing_res <- setdiff(reso, prepared_res)
+  do_prepare  <- FALSE
+  prep_res    <- integer(0)
+  skip_run    <- FALSE
+
+  if (length(missing_res) > 0) {
+    prep_choice <- .menu(
+      choices = c(
+        sprintf("Prepare missing selected resolution(s): %s m",
+                paste(missing_res, collapse = ", ")),
+        sprintf("Redo preparation for selected resolution(s): %s m",
+                paste(reso, collapse = ", ")),
+        "Cancel this run"
+      ),
+      title = "Some selected resolutions are not prepared yet."
+    )
+    if (prep_choice == 1) {
+      do_prepare <- TRUE
+      prep_res   <- missing_res
+    } else if (prep_choice == 2) {
+      do_prepare <- TRUE
+      prep_res   <- reso
+    } else {
+      skip_run <- TRUE
+    }
+  } else {
+    prep_choice <- .menu(
+      choices = c(
+        "Use existing prepared data",
+        "Prepare other resolution(s)",
+        sprintf("Redo preparation for selected resolution(s): %s m",
+                paste(reso, collapse = ", ")),
+        "Cancel this run"
+      ),
+      title = "Selected resolutions are already prepared."
+    )
+
+    if (prep_choice == 2) {
+      repeat {
+        raw_extra <- .ask(
+          "  Enter other resolution(s) to prepare (5, 10, 20), comma-separated: "
+        )
+        extra_res <- suppressWarnings(as.integer(trimws(strsplit(raw_extra, ",")[[1]])))
+        if (length(extra_res) == 0 || any(is.na(extra_res)) ||
+            !all(extra_res %in% .available_resolutions)) {
+          cat("  Invalid input - please enter one or more of: 5, 10, 20.\n"); next
+        }
+        do_prepare <- TRUE
+        prep_res   <- unique(extra_res)
+        break
+      }
+    } else if (prep_choice == 3) {
+      do_prepare <- TRUE
+      prep_res   <- reso
+    } else if (prep_choice == 4 || prep_choice == 0) {
+      skip_run <- TRUE
+    }
+  }
+
+  if (do_prepare) .run_data_prep(prep_res)
+
+  if (skip_run) {
+    message("Run cancelled before execution.")
+    next
+  }
+
+  if (run_mode_label == "data_prep") {
+    message("\nData preparation completed/confirmed for selected settings.")
+    message("Results are stored in LISEM_data/Geul_<res>m/maps/")
+    next
+  }
 
   # ---- Q8: NBS_num --------------------------------------------------------- #
   # In both nbs and scenario modes the number goes to NBS_num.
