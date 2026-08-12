@@ -509,8 +509,8 @@ repeat {
     )
   }
 
-  # 5.3 Load combined NBS scenario maps when NBS_num > 100
-  if (run_mode_label %in% c("nbs", "scenario") && NBS_num > 100) {
+  # 5.3 Load combined NBS scenario maps when any selected NBS_num > 100
+  if (run_mode_label %in% c("nbs", "scenario") && any(NBS_num > 100)) {
     message("\n--- Loading NBS scenario maps ---")
     source("sources/r_scripts/source_to_base_maps.R")
     for (j in seq_along(reso)) {
