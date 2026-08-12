@@ -47,17 +47,7 @@ run_type: "cal"
 # sources/setup/tables/lu_NBS_tbl.csv
 NBS_num: 0
 
-# 10. Optional extra name suffix added to the output folder structure.
-# Useful when making multiple simulations with the same catchment setup.
-# Leave empty "" for the default naming.
-dir_name: ""
-
-# 11. Initial soil moisture calibration factor.
+# 10. Initial soil moisture calibration factor.
 # Only meaningful when run_type = "cal".
 # Factor applied over the initial hydraulic head of the whole catchment.
 inithcal: 1.0
-
-# 12. Force recalculation of the local drain direction (LDD) maps.
-# WARNING: setting this to Y can take 15-30+ minutes for large catchments.
-# Only set to Y when the DEM has changed. Choose Y or N.
-calc_ldd: "N"
