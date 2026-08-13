@@ -213,7 +213,7 @@ valid_nbs <- if (!is.null(nbs_options_tbl)) nbs_options_tbl$lu_nr else NULL
   for (r in resolutions) {
     data_prep_dir <- sprintf("LISEM_data/Geul_%dm/maps", r)
     ready <- dir.exists(data_prep_dir) &&
-      length(list.files(data_prep_dir, pattern = "\\.map$")) > 0
+      length(list.files(data_prep_dir, pattern = "\\.map$")) > 10
     if (ready) prepared <- c(prepared, r)
   }
   unique(prepared)
@@ -617,7 +617,8 @@ repeat {
       base_maps_subcatchment(
         cell_size        = reso[j],
         sub_catch_number = points_id[i],
-        run_type         = run_type
+        run_type         = run_type,
+        calc_ldd = T
       )
     }
   }
