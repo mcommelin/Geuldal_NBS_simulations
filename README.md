@@ -45,8 +45,8 @@ flowchart TD
     A1 --> A2[Place the ./spatial_data folder inside the code repository]
     A2 ---> B{How much control /<br/>automation do you want?}
 
-    B -->|Full manual control, <br/> step-by-step in RStudio| C[1. Manual workflow]
-    B -->|Guided setup, <br/> new user / interactive| D[2. Interactive workflow]
+    B -->|Guided setup, <br/> new user / interactive| D[1. Interactive workflow]
+    B -->|Full manual control, <br/> step-by-step in RStudio| C[2. Manual workflow]
     B -->|Run on command line /<br/> HPC cluster, batch jobs| E[3. HPC workflow]
 
     C --> C1[Adjust settings from config_template.yaml and save as config.yaml]
