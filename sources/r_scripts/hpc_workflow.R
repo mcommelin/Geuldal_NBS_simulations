@@ -39,7 +39,7 @@ setwd("../")
 
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
-
+configuration()
 
 # Data preparation -------------------------------------------------------------
 if (ini$do_data_preparation == TRUE) {
