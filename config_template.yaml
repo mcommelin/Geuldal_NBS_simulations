@@ -34,3 +34,20 @@ resolution: [10]
 # -1 = 50% of available cores assigned
 # 0 = all available cores assigned - with GUI can give instability!
 cpu_cores: [2]
+
+## Run settings (used by interactive_run.R and can be set manually) -----------
+
+# 8. Type of LISEM run.
+# "cal" = date-specific calibration simulations
+# "base" = standard events for NBS scenario simulations
+run_type: "cal"
+
+# 9. NBS land-use number to include in the run.
+# 0 = no NBS (base run); other values correspond to entries in
+# sources/setup/tables/lu_NBS_tbl.csv
+NBS_num: 0
+
+# 10. Initial soil moisture calibration factor.
+# Only meaningful when run_type = "cal".
+# Factor applied over the initial hydraulic head of the whole catchment.
+inithcal: 1.0

@@ -12,6 +12,7 @@
 
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
+configuration()
 
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers

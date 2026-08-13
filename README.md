@@ -19,14 +19,21 @@ The repository only contains code and some tables with parameters and settings. 
 
 To run the code properly the ./spatial_data/ folder is required. Besides that a conda environment with PCRaster and Python installed is needed.
 
-Two options exist: 
-- manual simulation, preparing a few subcatchments and exploring simulations on a PC.
-- command line / HPC simulation, with a config file and Rscript the simulations are made automatically.
+Three workflow options are available:
 
-For manual simulations set basic settings in the config_template.yaml and save it as config.yaml. 
-The main workflow can be followed with the R script: LISEM_Geuldal_full_workflow.R  
+**1. Manual (step-by-step)**  
+Set basic settings in `config_template.yaml` and save it as `config.yaml`.  
+Open `LISEM_Geuldal_full_workflow.R` in RStudio and execute sections with `Ctrl+Enter` for full control over every step.
 
-For the command line setup, set basic settings in the hpc_template.yaml and save under a different name.
+**2. Interactive guided run (recommended for new users)**  
+Open an RStudio session in the project root and run:  
+```r
+source("sources/r_scripts/interactive_run.R")
+```  
+The script reads/creates `config.yaml`, walks you through a short question-and-answer session (run mode, subcatchments, resolution, NBS options, CPU cores, etc.), writes your choices back to `config.yaml`, and then executes the selected workflow steps automatically.
+
+**3. Command line / HPC**  
+Set basic settings in `hpc_template.yaml` and save under a different name.  
 The OpenLISEM dataset and simulations can be made with the following command:  
 `Rscript --vanilla ./sources/r_scripts/hpc_workflow.R [name_hpc_config].yaml`
 
