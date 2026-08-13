@@ -80,6 +80,13 @@ runtype <- ini$run_type
 # Make base databases ----------------------------------------------------------
 if (ini$do_base_db == TRUE) {
 
+  # check if NBS_num > 100, then scenario
+  if (ini$NBS_num > 100) {
+    load_scenario_maps(scen_num = ini$NBS_num,
+                       lu_classes = ini$lu_class,
+                       res = reso)
+  }
+  
 # cut all the subcatchments from the Geul
 source("sources/r_scripts/create_subcatch_db.R")
 for (i in seq_along(subnums)) {
@@ -107,6 +114,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        do_hpc = TRUE,
                        repo_dir = ini$repository_dir
 )
+
 
 # make the actual run databases for the hpc
 # choices are:
