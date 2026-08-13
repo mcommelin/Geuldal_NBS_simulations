@@ -82,6 +82,7 @@ if (ini$do_base_db == TRUE) {
 
   # check if NBS_num > 100, then scenario
   if (ini$NBS_num > 100) {
+    source("sources/r_scripts/source_to_base_maps.R")
     load_scenario_maps(scen_num = ini$NBS_num,
                        lu_classes = ini$lu_class,
                        res = reso)
