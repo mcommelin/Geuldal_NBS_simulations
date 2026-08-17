@@ -57,7 +57,7 @@ base_maps_subcatchment <- function(
   
   if(run_type == "base") {
     #find maps with NBS measures and add these to the base maps list
-    NBS_maps <- dir(main_dir, "^\\d\\d_.*.map$")
+    NBS_maps <- dir(main_dir, "^\\d{2,3}_.*\\.map$")
     
     base_maps <- c(base_maps, NBS_maps)
   }

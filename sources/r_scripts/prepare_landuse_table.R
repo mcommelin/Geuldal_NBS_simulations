@@ -72,6 +72,7 @@ landuse_table_nbs <- function() {
   # load lu table including the parameters for the NBS
   lu_tbl <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", show_col_types = FALSE) %>%
     select(-description, -notes, -do_LE) %>%
+    filter(lu_nr < 100) %>% # scenarios with multiple nbs should be removed here
     mutate(rr = rr * 10) # same adjustment as during calibration
   nms <- as.character(seq(0, ncol(lu_tbl) - 1))
   names(lu_tbl) <- nms

@@ -16,16 +16,20 @@ conda_env: "lisem"
 repository_dir: "Geuldal_NBS_simulations/"
 
 #1. Data preparation
-do_data_preparation: TRUE # boolean TRUE or FALSE
-res_data_prep: [10] #resolution of datasets: 1 or more of [5, 10, 20]
+do_data_preparation: TRUE # boolean TRUE or FALSE, only needs to run once, then can be skipped, saves time.
+res_data_prep: [10] #resolution (m) of datasets: 1 or more of [5, 10, 20]
 
 #2. Base dataset & OpenLisem simulations
-do_base_db: TRUE # boolean TRUE or FALSE - needs prepared_data!
-subset: [120, 125, 128, 130, 131, 140] # All subcatchmnets (= -1) of numbers of subset [xx, yy, zz, ..]
+do_base_db: TRUE # boolean TRUE or FALSE - needs prepared data at #1!
+subset: [120, 125, 128, 130, 131, 140] # All subcatchmnets (= -1) or numbers of subset [xx, yy, zz, ..]
 resolution: 10 # 1 of 5, 10, 20 - only if prepared at #1!
 run_type: base # 'cal' = date specific simulations or 'base' = standard events for scenarios
-do_lisem_run: TRUE # boolean TRUE or FALSE - needs prepared data and base bd's!
-NBS_num: 0 # 0 = no nbs, 11 - x -> add NBS according to landuse code in  /sources/setup/tables/lu_NBS_tbl.csv 
+do_lisem_run: TRUE # boolean TRUE or FALSE - needs prepared data and base bd's! Makes actual OpenLisem runs
+NBS_num: 0 # 0 = no nbs, 11 - 99 -> add NBS according to landuse code in  /sources/setup/tables/lu_NBS_tbl.csv
+           # NBS_num > 100 add combined scenarios - check documentation ./manual.pdf for details
+           # This script can only produce a dataset for 1 NBS per time, if multiple scenarios/NBS need to be run.
+           # run this script multiple times.
+lu_class: def # choose from 'def' or 'wrl'. See documentation for details.
 dir_name: "" # add additional name to folder structure - usefull when making multiple simulations in same setup
 inithcal: 1.0 # only in combination with run_type = 'cal'. Factor applied over the initial head of the whole catchment.
 cpu_cores: 8 # set number of cpu cores assigned to the produced OpenLISEM simulations

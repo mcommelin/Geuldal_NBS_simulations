@@ -211,3 +211,118 @@ file.copy(list.files("./spatial_data/prepared/LISEM_data", full.names = T),
 file.copy(list.files("./spatial_data/prepared/rain", full.names = T),
           "./LISEM_runs/rain", recursive = T)
 }
+
+
+
+
+
+#' Load scenario Maps
+#'
+#' @param scen_num The number of the scenario which should be loaded. > 100 This
+#' number should correspond with the numbers of the map names for this scenario
+#' in ./spatial_data/NBS_maps/scenarios/
+#' @param lu_classes  Either 'def' or 'wrl' . For the scenario maps we allow two d
+#' ifferent land use classifications:
+# 'def' = default, the classification as used in this workflow
+# 'wrl' = the classification as used in the WRL project, this does not fully 
+#         align any more so we adjust it here.
+# the lookup table combining the two classes can be found at:
+# ./sources/tables/transform_wrl_lu_classes.csv
+#' @param res resolution 5 or 10 or 20 meter.
+#'
+#' @returns converts a tif raster scenario input map, to usable PCRaster
+#' maps for the workflow.
+
+load_scenario_maps <- function(scen_num = NULL,
+                               lu_classes = "def",
+                               res = NULL) {
+  # function to load a scenario map
+  
+  # checks
+  if (is.null(res)) {
+    print("Error: set a resolution to prepare the NBS scenario")
+    return()
+  }
+  
+  # some aux variables
+  incl_graften <- 0 # used in pcraster script as boolean
+  lu_transform <- 0 # used in pcraster script as boolean
+  res_dir <- paste0("LISEM_data/Geul_", res, "m/maps/")
+  dir_in <- "spatial_data/NBS_maps/scenarios/"
+  # load the mask map to write pcraster maps
+  mask <- rast(paste0(res_dir, "mask.map"))
+  
+  # load the maps
+  scen_maps <- dir(dir_in, pattern = ".tif$")
+  # select the correct map(s)
+  scen_map <- scen_maps[startsWith(scen_maps, as.character(scen_num))]
+  
+    # check if graften are part of the scenario set boolean
+  if (length(scen_map) > 1) {
+    incl_graften <- 1
+    graften_map <- scen_map[grepl("graften", scen_map)]
+    scen_map <- scen_map[!grepl("graften", scen_map)]
+    
+    # save the graften map as pcraster
+    map <- rast(paste0(dir_in, graften_map))
+    map_res <- terra::resample(map, mask, method = "max")
+    map_out <- paste0(res_dir, "scen_graften.map")
+    writeRaster(map_res, map_out , filetype = "PCRaster", NAflag = -9999,
+                overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+  } else {
+    # make a dummy graften map to prevent PCRaster errors
+    map_out <- paste0(res_dir, "scen_graften.map")
+    writeRaster(mask, map_out , filetype = "PCRaster", NAflag = -9999,
+                overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+  }
+  
+  # save the scenario map as pcraster
+  map <- rast(paste0(dir_in, scen_map))
+  map_res <- terra::resample(map, mask, method = "near")
+  map_out <- paste0(res_dir, "scen.map")
+  writeRaster(map_res, map_out , filetype = "PCRaster", NAflag = -9999,
+              overwrite = TRUE, gdal = "PCRASTER_VALUESCALE = VS_SCALAR")
+  
+  scen_name <- str_remove(scen_map, ".tif")
+  
+  # for the scenario maps we allow two different land use classifications
+  # 'def' = default, the classification as used in this workflow
+  # 'wrl' = the classification as used in the WRL project, this does not fully 
+  #         align any more so we adjust it here.
+  # the lookup table combining the two classes can be found at:
+  # ./sources/tables/transform_wrl_lu_classes.csv
+  
+  if (lu_classes == "wrl") {
+    lu_transform <- 1
+  }
+    # always make the lu table, to prevent errors by PCRaster
+    lu_table <-  read_csv("sources/setup/tables/transform_wrl_lu_classes.csv") %>%
+      mutate(lu_nr = if_else(is.na(lu_nr), -99.9, lu_nr)) %>%
+      select(-beschrijving)
+    
+    nms <- as.character(seq(0, ncol(lu_table) - 1))
+    names(lu_table) <- nms
+    
+    # save the landuse parameters as table for PCRaster
+    write.table(lu_table, file = paste0(res_dir, "lu_classes.tbl"),
+                sep = " ", row.names = FALSE,
+                quote = FALSE)
+    
+  
+  
+  #' now we have all data in PCRaster format in the correct LISEM_data
+  #' directory, we can run the PCraster script, to make the final map for
+  #' the rest of the workflow.
+  pcr_script(script = paste0("prepare_scenario_maps.mod ", lu_transform, " ", incl_graften), 
+             script_dir = "sources/pcr_scripts/",
+             work_dir = res_dir)
+
+  # rename the scen.map, to the correct name! and cleanup
+  file.rename(paste0(res_dir, "scen_prep.map"), paste0(res_dir, scen_name, ".map"))
+  file.remove(paste0(res_dir, "scen.map"))
+  file.remove(paste0(res_dir, "lu_classes.tbl"))
+  file.remove(paste0(res_dir, "scen_graften.map"))
+}
+
+
+

@@ -7,7 +7,7 @@ library(scales)
 # 1. Spatial results ----------------------------------------------------------
 
 # fill the directory where the runs that need to be analyzed are located
-base_dir <- "results/nbs_simulations_new_rain_20260527"
+base_dir <- "results/nbs_simulations_20260629"
 #base_dir <- "LISEM_runs"
 # find different scenarios - assume workflow based folder structure!
 scen_dirs <- dir(base_dir, full.names = TRUE)
@@ -117,12 +117,17 @@ for (i in seq_along(baseline_dirs)) {
 a1 <- bind_rows(list1[[1]])
 a2 <- bind_rows(list1[[2]])
 a3 <- bind_rows(list1[[3]])
+a4 <- bind_rows(list1[[4]])
+a5 <- bind_rows(list1[[5]])
+a6 <- bind_rows(list1[[6]])
 
-res_pcr <- bind_rows(a1, a2, a3)
+res_pcr <- bind_rows(a1, a2, a3, a4, a5, a6) %>%
+  mutate(cond = str_remove(cond, "res_"))
+
 
 # save and load so whole analysis can be skippen
 saveRDS(res_pcr, "documenten_en_literatuur/results/r_tables/res_pcr.rds")
-res_pcr <- readRDS("documenten_en_literatuur/results/r_tables/res_pcr.rds")
+
 
 # 2. Hydrographs --------------------------------------------------------------
 
@@ -149,77 +154,21 @@ for (i in seq_along(hydr_files)) {
     select(Time, Pavg, R, P, Q, run) #, Qchan1)
   
 }
-all_hy <- bind_rows(hydr_list) 
+all_hy <- bind_rows(hydr_list) %>%
+  rename("scen" = "R", "cond" = "P") %>%
+  mutate(Pmm = Pavg / 360,
+         cond = str_remove(cond, "res_"))
 
 # save and load so whole analysis can be skippen
 saveRDS(all_hy, "documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
-all_hy <- readRDS("documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
 
 
-# summary all NBS 
-all <- all_hy %>%
-  rename("scen" = "R", "cond" = "P") %>%
-  mutate(Pmm = Pavg / 360) %>%
-  group_by(scen, cond) %>%
-  summarise(Qmax = max(Q),
-            Q = sum(Q) * 10,
-            Ptot = sum(Pmm)) #
-
-base_hy <- all %>%
-  ungroup() %>%
-  filter(str_detect(scen, "10m$")) %>%
-  rename("catch" = "scen")
-
-
-scen_hy <- all %>%
-  ungroup() %>%
-  filter_out(str_detect(scen, "10m$")) %>%
-  mutate(catch = str_extract(scen, "^.*10m"))
-
-
-a2 <- all %>%
-  ungroup() %>%
-  group_by(R) %>%
-  summarise(Qmax = mean(Qmax),
-            Q = mean(Q))
-
-
-# load hydrograph results as well.
-# - recalculate total outflow volume to mm outflow and Q/P ratio
-
-
-# plot
-q_ev <- all_hy %>%
-  filter(R == "Pesaken_10m" &
-           P == "res_T25_dry")
-
-titel <- paste0("Afvoer en neerslag voor ", q_ev$R[1], " met conditie: ", 
-                str_remove(q_ev$P[1], "res_"))
-
-# plot
-# axis constants
-q_max_round <- ceiling(max(c(q_ev$Q), na.rm = TRUE))
-p_max       <- max(q_ev$Pavg, na.rm = TRUE)
-k           <- q_max_round / (p_max * 1.2)
-y_top       <- q_max_round * 2
-
-# plot regular and inverted y-axis
-ggplot(q_ev) +
-  geom_linerange(aes(x = Time, ymin = y_top,
-                               ymax = y_top - Pavg * k), color = "grey") +
-  geom_line(aes(x = Time, y = Q), linewidth = 0.3) +
-  scale_y_continuous(
-    name     = "Debiet (L s⁻¹)",
-    limits   = c(0, y_top),
-    sec.axis = sec_axis(
-      ~ (y_top - .) / k,
-      name = "Neerslag (mm h⁻¹)"
-    ),
-    expand = c(0,0)) +
-  labs(title = titel) +
-  theme_bw()
 
 # 3. Summarise results ---------------------------------------------------------
+
+# load results section 1 and 2
+res_pcr <- readRDS("documenten_en_literatuur/results/r_tables/res_pcr.rds")
+all_hy <- readRDS("documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
 
 ## helper settings -------------------------------------------------------------
 
@@ -238,23 +187,70 @@ style_ft <- function(ft) {
 
 # desired order of conditions
 cond_order <- c(
-  "T10_dry", "T10_wet",
-  "T25_dry", "T25_wet",
-  "T100_dry", "T100_wet",
-  "T500_dry", "T500_wet"
+  "T10_wet", "T10_dry",
+  "T25_wet", "T25_dry",
+  "T100_wet", "T100_dry",
+  "T500_wet", "T500_dry"
 )
 
 
+# colors
+pal6 <- c(
+  "#0072B2", # blue
+  "#E69F00", # orange
+  "#009E73", # bluish green
+  "#D55E00", # vermillion
+  "#CC79A7", # reddish purple
+  "#56B4E9"  # sky blue
+)
+
+pal6_catch <- c(
+  "Bildchen" = "#0072B2", # blue
+  "Bocholtz" =  "#E69F00", # orange
+  "Grunstrasserbach" = "#009E73", # bluish green
+  "LangeGracht" = "#D55E00", # vermillion
+  "Mechelderbeek" = "#CC79A7", # reddish purple
+  "Pesaken" = "#56B4E9"  # sky blue
+)
+
+# fix colors for each catchment
+fixed_color_scale <- scale_color_manual(
+  name = NULL,
+  values = pal6_catch,                    # your named palette
+  drop = FALSE                      # keep all levels even if not in data
+)
+
+## 3.1 Organise hydrographs ----------------------------------------------------
+
+# summary all NBS 
+all <- all_hy %>%
+  group_by(scen, cond) %>%
+  mutate( t_min = Time * 24 * 60,                 # minutes since start
+          t_bin = floor(t_min / 2) * 2) %>%     
+  group_by(scen, cond, t_bin) %>%
+  summarise(Q = mean(Q),
+            Pavg = mean(Pavg),
+            ) %>%
+  group_by(scen, cond) %>%
+  summarise(Qmax = max(Q),
+            Q = sum(Q) * 120,
+            Ptot = sum(Pavg)/30) # 2 minutes to hour
+
+base_hy <- all %>%
+  ungroup() %>%
+  filter(str_detect(scen, "10m$")) %>%
+  rename("catch" = "scen")
 
 
-# produce different results
+scen_hy <- all %>%
+  ungroup() %>%
+  filter_out(str_detect(scen, "10m$")) %>%
+  mutate(catch = str_extract(scen, "^.*10m"))
 
-# 1: area of each catchment
-# 2: table with area of each lu in each catchment baseline
-# 3: table with area of each nbs in each catchment
-# 4: 
+## 3.2 Organise spatial data ---------------------------------------------------
 
-landuse_info <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", show_col_types = FALSE) %>%
+landuse_info <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", 
+                         show_col_types = FALSE) %>%
   select(lu_nr, description) %>%
   rename("lu" = "lu_nr")
 
@@ -301,29 +297,37 @@ scen_all_rel <- scen_all %>%
   left_join(base_left, by = c("catch", "cond")) %>%
   mutate(Qdiff = Q - Q_base,
          Q_area_diff = Qdiff / area)
+
+## 3.3 Tables ------------------------------------------------------------------
+
+### Table xx: Results, Discharge baseline runs ----------------------------------
+qp_cond <- base_all %>%
+  ungroup() %>%
+  group_by(cond) %>%
+  summarise(Ptot = mean(Ptot),
+            Qmm_sd = sd(Qmm),
+            Qmm = mean(Qmm),
+            QP_sd = sd(QP),
+            QP = mean(QP)) %>%
+  mutate(cond = factor(cond, levels = cond_order)) %>%
+  arrange(cond)
   
-# make some figures or tables
+base_qp <- qp_cond %>%
+  mutate(P = sprintf("%.1f", Ptot),
+         Qmm = sprintf("%.1f ± %.1f", Qmm, Qmm_sd),
+         QP = sprintf("%.0f%% ± %.0f%%", QP * 100, QP_sd * 100)) %>%
+  select(cond, P, Qmm, QP) %>%
+  rename_with(~ c("cond", "neerslag (mm)", "afstroming (mm)", "Q/P")) %>%
+  pivot_longer(cols = -cond, names_to = "par", values_to = "value") %>%
+  pivot_wider(names_from = cond)
 
-ggplot() + 
-  geom_point(data = scen_all_rel, aes(x = Ptot, y = Qmax, color = catch), size = 3, alpha = 0.2) +
-  geom_point(data = base_all, aes(x = Ptot, y = Qmax, color = catch)) +
-  theme_classic() +
- # geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
-  #ylim(c(0,100)) + xlim(c(0,100)) +
-  facet_wrap(~ description)
+ft_base_qp <- flextable(base_qp) %>%
+  set_header_labels(par = "") %>%
+  style_ft()
 
+ft_base_qp
 
-ggplot() +
-  geom_point(data = scen_all_rel, aes(x = as.factor(cond), y = Qmax, color = description)) +
-  geom_point(data = base_all, aes(x = as.factor(cond), y = Qmax), size = 4, alpha = 0.5, shape = 2) +
-  theme_classic() +
-  facet_wrap(~ catch, nrow = 3, scales = "free_y")
-
-## Table xx: Results, Discharge baseline runs ----------------------------------
-
-
-
-## Table xx : Results, NBS specific share per catchment ------------------------
+### Table xx : Results, NBS specific share per catchment ------------------------
 # table with area and or volume
 
 area_nbs <- scen_all_rel %>%
@@ -337,53 +341,61 @@ area_nbs <- scen_all_rel %>%
          catch = str_remove(catch, "_10m"),
          description = str_replace(description, "_", " "))
 
-# save so table can be remade
-saveRDS(area_nbs, "documenten_en_literatuur/results/r_tables/area_nbs.rds")
 
-# make and write flextable
-area_nbs <- readRDS("documenten_en_literatuur/results/r_tables/area_nbs.rds")
-
-# TODO change from per catch to per NBS!
-subc <- unique(area_nbs$catch)
+subc <- unique(area_nbs$description)
 
 ft_area_list <- vector("list", length = length(subc))
 
 for (i in seq_along(subc)) {
 t_area_nbs <- area_nbs %>%
-  filter(catch == subc[i]) %>%
-  select(-lu, -catch) %>%
+  filter(description == subc[i]) %>%
+  select(-lu, -description) %>%
   mutate(rel_area = sprintf("%s%%", rel_area)) %>%
-  rename_with(~ c("NBS", "Oppervlakte \n(ha)", "opp. %", "volume \n(m³)"))
+  rename_with(~ c("Deelgebied", "Oppervlakte \n(ha)", "opp. %", "volume \n(m³)"))
 
+if (i != 7 & i != 11) {
+  t_area_nbs  <- t_area_nbs %>%
+    select(-4)
+}
 
 
 ft_area_list[[i]] <- flextable(t_area_nbs) %>%
-  style_ft()
+  style_ft() %>%
+  flextable::width(j = 1, width = 1.2) %>%
+  flextable::width(j = 2, width = 1.2)
 }
 
-ft_area_nbs[[1]]
+ft_area_list[[1]]
 
-## Table xx : Results, normalised effects NBS area -----------------------------
+### Table xx : Results, normalised effects NBS area -----------------------------
 # table with effects per measure and per area
 
-# TODO adjust to flextable
+#' **
+#' The results for graften and infiltratiestroken are negative for Bocholts
+#' we believe that this is strange model behaviour and so we exclude this from
+#' the main table. 
+#' comment out the line with the ** to make a smaller table that does include 
+#' the data to show the effect in a lower section of the report.
+
 # the multiplication with -1 is used to express the reduction as positive value
 effect_nbs <- scen_all_rel %>%
+  filter_out(lu %in% c(19, 20) & catch == "Bocholtz_10m") %>% # **
   mutate(Qdiff = Qdiff / -1000) %>% # to m3
   group_by(lu, description, cond) %>%
   summarise(Qmm_red_av = mean((Qmm - Qmm_base) * -1),
-            Qmm_red_min = min((Qmm - Qmm_base)* -1),
-            Qmm_red_max = max((Qmm - Qmm_base)* -1),
+            Qmm_red_sd = sd((Qmm - Qmm_base)* -1),
+            #Qmm_red_max = max((Qmm - Qmm_base)* -1),
             Qar_red_av = mean(Q_area_diff* -1),
-            Qar_red_min = min(Q_area_diff* -1),
-            Qar_red_max = max(Q_area_diff* -1),
+            Qar_red_sd = sd(Q_area_diff* -1),
+            #Qar_red_max = max(Q_area_diff* -1),
             Q_red_av = mean(Qdiff),
-            Q_red_min = min(Qdiff),
-            Q_red_max = max(Qdiff)) %>%
+            #Q_red_min = min(Qdiff),
+            Q_red_sd = sd(Qdiff)) %>%
   arrange(lu) %>%
-  mutate(Qmm_red = sprintf("%.1f (%.1f - %.0f)", Qmm_red_av, Qmm_red_min, Qmm_red_max),
-         Qar_red = sprintf("%.1f (%.1f - %.1f)", Qar_red_av, Qar_red_min, Qar_red_max),
-         Q_red = sprintf("%.0f (%.0f - %.0f)", Q_red_av, Q_red_min, Q_red_max),
+  mutate(Qmm_red = sprintf("%.1f ± %.1f", Qmm_red_av, Qmm_red_sd),
+         Qar_red = sprintf("%.1f ± %.1f", Qar_red_av, Qar_red_sd),
+         Qar_red = if_else(is.na(Qar_red_sd), sprintf("%.1f", Qar_red_av), Qar_red),
+         Q_red = sprintf("%.1f ± %.1f", Q_red_av, Q_red_sd),
          description = str_replace(description, "_", " "),
          cond = str_remove(cond, "res_"),
          cond = factor(cond, levels = cond_order)) %>%
@@ -394,23 +406,34 @@ ef_norm <- effect_nbs %>%
   select(-Q_red) %>%
   pivot_wider(names_from = cond, values_from = Qar_red) %>%
   rename("NBS" = "description") %>%
+  mutate(NBS = if_else(NBS == "omvorming naaldbos", paste0(NBS, "¹"), NBS),
+         NBS = if_else(NBS == "graften" | NBS == "infiltratiestroken", paste0(NBS, "²"), NBS)) %>%
   ungroup() %>%
   select(-lu)
 
-
-# save so table can be remade
-saveRDS(ef_norm, "documenten_en_literatuur/results/r_tables/ef_norm.rds")
-
-# make and write flextable
-ef_norm <- readRDS("documenten_en_literatuur/results/r_tables/ef_norm.rds")
-
 ft_ef_norm <- flextable(ef_norm) %>%
-  style_ft()
+  add_footer_row(
+    values = "¹ Voor omvorming naaldbos is alleen Bildchen gebruikt, waardoor geen standaard deviatie kan worden berekent.
+    ² De resultaten van Bocholtz zijn voor deze maatregelen niet meegenomen, zie sectie xx voor verdere uitleg.",
+    colwidths = ncol(ef_norm)
+  ) %>%
+  style_ft() %>%
+  flextable::align(part = "footer", align = "left")
 
 ft_ef_norm
+
+# we make a table for graften en infiltratiestroken including the data from Bocholtz
+# to show the effect including the strange results for these measures.
+ef_boch <- ef_norm %>%
+  filter(NBS == "graften" | NBS == "infiltratiestroken")
+
+ft_ef_graf <- flextable(ef_boch) %>%
+  style_ft()
+
+ft_ef_graf
 # printing is done at the bottom of the script
 
-## Table xx : Results, normalised effects NBS vol ------------------------------
+### Table xx : Results, normalised effects NBS vol ------------------------------
 # different tables for volumes?
 vol_nbs <- c(17, 21)
 
@@ -424,11 +447,10 @@ effect_nbs_vol <- scen_all_rel %>%
   mutate(rel_vol_ef = Qdiff / vol) %>%
   group_by(lu, description, cond) %>%
   summarise(rel_mean = mean(rel_vol_ef),
-            rel_min = min(rel_vol_ef),
-            rel_max = max(rel_vol_ef)) %>%
+            rel_sd = sd(rel_vol_ef)) %>%
   arrange(lu) %>%
   ungroup() %>%
-  mutate(vol_red = sprintf("%.1f (%.1f - %.1f)", rel_mean, rel_min, rel_max),
+  mutate(vol_red = sprintf("%.1f ± %.1f", rel_mean, rel_sd),
          cond = str_remove(cond, "res_"),
          cond = factor(cond, levels = cond_order)) %>%
   select(description, cond, vol_red) %>%
@@ -436,219 +458,409 @@ effect_nbs_vol <- scen_all_rel %>%
   pivot_wider(names_from = cond, values_from = vol_red) %>%
   rename("NBS" = "description")
   
-# save so table can be remade
-saveRDS(effect_nbs_vol, "documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
-
-# make and write flextable
-effect_nbs_vol <- readRDS("documenten_en_literatuur/results/r_tables/effect_nbs_vol.rds")
-
 ft_ef_vol <- flextable(effect_nbs_vol) %>%
   style_ft()
  
 ft_ef_vol
 
 
-## Table xx: Results, NBS Qpeak reduction -------------------------------------
+## 3.4 Figures -----------------------------------------------------------------
 
-# heat table qmax
-# desired order of conditions
-cond_order <- c(
-  "T10_dry", "T10_wet",
-  "T25_dry", "T25_wet",
-  "T100_dry", "T100_wet",
-  "T500_dry", "T500_wet"
-)
+### Figure xx: Results - individual hydrographs ---------------------------------
+# - recalculate total outflow volume to mm outflow and Q/P ratio
 
+subc <- unique(base_all$catch)
 
-base_select <- base_all %>%
-  select(catch, Qmax, cond)
-# add label for baseline
-base_tab <- base_select %>%
-  mutate(nbs = "baseline")
+for (i in seq_along(subc)) {
+  for (j in seq_along(cond_order)) {
 
-scen_tab <- scen_all %>%
-  select(catch, Qmax, description, cond) %>%
-  rename("nbs" = "description")
-# combine baseline + nbs scenarios
-all_tab <- bind_rows(base_tab, scen_tab) %>%
-  left_join(
-    base_all %>% rename(Qmax_base = Qmax),
-    by = c("catch", "cond")
-  ) %>%
-  mutate(rel_change = if_else(nbs == "baseline", 0,
-            100 * (Qmax - Qmax_base) / Qmax_base),
-         cond = str_remove(cond, "res_"),
-         catch = str_remove(catch, "_10m"),
-         Qmax = Qmax / 1000
+    c <- subc[i]
+    o <- cond_order[j]
+    
+# plot
+q_ev <- all_hy %>%
+  filter(scen == c &
+           cond == o) %>%
+  mutate( t_min = Time * 24 * 60,                 # minutes since start
+          t_bin = floor(t_min / 2) * 2) %>%     
+  group_by(t_bin) %>%
+  summarise(Q = mean(Q),
+            Pavg = mean(Pavg)) %>%
+  mutate(
+    Time = as.POSIXct("2000-01-01 00:00:00", tz = "UTC") + t_bin * 60,
+    thour = t_bin / 60
   )
 
-# 3. order rows: baseline first within each catchment
-all_tab <- all_tab %>%
-  mutate(
-    nbs = factor(nbs, levels = c("baseline", sort(setdiff(unique(nbs), "baseline")))),
-    cond = factor(cond, levels = cond_order)
-  ) %>%
-  arrange(catch, nbs, cond)
+c <- str_remove(c, "_10m")
 
-show_tab <- all_tab %>%
-  select(catch, nbs, cond, Qmax) %>%
-  pivot_wider(names_from = cond, values_from = Qmax) %>%
-  arrange(catch, nbs)
+titel <- paste0("Afvoer en neerslag voor ", c, " met conditie: ", 
+                o)
 
-color_tab <- all_tab %>%
-  select(catch, nbs, cond, rel_change) %>%
-  pivot_wider(names_from = cond, values_from = rel_change) %>%
-  arrange(catch, nbs)
+# plot
+# axis constants
+q_max_round <- ceiling(max(c(q_ev$Q), na.rm = TRUE))
+p_max       <- max(q_ev$Pavg, na.rm = TRUE)
+k           <- q_max_round / (p_max * 1.2)
+y_top       <- q_max_round * 2
 
-cond_cols <- cond_cols <- cond_order
-max_abs_change <- max(abs(all_tab$rel_change), na.rm = TRUE)
+# plot regular and inverted y-axis
+ggplot(q_ev) +
+  geom_linerange(aes(x = Time, ymin = y_top,
+                     ymax = y_top - Pavg * k), color = "grey") +
+  geom_line(aes(x = Time, y = Q), linewidth = 0.3) +
+  scale_y_continuous(
+    name     = "Debiet (L s⁻¹)",
+    limits   = c(0, y_top),
+    sec.axis = sec_axis(
+      ~ (y_top - .) / k,
+      name = "Neerslag (mm h⁻¹)"
+    ),
+    expand = c(0,0)) +
+  scale_x_datetime(
+    date_labels = "%H:%M",
+    date_breaks = "4 hours"
+  ) +
+  labs(x = "Tijd") +
+  theme_bw() +
+  theme(plot.title = element_text(size = 10), panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+  
 
-pal <- col_numeric(
-  palette = c("#1a9850", "#f7f7f7", "#d73027"),
-  domain = c(-max_abs_change, max_abs_change)
-)
-
-show_tab_fmt <- show_tab %>%
-  mutate(across(all_of(cond_cols), ~ sprintf("%.2f", .x)))
-
-ft <- flextable(show_tab_fmt) %>%
-  flextable::align(align = "center", part = "all") %>%
-  bold(part = "header") %>%
-  merge_v(j = "catch") %>%
-  valign(j = "catch", valign = "center") %>%
-  fontsize(size = 8, part = "all") %>%          # smaller font
-  padding(padding = 2, part = "all") %>%        # tighter cells
-  height_all(height = 0.18) %>%                 # compact rows
-  autofit()
-
-for (cl in cond_cols) {
-  fills <- pal(color_tab[[cl]])
-  fills[color_tab$nbs == "baseline"] <- "#D9D9D9"
-  ft <- bg(ft, j = cl, bg = fills, part = "body")
+ggsave(paste0("images/results/nbs_base_hydrographs/", c, "_", o, ".png"), width = 3, height = 3)
+  }
 }
+### Figure xx: Results - NBS effects comparison ---------------------------------  
 
-#ft <- bold(ft, i = ~ nbs == "baseline", part = "body")
-
-# thicker line between catchments
-end_rows <- c(
-  which(show_tab_fmt$catch[-1] != show_tab_fmt$catch[-nrow(show_tab_fmt)]),
-  nrow(show_tab_fmt)
-)
-
-thick_border <- fp_border(color = "darkgrey", width = 2)
-
-ft <- hline(ft, i = end_rows, border = thick_border, part = "body")
-
-ft <- 
-
-ft
-
-doc <- read_docx() %>%
-  body_add_par("Peak discharge table", style = "heading 1") %>%
-  body_add_flextable(ft)
-
-print(doc, target = "peak_discharge_table.docx")
-
-## Table xx: Results, NBS Qtot reduction ---------------------------------------
-
-# heat table qmm total
-# desired order of conditions
-cond_order <- c(
-  "T10_dry", "T10_wet",
-  "T25_dry", "T25_wet",
-  "T100_dry", "T100_wet",
-  "T500_dry", "T500_wet"
-)
+dat <- scen_all_rel %>%
+  mutate(catch = str_remove(catch, "_10m"))
 
 
-base_select <- base_all %>%
-  select(catch, Qmm, cond)
-# add label for baseline
-base_tab <- base_select %>%
-  mutate(nbs = "baseline")
+ggplot(
+  dat,
+  aes(
+    x = factor(cond, levels = cond_order),
+    y = Qmm_base - Qmm,
+    color = catch
+  )
+) +
+  geom_point(size = 1.8, alpha = 0.9) +
+  facet_wrap(~description, nrow = 4) +
+  theme_bw(base_size = 9) +
+  labs(
+    x = NULL,
+    y = "Totale reductie van afstroming (mm)",   # or "Qmm_base - Qmm (mm)"
+    color = "Deelgebied"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = c(0.92, 0.06),   # lower-right in plotting area
+    legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(0.55, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  fixed_color_scale
 
-scen_tab <- scen_all %>%
-  select(catch, Qmm, description, cond) %>%
-  rename("nbs" = "description")
-# combine baseline + nbs scenarios
-all_tab <- bind_rows(base_tab, scen_tab) %>%
-  left_join(
-    base_all %>% rename(Qmm_base = Qmm),
-    by = c("catch", "cond")
-  ) %>%
-  mutate(rel_change = if_else(nbs == "baseline", 0,
-            100 * (Qmm - Qmm_base) / Qmm_base),
-         cond = str_remove(cond, "res_"),
-         catch = str_remove(catch, "_10m")
+ggsave(
+  "images/results/nbs_report/nbs_effects_A4.png",
+  width = 6.3, height = 9.7, dpi = 300)
+
+
+### Figure xx: Results - Discharge per catchment -------------------------------
+
+dat <- base_all %>%
+  mutate(catch = str_remove(catch, "_10m"))
+
+
+ggplot(dat) +
+  geom_point(aes(
+    x = factor(cond, levels = cond_order),
+    y = Qmm,
+    color = catch
+  ), size = 1.8, alpha = 0.9) +
+  geom_point(aes(
+    x = factor(cond, levels = cond_order),
+    y = Ptot, shape = "Neerslag volume"), size = 2) +
+  theme_bw(base_size = 9) +
+  labs(
+    x = NULL,
+    y = "Neerslag en afstroming (mm)"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = c(0.31, 0.66),   # lower-right in plotting area
+    legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.spacing.y = unit(0, "pt"), 
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(1, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  scale_color_manual(values = pal6) +
+  scale_shape_manual(values = c("Neerslag volume" = 2)) +
+  guides(
+    color = guide_legend(title = "Deelgebied", keywidth = unit(20, "pt")),
+    shape = guide_legend(title = NULL, keywidth = unit(23, "pt"))
   )
 
-# 3. order rows: baseline first within each catchment
-all_tab <- all_tab %>%
-  mutate(
-    nbs = factor(nbs, levels = c("baseline", sort(setdiff(unique(nbs), "baseline")))),
-    cond = factor(cond, levels = cond_order)
-  ) %>%
-  arrange(catch, nbs, cond)
 
-show_tab <- all_tab %>%
-  select(catch, nbs, cond, Qmm) %>%
-  pivot_wider(names_from = cond, values_from = Qmm) %>%
-  arrange(catch, nbs)
-
-color_tab <- all_tab %>%
-  select(catch, nbs, cond, rel_change) %>%
-  pivot_wider(names_from = cond, values_from = rel_change) %>%
-  arrange(catch, nbs)
-
-cond_cols <- cond_cols <- cond_order
-max_abs_change <- max(abs(all_tab$rel_change), na.rm = TRUE)
-
-pal <- col_numeric(
-  palette = c("#1a9850", "#f7f7f7", "#d73027"),
-domain = c(-max_abs_change, max_abs_change)
+ggsave(
+  "images/results/nbs_report/base_runoff_subc.png",
+  width = 5, height = 5, dpi = 300
 )
 
-show_tab_fmt <- show_tab %>%
-  mutate(across(all_of(cond_cols), ~ sprintf("%.2f", .x)))
+### Figure xx: Results - NBS normalised comparison -----------------------------  
+# change the lu number to make a figure for a specific NBS.
 
-ft <- flextable(show_tab_fmt) %>%
-  flextable::align(align = "center", part = "all") %>%
-  bold(part = "header") %>%
-  merge_v(j = "catch") %>%
-  valign(j = "catch", valign = "center") %>%
-  fontsize(size = 8, part = "all") %>%          # smaller font
-  padding(padding = 2, part = "all") %>%        # tighter cells
-  height_all(height = 0.18) %>%                 # compact rows
-  autofit()
 
-for (cl in cond_cols) {
-  fills <- pal(color_tab[[cl]])
-  fills[color_tab$nbs == "baseline"] <- "#D9D9D9"
-  ft <- bg(ft, j = cl, bg = fills, part = "body")
+dat <- scen_all_rel %>%
+  mutate(catch = str_remove(catch, "_10m")) %>%
+  filter(lu == 13) # filter(lu != 17 & lu != 21)
+  
+# for 17 = contourgreppels
+# and 21 = waterbuffer droogdal
+# adjust to volume per installed m3 NBS
+
+# cal 17 = Q_area_diff / 200
+# cal 21 = Q_area_diff / 1500
+
+# y title = "Berging per aangelegd volume (m3 per m3 NBS)"
+# y title org: "Genormaliseerde reductie (mm per m² NBS)"
+
+
+ggplot(
+  dat,
+  aes(
+    x = factor(cond, levels = cond_order),
+    y = Q_area_diff * -1,
+    color = catch
+  )
+) +
+  geom_point(size = 1.8, alpha = 0.9) +
+  facet_wrap(~description, nrow = 4) +
+  theme_bw(base_size = 9) +
+  labs(
+    x = NULL,
+    y = "Genormaliseerde reductie \n(mm per m² NBS)",   # or "Qmm_base - Qmm (mm)"
+    color = "Deelgebied"
+  ) +
+  guides(
+    color = guide_legend(
+      nrow = 2,           # or 3
+      byrow = TRUE,
+      override.aes = list(size = 2)
+    )
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = "bottom",   # lower-right in plotting area
+    legend.justification = "left",  
+    legend.box.just = "left",
+    legend.margin = margin(t = 0, r = 0, b = 0, l = -30),
+    legend.direction = "horizontal",
+    legend.box = "horizontal",
+    legend.title = element_text(size = 7),
+    legend.text = element_text(size = 6.5),   # smaller text
+    legend.key.height = unit(0.25, "cm"),
+    legend.key.width  = unit(0.4, "cm"),
+    legend.spacing.x = unit(0.1, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  fixed_color_scale #+ ylim(c(0,16))
+
+
+ggsave(
+  "images/results/nbs_report/nbs_effects_productie_grasland.png",
+  width = 3, height = 3.5, dpi = 300)
+
+### Figure xx: Results - compare NBS - base hydrographs ------------------------
+
+subc <- unique(base_all$catch) # all base scnearios
+scens <- unique(all$scen)
+scens <- scens[!scens %in% subc] # all nbs scenarios
+
+for (i in seq_along(subc)) {
+  for (j in seq_along(cond_order)) {
+    
+    base_scens <- scens[str_detect(scens, subc[i])]
+    
+    c <- subc[i]
+    o <- cond_order[j]
+    
+    # plot
+    q_ev <- all_hy %>%
+      filter(scen == c &
+               cond == o) %>%
+      mutate( t_min = Time * 24 * 60,                 # minutes since start
+              t_bin = floor(t_min / 2) * 2) %>%     
+      group_by(t_bin) %>%
+      summarise(Q = mean(Q),
+                Pavg = mean(Pavg)) %>%
+      mutate(
+        Time = as.POSIXct("2000-01-01 00:00:00", tz = "UTC") + t_bin * 60
+      )
+    
+    
+    for (k in seq_along(base_scens)) {
+      
+      s <- base_scens[k]
+      
+    q_scen <- all_hy %>%
+      filter(scen == s &
+               cond == o) %>%
+      mutate( t_min = Time * 24 * 60,                 # minutes since start
+              t_bin = floor(t_min / 2) * 2) %>%     
+      group_by(t_bin) %>%
+      summarise(Q = mean(Q),
+                Pavg = mean(Pavg)) %>%
+      mutate(
+        Time = as.POSIXct("2000-01-01 00:00:00", tz = "UTC") + t_bin * 60
+      )
+    
+    s <- str_remove(s, "_10m")
+    titel <- paste0("Afvoer en neerslag voor ", s, " met conditie: ", 
+                    o)
+    
+    # plot
+    # axis constants
+    q_max_round <- ceiling(max(c(q_scen$Q, q_ev$Q), na.rm = TRUE))
+    p_max       <- max(q_scen$Pavg, na.rm = TRUE)
+    k           <- q_max_round / (p_max * 1.2)
+    y_top       <- q_max_round * 2
+    
+    # plot regular and inverted y-axis
+    ggplot() +
+      geom_linerange(data = q_ev, aes(x = Time, ymin = y_top,
+                         ymax = y_top - Pavg * k), color = "grey") +
+      geom_line(data = q_ev, aes(x = Time, y = Q, color = "basis"), linewidth = 0.3) +
+      geom_line(data = q_scen, aes(x = Time, y = Q, color = "nbs"), linewidth = 0.3) +
+      scale_y_continuous(
+        name     = "Debiet (L s⁻¹)",
+        limits   = c(0, y_top),
+        sec.axis = sec_axis(
+          ~ (y_top - .) / k,
+          name = "Neerslag (mm h⁻¹)"
+        ),
+        expand = c(0,0)) +
+      scale_x_datetime(
+        date_labels = "%H:%M",
+        date_breaks = "4 hours"
+      ) +
+      labs(x = "Tijd") + # title = titel,
+      theme_bw() +
+      theme(plot.title = element_text(size = 10), 
+            panel.grid.minor = element_blank(),
+        legend.position = c(0.95, 0.75),   # lower-right in plotting area
+        legend.justification = c("right", "bottom"),
+        legend.background = element_rect(fill = "white", color = "grey80"),
+        legend.key.height = unit(0.35, "cm"),
+        legend.key.width  = unit(0.55, "cm"),
+        strip.text = element_text(size = 8),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+      ) +
+      scale_color_manual(name = NULL,
+                         values = c("basis" = "black",
+                                    "nbs" = "blue"))
+    
+    
+    ggsave(paste0("images/results/nbs_scenarios_hydrographs/", s, "_", o, ".png"), width = 3, height = 3)
+    }
+  }
 }
 
-#ft <- bold(ft, i = ~ nbs == "baseline", part = "body")
+### Figure xx: Results - Qpeak reduction ---------------------------------------  
 
-# thicker line between catchments
-end_rows <- c(
-  which(show_tab_fmt$catch[-1] != show_tab_fmt$catch[-nrow(show_tab_fmt)]),
-  nrow(show_tab_fmt)
+base_qmax <- base_all |>
+  select(catch, cond, Qmax) |>
+  rename("Qmax_base" = "Qmax")
+
+
+dat <- scen_all_rel |>
+  left_join(base_qmax, by = c("catch", "cond")) |>
+  mutate(catch = str_remove(catch, "_10m"),
+         Qpeak_red = (1 - (Qmax / Qmax_base)) * 100,
+         description = if_else(description == "graften", "graften ¹", description))
+
+
+ggplot(
+  dat,
+  aes(
+    x = factor(cond, levels = cond_order),
+    y = Qpeak_red,
+    color = catch
+  )
+) +
+  geom_point(size = 1.8, alpha = 0.9) +
+  facet_wrap(~description, nrow = 4) +
+  theme_bw(base_size = 9)  +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = c(0.92, 0.06),   # lower-right in plotting area
+    legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(0.55, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  labs(
+    x = NULL,
+    y = "Relatieve afname piek afstroming (%)"
+  ) +
+  scale_color_manual(
+    name = "Deelgebied",
+    values = pal6_catch,                    # your named palette
+    drop = FALSE                      # keep all levels even if not in data
+  ) +
+  ylim(c(-13, 100))
+
+ggsave(
+  "images/results/nbs_report/nbs_peak_reduction.png",
+  width = 6.3, height = 9.7, dpi = 300)
+
+### Figure xx: Results - Qpeak base per catchment -------------------------------
+
+dat <- base_all %>%
+  mutate(catch = str_remove(catch, "_10m"))
+
+
+ggplot(dat) +
+  geom_point(aes(
+    x = factor(cond, levels = cond_order),
+    y = Qmax / 1000,
+    color = catch
+  ), size = 1.8, alpha = 0.9) +
+  theme_bw(base_size = 9) +
+  labs(
+    x = NULL,
+    y = "Maximale afstroming m³ sec⁻¹"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = c(0.31, 0.72),   # lower-right in plotting area
+    legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.spacing.y = unit(0, "pt"), 
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(1, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  scale_color_manual(values = pal6) +
+  guides(
+    color = guide_legend(title = "Deelgebied", keywidth = unit(20, "pt")),
+    shape = guide_legend(title = NULL, keywidth = unit(23, "pt"))
+  )
+
+
+ggsave(
+  "images/results/nbs_report/base_qmax_subc.png",
+  width = 5, height = 5, dpi = 300
 )
-
-thick_border <- fp_border(color = "darkgrey", width = 2)
-
-ft <- hline(ft, i = end_rows, border = thick_border, part = "body")
-
-ft <- fit_to_width(ft, max_width = 9)
-
-ft
-
-doc <- read_docx() %>%
-  body_add_par("Total discharge table", style = "heading 1") %>%
-  body_add_flextable(ft)
-
-print(doc, target = "Total_discharge_table.docx")
-
 
 # 4. Catchment overview -------------------------------------------------------
 
@@ -731,8 +943,6 @@ ft_lu_area <- flextable(lu_areas) %>%
 ft_lu_area
 
 
-
-
 # 5. Print results ------------------------------------------------------------
 
 # make a word document with bookmarks for all tables, this will be filled
@@ -745,6 +955,11 @@ doc <- doc %>%
   body_add_par("") %>%
   
   #table
+  body_add_par("Neerslag en afstroming per conditie", style = "heading 2") %>%
+  body_add_flextable(ft_base_qp) %>%
+  
+  body_add_par("Normalised effects NBS per area - with Bocholtz", style = "heading 2") %>%
+  body_add_flextable(ft_ef_graf) %>%
   
   body_add_par("Normalised effects NBS per area", style = "heading 2") %>%
   body_add_flextable(ft_ef_norm) %>%
@@ -752,14 +967,38 @@ doc <- doc %>%
   body_add_par("Normalised effects NBS per volume", style = "heading 2") %>%
   body_add_flextable(ft_ef_vol) %>%
   
-  body_add_par(paste0("NBS area in ", subc[1]), style = "heading 2") %>%
+  body_add_par(paste0("NBS area for ", subc[1]), style = "heading 2") %>%
   body_add_flextable(ft_area_list[[1]]) %>%
   
-  body_add_par(paste0("NBS area in ", subc[2]), style = "heading 2") %>%
+  body_add_par(paste0("NBS area for ", subc[2]), style = "heading 2") %>%
   body_add_flextable(ft_area_list[[2]]) %>%
   
-  body_add_par(paste0("NBS area in ", subc[3]), style = "heading 2") %>%
-  body_add_flextable(ft_area_list[[3]])%>%
+  body_add_par(paste0("NBS area for ", subc[3]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[3]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[4]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[4]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[5]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[5]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[6]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[6]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[7]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[7]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[8]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[8]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[9]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[9]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[10]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[10]]) %>%
+  
+  body_add_par(paste0("NBS area for ", subc[11]), style = "heading 2") %>%
+  body_add_flextable(ft_area_list[[11]]) %>%
   
   body_add_par("Gebied overzicht", style = "heading 2") %>%
   body_add_flextable(ft_lu_area)

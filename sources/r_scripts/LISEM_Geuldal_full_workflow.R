@@ -1,17 +1,18 @@
 # full workflow for lisem simulations in the Geul catchment.
 # select lines and execute these with Ctrl + Enter
 
-#=======================================================================#
+#_______________________________________________________________________#
 #       To run the code below you need the folder spatial_data          #
-#=======================================================================#
+#_______________________________________________________________________#
 #First download all maps from Sharepoint - Geuldal spatial data         #  
 # 1. place the content inside this cloned repository in ./spatial_data  #
-#=======================================================================#
+#_______________________________________________________________________#
 
 # Initialization ---------------------------------------------------------------
 
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
+configuration()
 
 # 1. Data preparation --------------
 # Where possible automatize GIS data management to create base data layers
@@ -272,8 +273,10 @@ create_lisem_run(resolution = 10, catch_num = 54, swatre_file = swatre_file,
 # The map should have the following values: 1 = location for measure, 0 = original landuse
 # In case of a Landscape Element NBS 1 = area where measure can be placed and
 # 2 = actual physical location of NBS, according to maps provided by Stroming.
-# Alternative (not yet implemented): map should have landuse number of 
+
+# Alternative: map should have landuse number of 
 # NBS already in the map, this can be used for scenarios with multiple measures.
+# see section 3.4
 
 source("sources/r_scripts/source_to_base_maps.R")
 spatial_data_to_pcr(only_NBS = TRUE) # assuming section 1.1 was already run. 
@@ -320,7 +323,7 @@ source("sources/r_scripts/create_lisem_run.R")
 
 # choose which NBS measure you want
 # see /sources/setup/tables/lu_NBS_tbl.csv for the number(s) 
-nbs_ids <- c(0, 14, 19) # 0 = base run without NBS
+nbs_ids <- c(0, 11, 14, 17, 19, 20, 21) # 0 = base run without NBS
 # corresponding to each NBS, here you can also add more
 
 points_id <- c(52, 54)# use if you want to change catchment
@@ -348,13 +351,71 @@ for (i in seq_along(points_id)) {
 
 ## 3.4 combined NBS scenarios --------------------------------------------
 
-# load NBS scenario map:
-# lu numbers according to lu_NBS_tbl.csv
-# change the use of NBSnum - does not work with combinations.
-# if combined - loop over all NBS nums, and execute accordingly?
-# NBSnum = 99 = combined scenario?
+# Beside simulation with 1 specific NBS added to the catchment, we are also
+# interested in how scenarios with multiple NBS influence runoff and flooding.
+# In the section below we test three scenario's to check if the code works.
+# in the document xxxx/xxx you can find explanation how to add other scenarios.
+# TODO add reference to workflow manual.
 
+# Make sure section 1 of the workflow is executed!
+# update landuse table, this works for all NBS.
+source("sources/r_scripts/prepare_landuse_table.R")
+landuse_table_nbs()
 
+# make a new swatre file, this works for all NBS.
+source("sources/r_scripts/swatre_input.R")
+swatre_nbs_file <- "swatre_NBS.csv"
+soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
+                       swatre_out = paste0("sources/setup/calibration/", swatre_nbs_file),
+                       do_NBS = TRUE
+)
+
+# load the scenario based on input maps in ./spatial_data
+source("sources/r_scripts/source_to_base_maps.R")
+
+# scen_num: > 100, the number of the scenario
+# lu_classes: "wrl" or "def"
+# res: 5, 10 or 20.
+load_scenario_maps(scen_num = 101,
+                   lu_classes = "def",
+                   res = 10)
+
+# update your subcatchment database with the NBS scenario maps
+# the function will find any NBS maps in the base dataset and include them in 
+# the subcatchments.
+points_id <- c(52)# use if you want to change catchment
+reso <- c(10)
+
+# load the function for subcatchment preparation
+source("sources/r_scripts/create_subcatch_db.R")
+
+# run for both resolutions and all selected subcatchments
+for (i in seq_along(points_id)) {
+  for (j in seq_along(reso)) {
+    base_maps_subcatchment(
+      cell_size = reso[j],
+      sub_catch_number = points_id[i],
+      run_type = "base",  # for NBS use "base"
+      calc_ldd = T  # only recalculate ldd if first time or dem is changed, can take some time!!
+    )
+  }
+}
+
+# now create a lisem simulation for a specific scenario
+# the scenario number is inserted under NBS_num
+source("sources/r_scripts/create_lisem_run.R")
+
+# possible to change this to the loop as in section 3.2 then multiple scenarios
+# and catchments can be produced fast.
+create_lisem_run(
+  resolution = 10,
+  catch_num = 52,
+  swatre_file = swatre_nbs_file,
+  run_type = "base",
+  do_runfile = T,
+  NBS_num = 101,
+  cpu_cores = 8
+)
 
 # 4. HPC runs full Geuldal -----------------------------------------------------
 
