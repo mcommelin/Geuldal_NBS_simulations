@@ -129,18 +129,26 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
     }, error = function(e) FALSE)
   }
 
-  if (!require("rosettaPTF", quietly = TRUE)) {
-    message("Installing latest rosettaPTF from GitHub...")
-    remotes::install_github("ncss-tech/rosettaPTF")
-    message("Installing latest rosetta-soil into '", rosetta_env_name, "' environment...")
-    py_install("rosetta-soil", pip = TRUE, envname = rosetta_env_name)
+  # Step 1: If rosettaPTF is already installed, smoke-test it before doing anything.
+  #         This catches a broken or outdated existing install without forcing a
+  #         full reinstall on every run.
+  if (require("rosettaPTF", quietly = TRUE)) {
+    rosetta_ok <- rosetta_smoke_test()
+  } else {
+    rosetta_ok <- FALSE  # not installed yet, treat as failed
   }
 
-  library(rosettaPTF)
+  # Step 2: If not yet working, install the latest versions and re-test.
+  if (!rosetta_ok) {
+    message("Installing latest rosettaPTF from GitHub...")
+    remotes::install_github("ncss-tech/rosettaPTF", force = TRUE)
+    message("Installing latest rosetta-soil into '", rosetta_env_name, "' environment...")
+    py_install("rosetta-soil", pip = TRUE, envname = rosetta_env_name)
+    library(rosettaPTF)
+    rosetta_ok <- rosetta_smoke_test()
+  }
 
-  # Smoke-test: verify the install actually works end-to-end.
-  rosetta_ok <- rosetta_smoke_test()
-
+  # Step 3: If latest still fails, fall back to known-good pinned versions.
   if (!rosetta_ok) {
     message("Latest rosetta-soil/rosettaPTF failed validation (possible numpy ABI mismatch) – ",
             "falling back to known-good pinned versions...")
@@ -152,8 +160,6 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
     py_install(c("numpy==1.26.4", "rosetta-soil==0.1.2"),
                pip = TRUE, envname = rosetta_env_name)
     library(rosettaPTF)
-
-    # Re-validate after the fallback install.
     rosetta_ok <- rosetta_smoke_test()
 
     if (!rosetta_ok) {
