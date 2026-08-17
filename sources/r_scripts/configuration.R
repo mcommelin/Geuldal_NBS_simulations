@@ -34,6 +34,11 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
   # All conda setup is wrapped in tryCatch so a broken conda installation
   # gives a clear error rather than a confusing downstream failure.
 
+  # Resolve the conda binary path from config so reticulate always finds it,
+  # even when Miniconda is installed at a custom/non-standard location that is
+  # not on the system PATH (the root cause of 'unable to find conda binary').
+  conda_bin <- paste0(config$miniconda_path, "/condabin/conda")
+
   # 1. Ensure Miniconda itself exists; install silently if not.
   if (!dir.exists(config$miniconda_path)) {
     message("Miniconda not found at '", config$miniconda_path,
@@ -48,7 +53,7 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
 
   # 2. List existing conda environments (used for idempotent creation below).
   existing_envs <- tryCatch(
-    reticulate::conda_list()$name,
+    reticulate::conda_list(conda = conda_bin)$name,
     error = function(e) stop(
       "Could not list conda environments. Is conda/Miniconda correctly installed at '",
       config$miniconda_path, "'?\nOriginal error: ", conditionMessage(e))
@@ -62,7 +67,8 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
     message("Creating dedicated '", rosetta_env_name,
             "' conda environment for rosettaPTF (Python only)...")
     tryCatch(
-      reticulate::conda_create(envname = rosetta_env_name, python_version = "3.11"),
+      reticulate::conda_create(envname = rosetta_env_name, python_version = "3.11",
+                               conda = conda_bin),
       error = function(e) stop(
         "Failed to create '", rosetta_env_name, "' conda environment.\n",
         "Original error: ", conditionMessage(e))
@@ -75,10 +81,12 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
             "' conda environment and installing PCRaster from conda-forge",
             " (this may take a few minutes)...")
     tryCatch({
-      reticulate::conda_create(envname = config$conda_env, python_version = "3.11")
+      reticulate::conda_create(envname = config$conda_env, python_version = "3.11",
+                               conda = conda_bin)
       reticulate::conda_install(envname = config$conda_env,
                                 packages = "pcraster",
-                                channel  = "conda-forge")
+                                channel  = "conda-forge",
+                                conda    = conda_bin)
     }, error = function(e) stop(
       "Failed to create '", config$conda_env, "' conda environment with PCRaster.\n",
       "Original error: ", conditionMessage(e))
