@@ -27,9 +27,6 @@ if (!require("tidyverse")) install.packages("tidyverse", repos='https://cloud.r-
 #if (!require("sensobol")) install.packages("sensobol", repos='https://cloud.r-project.org')
 #if (!require("foreach")) install.packages("foreach", repos='https://cloud.r-project.org')
 #if (!require("doParallel")) install.packages("doParallel", repos='https://cloud.r-project.org')
-if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.r-project.org')
-  library(reticulate)
-
   # --- Automatic conda / environment provisioning ---
   # All conda setup is wrapped in tryCatch so a broken conda installation
   # gives a clear error rather than a confusing downstream failure.
@@ -41,13 +38,17 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
   rosetta_env_name <- "rosetta"
   rosetta_env_path <- paste0(config$miniconda_path, "/envs/", rosetta_env_name)
 
-  # Tell reticulate which Python to use BEFORE anything can trigger Python
-  # initialisation.  Reticulate locks onto the first Python it sees; if a
-  # virtualenv (e.g. ~/.virtualenvs/r-reticulate) is discovered first we get
-  # "another version of Python has already been initialized".  Setting
-  # RETICULATE_PYTHON prevents that auto-discovery from winning the race.
+  # Tell reticulate which Python to use BEFORE loading the package so that
+  # auto-discovery of ~/.virtualenvs/r-reticulate (or any other interpreter)
+  # cannot win the race.  Both env vars must be set first:
+  #   RETICULATE_PYTHON     – exact interpreter path
+  #   RETICULATE_PYTHON_ENV – disables virtualenv auto-discovery
   rosetta_python <- file.path(rosetta_env_path, "bin", "python")
-  Sys.setenv(RETICULATE_PYTHON = rosetta_python)
+  Sys.setenv(RETICULATE_PYTHON     = rosetta_python,
+             RETICULATE_PYTHON_ENV = rosetta_env_path)
+
+if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.r-project.org')
+  library(reticulate)
 
   # 1. Ensure Miniconda itself exists; install silently if not.
   if (!dir.exists(config$miniconda_path)) {
