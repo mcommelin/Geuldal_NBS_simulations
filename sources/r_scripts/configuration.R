@@ -79,7 +79,7 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
     message("Creating dedicated '", rosetta_env_name,
             "' conda environment for rosettaPTF (Python only)...")
     tryCatch(
-      reticulate::conda_create(envname = rosetta_env_name, python_version = "3.11",
+      reticulate::conda_create(envname = rosetta_env_name, python_version = "3.13",
                                conda = conda_bin),
       error = function(e) stop(
         "Failed to create '", rosetta_env_name, "' conda environment.\n",
@@ -112,8 +112,8 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
 
   # 6. Self-healing rosettaPTF + rosetta-soil install:
   #    Try the *latest* versions first; only fall back to known-good pinned versions
-  #    (rosettaPTF@8e81f4e + numpy==1.26.4 + rosetta-soil==0.1.2) if a smoke-test
-  #    fails.  The fallback pins numpy==1.26.4 together with rosetta-soil so pip
+  #    (rosettaPTF@8e81f4e + numpy==2.4.2 + rosetta-soil==0.1.2) if a smoke-test
+  #    fails.  The fallback pins numpy==2.4.2 together with rosetta-soil so pip
   #    resolves them jointly, avoiding the numpy ABI / .npz array-reading error
   #    that arises when numpy is installed as an unpinned transitive dependency and
   #    later upgraded to an incompatible version.
@@ -155,16 +155,16 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
     remotes::install_github(
       "ncss-tech/rosettaPTF@8e81f4e98d6e1e0758e5b076a1c7321ea26ea676",
       force = TRUE)
-    # Install numpy==1.26.4 and rosetta-soil==0.1.2 together so pip resolves
+    # Install numpy==2.4.2 and rosetta-soil==0.1.2 together so pip resolves
     # them jointly and the numpy ABI matches what the bundled .npz files expect.
-    py_install(c("numpy==1.26.4", "rosetta-soil==0.1.2"),
+    py_install(c("numpy==2.4.2", "rosetta-soil==0.1.2"),
                pip = TRUE, envname = rosetta_env_name)
     library(rosettaPTF)
     rosetta_ok <- rosetta_smoke_test()
 
     if (!rosetta_ok) {
       stop("rosettaPTF / rosetta-soil installation failed even with known-good pinned ",
-           "versions (rosettaPTF@8e81f4e, numpy==1.26.4, rosetta-soil==0.1.2).\n",
+           "versions (rosettaPTF@8e81f4e, numpy==2.4.2, rosetta-soil==0.1.2).\n",
            "Please check your conda/Python setup and review the install block in ",
            "'sources/r_scripts/configuration.R'.")
     }
