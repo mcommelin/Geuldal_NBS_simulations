@@ -11,10 +11,13 @@ install_packages: "Y"   # choose Y or N
 debug_messages: "Y"     # choose Y on N
 
 # 3. Path to your local Miniconda installation.
+# If this path does not exist, configuration.R will install Miniconda here automatically.
 # Example: "/home/username/miniconda3"
 miniconda_path: "~/ProgramFiles/miniconda3"
 
-# 4. Name of the conda environment where pcraster is installed
+# 4. Name of the conda environment where PCRaster is installed.
+# If this environment does not exist, configuration.R will create it and install
+# PCRaster from conda-forge automatically on first run.
 # Example: "lisem"
 conda_env: "lisem"
 
