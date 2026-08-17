@@ -37,7 +37,17 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
   # Resolve the conda binary path from config so reticulate always finds it,
   # even when Miniconda is installed at a custom/non-standard location that is
   # not on the system PATH (the root cause of 'unable to find conda binary').
-  conda_bin <- paste0(config$miniconda_path, "/condabin/conda")
+  conda_bin        <- paste0(config$miniconda_path, "/condabin/conda")
+  rosetta_env_name <- "rosetta"
+  rosetta_env_path <- paste0(config$miniconda_path, "/envs/", rosetta_env_name)
+
+  # Tell reticulate which Python to use BEFORE anything can trigger Python
+  # initialisation.  Reticulate locks onto the first Python it sees; if a
+  # virtualenv (e.g. ~/.virtualenvs/r-reticulate) is discovered first we get
+  # "another version of Python has already been initialized".  Setting
+  # RETICULATE_PYTHON prevents that auto-discovery from winning the race.
+  rosetta_python <- file.path(rosetta_env_path, "bin", "python")
+  Sys.setenv(RETICULATE_PYTHON = rosetta_python)
 
   # 1. Ensure Miniconda itself exists; install silently if not.
   if (!dir.exists(config$miniconda_path)) {
@@ -62,7 +72,9 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
   # 3. Create a dedicated 'rosetta' conda environment for rosettaPTF / rosetta-soil.
   #    Kept separate from the PCRaster env to avoid ABI conflicts between
   #    conda-forge C++ binaries (PCRaster/GDAL) and pip-installed scientific packages.
-  rosetta_env_name <- "rosetta"
+  # 3. Create a dedicated 'rosetta' conda environment for rosettaPTF / rosetta-soil.
+  #    Kept separate from the PCRaster env to avoid ABI conflicts between
+  #    conda-forge C++ binaries (PCRaster/GDAL) and pip-installed scientific packages.
   if (!(rosetta_env_name %in% existing_envs)) {
     message("Creating dedicated '", rosetta_env_name,
             "' conda environment for rosettaPTF (Python only)...")
@@ -94,7 +106,8 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
   }
 
   # 5. Activate the dedicated rosetta environment for reticulate / rosettaPTF calls.
-  rosetta_env_path <- paste0(config$miniconda_path, "/envs/", rosetta_env_name)
+  #    RETICULATE_PYTHON was already set above so Python binds to the rosetta env
+  #    before any auto-discovery can lock onto a different interpreter.
   use_condaenv(condaenv = rosetta_env_path, required = TRUE)
 
   # 6. Self-healing rosettaPTF + rosetta-soil install:
