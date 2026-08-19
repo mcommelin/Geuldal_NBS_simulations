@@ -125,7 +125,7 @@ res_pcr <- bind_rows(a1, a2, a3, a4, a5, a6) %>%
   mutate(cond = str_remove(cond, "res_"))
 
 
-# save and load so whole analysis can be skippen
+# save and load so whole analysis can be skipped
 saveRDS(res_pcr, "documenten_en_literatuur/results/r_tables/res_pcr.rds")
 
 
@@ -166,9 +166,17 @@ saveRDS(all_hy, "documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
 
 # 3. Summarise results ---------------------------------------------------------
 
+# there is an error in the calculation of swale landuse surface area (2026-08-19)
+#' the workflow below is corrected, and the res_pcr.rds file also. The code above this
+#' lines will rewrite res_pcr and undo the correction!!!
+
+
 # load results section 1 and 2
 res_pcr <- readRDS("documenten_en_literatuur/results/r_tables/res_pcr.rds")
 all_hy <- readRDS("documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
+
+
+
 
 ## helper settings -------------------------------------------------------------
 
@@ -259,8 +267,9 @@ area_catch <- res_pcr %>%
   group_by(catch, scen, cond) %>%
   summarise(catch_area = sum(area)) %>%
   ungroup() %>%
-  distinct(catch, catch_area)
- 
+  group_by(catch) %>%
+  summarise(catch_area = max(catch_area))
+
 # nbs areas
 nbs_areas <- res_pcr %>%
   select(lu, area, catch) %>%
@@ -365,7 +374,7 @@ ft_area_list[[i]] <- flextable(t_area_nbs) %>%
   flextable::width(j = 2, width = 1.2)
 }
 
-ft_area_list[[1]]
+ft_area_list[[7]]
 
 ### Table xx : Results, normalised effects NBS area -----------------------------
 # table with effects per measure and per area
@@ -618,7 +627,7 @@ ggsave(
 
 dat <- scen_all_rel %>%
   mutate(catch = str_remove(catch, "_10m")) %>%
-  filter(lu == 13) # filter(lu != 17 & lu != 21)
+  filter(lu == 17) # filter(lu != 17 & lu != 21)
   
 # for 17 = contourgreppels
 # and 21 = waterbuffer droogdal
@@ -635,7 +644,7 @@ ggplot(
   dat,
   aes(
     x = factor(cond, levels = cond_order),
-    y = Q_area_diff * -1,
+    y = Q_area_diff / 200 * -1,
     color = catch
   )
 ) +
@@ -644,7 +653,7 @@ ggplot(
   theme_bw(base_size = 9) +
   labs(
     x = NULL,
-    y = "Genormaliseerde reductie \n(mm per m² NBS)",   # or "Qmm_base - Qmm (mm)"
+    y = "Berging per aangelegd \nvolume (m3 per m3 NBS)",   # or "Qmm_base - Qmm (mm)"
     color = "Deelgebied"
   ) +
   guides(
@@ -674,7 +683,7 @@ ggplot(
 
 
 ggsave(
-  "images/results/nbs_report/nbs_effects_productie_grasland.png",
+  "images/results/nbs_report/nbs_effects_contourgreppels_corrected.png",
   width = 3, height = 3.5, dpi = 300)
 
 ### Figure xx: Results - compare NBS - base hydrographs ------------------------
