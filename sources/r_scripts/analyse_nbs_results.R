@@ -255,6 +255,39 @@ scen_hy <- all %>%
   filter_out(str_detect(scen, "10m$")) %>%
   mutate(catch = str_extract(scen, "^.*10m"))
 
+### 3.1.1. Calculate peak time change ------------------------------------------
+all_10 <- all_hy %>%
+  group_by(scen, cond) %>%
+  mutate( t_min = Time * 24 * 60,                 # minutes since start
+          t_bin = floor(t_min / 10) * 10) %>%     
+  group_by(scen, cond, t_bin) %>%
+  summarise(Q = mean(Q),
+            Pavg = mean(Pavg),
+  )
+
+# max Q and peak time
+peak_10 <- all_10 %>%
+  ungroup() %>%
+  group_by(scen, cond) %>%
+  slice_max(Q)
+
+# filter base
+peak_10_base <- peak_10 %>%
+  ungroup() %>%
+  filter(str_detect(scen, "10m$")) %>%
+  rename("catch" = "scen") %>%
+  select(catch, cond, t_bin) %>%
+  rename("t_base" = "t_bin")
+
+peak_10_scen <- peak_10 %>%
+  ungroup() %>%
+  filter_out(str_detect(scen, "10m$")) %>%
+  mutate(catch = str_extract(scen, "^.*10m")) %>%
+  left_join(peak_10_base, by = c("catch", "cond")) %>%
+  mutate(t_diff = t_bin - t_base)
+
+
+
 ## 3.2 Organise spatial data ---------------------------------------------------
 
 landuse_info <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", 
@@ -870,6 +903,49 @@ ggsave(
   "images/results/nbs_report/base_qmax_subc.png",
   width = 5, height = 5, dpi = 300
 )
+
+
+### Figure xx: Results - QPeak time change -------------------------------------
+dat <- peak_10_scen |>
+  mutate(catch = str_remove(catch, "_10m"),
+         description = str_extract(scen, "(?<=10m_).*"))
+
+
+ggplot(
+  dat,
+  aes(
+    x = factor(cond, levels = cond_order),
+    y = t_diff,
+    color = catch
+  )
+) +
+  geom_point(size = 1.8, alpha = 0.9) +
+  facet_wrap(~description, nrow = 4) +
+  theme_bw(base_size = 9)  +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = c(0.92, 0.06),   # lower-right in plotting area
+    legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(0.55, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  labs(
+    x = NULL,
+    y = "Relatieve afname piek afstroming (%)"
+  ) +
+  scale_color_manual(
+    name = "Deelgebied",
+    values = pal6_catch,                    # your named palette
+    drop = FALSE                      # keep all levels even if not in data
+  ) #+
+ # ylim(c(-13, 100))
+
+ggsave(
+  "images/results/nbs_report/nbs_peak_time_shift.png",
+  width = 6.3, height = 9.7, dpi = 300)
 
 # 4. Catchment overview -------------------------------------------------------
 
