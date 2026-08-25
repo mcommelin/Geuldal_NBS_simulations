@@ -125,7 +125,7 @@ res_pcr <- bind_rows(a1, a2, a3, a4, a5, a6) %>%
   mutate(cond = str_remove(cond, "res_"))
 
 
-# save and load so whole analysis can be skippen
+# save and load so whole analysis can be skipped
 saveRDS(res_pcr, "documenten_en_literatuur/results/r_tables/res_pcr.rds")
 
 
@@ -166,9 +166,17 @@ saveRDS(all_hy, "documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
 
 # 3. Summarise results ---------------------------------------------------------
 
+# there is an error in the calculation of swale landuse surface area (2026-08-19)
+#' the workflow below is corrected, and the res_pcr.rds file also. The code above this
+#' lines will rewrite res_pcr and undo the correction!!!
+
+
 # load results section 1 and 2
 res_pcr <- readRDS("documenten_en_literatuur/results/r_tables/res_pcr.rds")
 all_hy <- readRDS("documenten_en_literatuur/results/r_tables/all_hydrographs.rds")
+
+
+
 
 ## helper settings -------------------------------------------------------------
 
@@ -247,6 +255,39 @@ scen_hy <- all %>%
   filter_out(str_detect(scen, "10m$")) %>%
   mutate(catch = str_extract(scen, "^.*10m"))
 
+### 3.1.1. Calculate peak time change ------------------------------------------
+all_10 <- all_hy %>%
+  group_by(scen, cond) %>%
+  mutate( t_min = Time * 24 * 60,                 # minutes since start
+          t_bin = floor(t_min / 10) * 10) %>%     
+  group_by(scen, cond, t_bin) %>%
+  summarise(Q = mean(Q),
+            Pavg = mean(Pavg),
+  )
+
+# max Q and peak time
+peak_10 <- all_10 %>%
+  ungroup() %>%
+  group_by(scen, cond) %>%
+  slice_max(Q)
+
+# filter base
+peak_10_base <- peak_10 %>%
+  ungroup() %>%
+  filter(str_detect(scen, "10m$")) %>%
+  rename("catch" = "scen") %>%
+  select(catch, cond, t_bin) %>%
+  rename("t_base" = "t_bin")
+
+peak_10_scen <- peak_10 %>%
+  ungroup() %>%
+  filter_out(str_detect(scen, "10m$")) %>%
+  mutate(catch = str_extract(scen, "^.*10m")) %>%
+  left_join(peak_10_base, by = c("catch", "cond")) %>%
+  mutate(t_diff = t_bin - t_base)
+
+
+
 ## 3.2 Organise spatial data ---------------------------------------------------
 
 landuse_info <- read_csv("sources/setup/tables/lu_NBS_tbl.csv", 
@@ -259,8 +300,9 @@ area_catch <- res_pcr %>%
   group_by(catch, scen, cond) %>%
   summarise(catch_area = sum(area)) %>%
   ungroup() %>%
-  distinct(catch, catch_area)
- 
+  group_by(catch) %>%
+  summarise(catch_area = max(catch_area))
+
 # nbs areas
 nbs_areas <- res_pcr %>%
   select(lu, area, catch) %>%
@@ -365,7 +407,7 @@ ft_area_list[[i]] <- flextable(t_area_nbs) %>%
   flextable::width(j = 2, width = 1.2)
 }
 
-ft_area_list[[1]]
+ft_area_list[[7]]
 
 ### Table xx : Results, normalised effects NBS area -----------------------------
 # table with effects per measure and per area
@@ -618,7 +660,7 @@ ggsave(
 
 dat <- scen_all_rel %>%
   mutate(catch = str_remove(catch, "_10m")) %>%
-  filter(lu == 13) # filter(lu != 17 & lu != 21)
+  filter(lu == 17) # filter(lu != 17 & lu != 21)
   
 # for 17 = contourgreppels
 # and 21 = waterbuffer droogdal
@@ -635,7 +677,7 @@ ggplot(
   dat,
   aes(
     x = factor(cond, levels = cond_order),
-    y = Q_area_diff * -1,
+    y = Q_area_diff / 200 * -1,
     color = catch
   )
 ) +
@@ -644,7 +686,7 @@ ggplot(
   theme_bw(base_size = 9) +
   labs(
     x = NULL,
-    y = "Genormaliseerde reductie \n(mm per m² NBS)",   # or "Qmm_base - Qmm (mm)"
+    y = "Berging per aangelegd \nvolume (m3 per m3 NBS)",   # or "Qmm_base - Qmm (mm)"
     color = "Deelgebied"
   ) +
   guides(
@@ -674,7 +716,7 @@ ggplot(
 
 
 ggsave(
-  "images/results/nbs_report/nbs_effects_productie_grasland.png",
+  "images/results/nbs_report/nbs_effects_contourgreppels_corrected.png",
   width = 3, height = 3.5, dpi = 300)
 
 ### Figure xx: Results - compare NBS - base hydrographs ------------------------
@@ -861,6 +903,49 @@ ggsave(
   "images/results/nbs_report/base_qmax_subc.png",
   width = 5, height = 5, dpi = 300
 )
+
+
+### Figure xx: Results - QPeak time change -------------------------------------
+dat <- peak_10_scen |>
+  mutate(catch = str_remove(catch, "_10m"),
+         description = str_extract(scen, "(?<=10m_).*"))
+
+
+ggplot(
+  dat,
+  aes(
+    x = factor(cond, levels = cond_order),
+    y = t_diff,
+    color = catch
+  )
+) +
+  geom_point(size = 1.8, alpha = 0.9) +
+  facet_wrap(~description, nrow = 4) +
+  theme_bw(base_size = 9)  +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),  # vertical labels
+    panel.spacing = unit(0.8, "lines"),
+    legend.position = c(0.92, 0.06),   # lower-right in plotting area
+    legend.justification = c("right", "bottom"),
+    legend.background = element_rect(fill = "white", color = "grey80"),
+    legend.key.height = unit(0.35, "cm"),
+    legend.key.width  = unit(0.55, "cm"),
+    strip.text = element_text(size = 8)
+  ) +
+  labs(
+    x = NULL,
+    y = "Relatieve afname piek afstroming (%)"
+  ) +
+  scale_color_manual(
+    name = "Deelgebied",
+    values = pal6_catch,                    # your named palette
+    drop = FALSE                      # keep all levels even if not in data
+  ) #+
+ # ylim(c(-13, 100))
+
+ggsave(
+  "images/results/nbs_report/nbs_peak_time_shift.png",
+  width = 6.3, height = 9.7, dpi = 300)
 
 # 4. Catchment overview -------------------------------------------------------
 

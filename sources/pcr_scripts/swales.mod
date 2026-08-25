@@ -23,6 +23,7 @@ single = ${3};
 
 #adjusted dem
 sw_dem = sw_dem.map; # set to dem.map in final code
+sw_ditch = swale_ditch.map; # boolean map of location of swale ditches
 
 initial
 # some aux maps
@@ -62,7 +63,7 @@ ditch_west = scalar(if(shift(dem, 0, -1) < dem and swales eq 0 and shift(swales,
 ditch_east = scalar(if(shift(dem, 0, 1) < dem and swales eq 0 and shift(swales, 0, 1) eq 1, shift(sw_mean_h, 0, 1),0));
 
 # combine to 1 
-sw_ditch = boolean(if(ditch_north + ditch_south + ditch_west + ditch_east > 0, 1, 0) * area);
+report sw_ditch = boolean(if(ditch_north + ditch_south + ditch_west + ditch_east > 0, 1, 0) * area);
 
 # make swale ditch height
 sw_ditch_h = max(ditch_north, ditch_south, ditch_west, ditch_east);
