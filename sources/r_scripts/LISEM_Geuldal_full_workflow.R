@@ -338,7 +338,8 @@ for (i in seq_along(points_id)) {
       run_type = "base",
       do_runfile = T,
       NBS_num = nbs_ids[k], # number corresponding to NBS in landuse table 0 = base simulation
-      cpu_cores = ncpu # number of cpu cores used by lisem (defaults to 50%)
+      cpu_cores = ncpu, # number of cpu cores used by lisem (defaults to 50%)
+      urban_rain = FALSE
     )
   }
 }

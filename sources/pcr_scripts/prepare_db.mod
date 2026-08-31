@@ -43,6 +43,10 @@ chantbl = chan.tbl;	# table with param values for different channel types
 # parameters:
 # 1 = rr, 5 = smax, 7 = per, 8 = mann
 
+# values defing type of ID.map
+rtype = ${1}; # runtype 1 = base, 0 = cal
+urain = ${2}; # urban_rain 1 = true, 0 = false
+
 ###################
 ### PROCES MAPS ###
 ###################
@@ -109,6 +113,8 @@ report profn.map = nominal(profile);
 ###########################
 ### MAPS WITH RAINFALL  ### 
 ########################### 
+id = if(rtype eq 1, one, id); # set the whole catchment to 1 ID for base runs
+id = if(urain eq 0, if(cover(bua, 0) eq 1, -1, id), id);
 report id = if(boolean(catchment), id); 
 
 #################
