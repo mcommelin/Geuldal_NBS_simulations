@@ -130,6 +130,7 @@ create_hpc_run(subset = subnums,
                run_type = runtype,
                do_runfile = TRUE,
                cpu_cores = ini$cpu_cores,
-               inith_cal = ini$inithcal)
+               inith_cal = ini$inithcal,
+               urban_rain = ini$urban_rain)
 
 }

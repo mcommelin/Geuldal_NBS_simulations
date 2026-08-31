@@ -280,7 +280,7 @@ repeat {
     cat("Press Enter to accept the default value shown in [brackets].\n\n")
   }
 
-  # ---- Q5: Run mode -------------------------------------------------------- #
+# --- Q5: Run mode -------------------------------------------------------- 
   cat("-- Run mode --\n")
   run_mode <- .menu(
     choices = c(
@@ -296,7 +296,7 @@ repeat {
 
   run_mode_label <- c("data_prep", "cal", "nbs", "scenario")[run_mode]
 
-  # ---- Q6: Subcatchment number(s) ----------------------------------------- #
+  # ---- Q6: Subcatchment number(s) ----------------------------------------- 
   cat("\n-- Subcatchment(s) --\n")
   cat("Which subcatchments do you want to simulate?")
   cat("\nEnter the number(s) of the subcatchments or type 'list' for options")
@@ -322,7 +322,7 @@ repeat {
   points_id      <- pts_vec
   template_lines <- .set_list(template_lines, "subcatchments", points_id)
 
-  # ---- Q7: Resolution ------------------------------------------------------ #
+  # ---- Q7: Resolution ------------------------------------------------------ 
   cat("\n-- Resolution --\n")
   cat("Which resolution do you want to run the simulations?")
   cat("\nChoose from 5, 10, 20 m, default = 10")
@@ -426,7 +426,7 @@ repeat {
     next
   }
 
-  # ---- Q8: NBS_num --------------------------------------------------------- #
+  # ---- Q8: NBS_num --------------------------------------------------------- 
   # In both nbs and scenario modes the number goes to NBS_num.
   # When NBS_num > 100, load_scenario_maps() is called before create_lisem_run().
   NBS_num    <- 0
@@ -490,7 +490,27 @@ repeat {
 
   template_lines <- .set_list(template_lines, "NBS_num", NBS_num)
 
-  # ---- Q9: CPU cores ------------------------------------------------------- #
+  # ---- Q9: Urban rain ------------------------------------------------------- 
+  cat("\n-- Precipitation on urban areas --\n")
+  cat("In some cases, removing precipitation from urban areas can be usefull \n")
+  cat("For example to couple the output with other models. \n")
+  cat("Without precipitation, storm drains will also be switched off \n")
+  default_urain <- as.character(config$urban_rain)
+  
+  repeat {
+    raw  <- .ask(sprintf("  Include urban rain? TRUE or FALSE [%s]: ",
+                         default_urain),
+                 default = default_urain)
+    urban_rain <- suppressWarnings(as.integer(trimws(raw)))
+    if (is.na(urban_rain)) { cat("  Invalid - please enter TRUE or FALSE.\n"); next }
+    break
+  }
+  template_lines <- .set_scalar(template_lines, "urban_rain", urban_rain)
+  
+  
+  
+  
+  # ---- Q10: CPU cores ------------------------------------------------------- 
   cat("\n-- CPU cores for LISEM --\n")
   default_cpu <- as.character(config$cpu_cores)
 
@@ -504,7 +524,7 @@ repeat {
   }
   template_lines <- .set_scalar(template_lines, "cpu_cores", ncpu)
 
-  # ---- Q10: inith_cal (calibration runs only) ------------------------------ #
+  # ---- Q11: inith_cal (calibration runs only) ------------------------------ 
   inith_cal <- as.numeric(config$inithcal)
 
   if (run_mode_label == "cal") {
@@ -529,7 +549,7 @@ repeat {
   writeLines(template_lines, config_path)
   message("config.yaml updated with current run settings.\n")
 
-  # ---- Summary + confirmation ---------------------------------------------- #
+  # ---- Summary + confirmation ---------------------------------------------- 
   cat("\n")
   cat("# ------------------------------------------------------------------- #\n")
   cat("#              Summary of selected settings                           #\n")
@@ -564,7 +584,7 @@ repeat {
     next   # go back to the between-run menu
   }
 
-  # ---- Execution ----------------------------------------------------------- #
+  # ---- Execution ----------------------------------------------------------- 
 
   # 5.2 Landuse and soil tables
   message("\n--- Landuse and SWATRE tables ---")
@@ -641,7 +661,8 @@ repeat {
           do_runfile  = TRUE,
           NBS_num     = 0,
           cpu_cores   = ncpu,
-          inith_cal   = inith_cal
+          inith_cal   = inith_cal,
+          urban_rain  = urban_rain
         )
       }
     }
