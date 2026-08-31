@@ -51,3 +51,7 @@ NBS_num: 0
 # Only meaningful when run_type = "cal".
 # Factor applied over the initial hydraulic head of the whole catchment.
 inithcal: 1.0
+
+# 11. Exclude precipitation urban areas?
+# boolean TRUE of FALSE - in case of FALSE: no precipitation on urban areas and no storm drains.
+urban_rain: TRUE 

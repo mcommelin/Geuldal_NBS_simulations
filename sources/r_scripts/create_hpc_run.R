@@ -23,7 +23,10 @@
 #' maps and rainfall events. base = standard conditions for scenario testing
 #' @param inith_cal Calibration factor multiplying inithead for the whole 
 #' catchment. Only used in hpc setup.
-#'
+#' @param urban_rain default = TRUE. For special cases, simulations without precipitation
+#' on urban areas can be activated use urban_rain = FALSE to exclude rain from urban areas
+#' This will also switch of the storm drain which are simulated below the streets in 
+#' urban areas.
 #' @returns creates a map and runfile dataset to run OpenLISEM for (a subset of)
 #' the Geulcatchment
 #'
@@ -36,7 +39,8 @@ create_hpc_run <- function(subset = NULL,
                            run_type = "",
                            do_runfile = TRUE,
                            cpu_cores = 0,
-                           inith_cal = 1
+                           inith_cal = 1,
+                           urban_rain = TRUE
                            ) {
   
   # check if a subset is done of the Geul, otherwise make everything
@@ -55,7 +59,7 @@ create_hpc_run <- function(subset = NULL,
   for (i in seq_along(subnums)) {
     create_lisem_run(resolution = resolution, catch_num = subnums[i], swatre_file = swatre_file,
                      run_type = run_type, do_hpc = TRUE, cpu_cores = cpu_cores, NBS_num = NBS_num,
-                     dir_name = dir_name, inith_cal = inith_cal)
+                     dir_name = dir_name, inith_cal = inith_cal, urban_rain = urban_rain)
   }
   
   # check if it is a base run, or simulation a NBS

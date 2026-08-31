@@ -17,7 +17,8 @@ make_runfile_lisem <- function(work_dir = NULL,
                                run_type = "",
                                theta_cal = NULL,
                                cpu_cores = 0,
-                               do_hpc = FALSE
+                               do_hpc = FALSE,
+                               urban_rain = TRUE
 ) 
 {
   
@@ -58,8 +59,8 @@ make_runfile_lisem <- function(work_dir = NULL,
   } else {
     rain_file <- paste0("rain_",evdate, ".txt")
     # set ID map to 1 zone
-    run_temp <- str_replace_all(run_temp, "ID=ID.map",
-                                paste0("ID=one.map"))
+    #run_temp <- str_replace_all(run_temp, "ID=ID.map",
+     #                           paste0("ID=one.map"))  # moved to create_lisem_run() adjust ID.map based on several settings
     
     # set to event based
     run_temp <- str_replace_all(run_temp, "Event based=0",
@@ -70,6 +71,12 @@ make_runfile_lisem <- function(work_dir = NULL,
                               paste0(proj_wd, "/", rain_dir))
   run_temp <- str_replace_all(run_temp, "<<rain_file>>",
                               rain_file)
+  
+  # switch off storm drains when excluding urban areas
+  if (urban_rain == FALSE) {
+  run_temp <- str_replace_all(run_temp, "Include storm drains=1",
+                              paste0("Include storm drains=0"))
+  }
   
   # infiltration files
   run_temp <- str_replace(run_temp, "<<swatre_inp>>",
@@ -209,6 +216,10 @@ make_runfile_lisem <- function(work_dir = NULL,
 #' When you want to use the precalculated initial head instead of a homogeneous value,
 #' Add 100 to the calibration factor, so 100 + 1.05 = 101.05. The code will adjust this back.
 #' Also make sure that the precalculated values are available as maps in ./spatial_data
+#' @param urban_rain default = TRUE. For special cases, simulations without precipitation
+#' on urban areas can be activated use urban_rain = FALSE to exclude rain from urban areas
+#' This will also switch of the storm drain which are simulated below the streets in 
+#' urban areas.
 #' 
 #' @returns creates a map and runfile dataset to run OpenLISEM
 #'
@@ -223,7 +234,8 @@ create_lisem_run <- function(
     cpu_cores = 0,
     do_hpc = FALSE,
     dir_name = "",
-    inith_cal = NULL) 
+    inith_cal = NULL,
+    urban_rain = TRUE) 
 {
   
   # set some triggers
@@ -560,12 +572,20 @@ create_lisem_run <- function(
     )
   }
   
+  # create the correct ID.map, depends on:
+  # if run_type == "base' set to 1
+  # if uraban_rain == FALSE set bua to -1
+  # always save as ID.map
+  rtype <- ifelse(run_type == "base", 1, 0)
+  urain <- ifelse(urban_rain == TRUE, 1, 0)
+  
   pcr_script(
-    script = "prepare_db.mod",
+    script = paste0("prepare_db.mod ", rtype, " ", urain),
     script_dir = "sources/pcr_scripts",
     work_dir = subdir
   )
   
+
   # optional run NDVI related script for event based ndvi, per, lai, n
   if (do_ndvi == TRUE) {
     cal_events <- read_csv("sources/selected_events.csv") %>%
@@ -657,7 +677,8 @@ create_lisem_run <- function(
           run_type = run_type,
           theta_cal = inith_cal,
           cpu_cores = cpu_cores,
-          do_hpc = do_hpc
+          do_hpc = do_hpc,
+          urban_rain = urban_rain
         )
       }
     } # end date specific loop
@@ -695,7 +716,8 @@ create_lisem_run <- function(
           do_ndvi_run = do_ndvi,
           run_type = run_type,
           cpu_cores = cpu_cores,
-          do_hpc = do_hpc
+          do_hpc = do_hpc,
+          urban_rain = urban_rain
         )
       }
     }

@@ -27,6 +27,7 @@ NBS_num: 0 # 0 = no nbs, 11 - 99 -> add NBS according to landuse code in  /sourc
            # This script can only produce a dataset for 1 NBS per time, if multiple scenarios/NBS need to be run.
            # run this script multiple times.
 lu_class: def # choose from 'def' or 'wrl'. See documentation for details.
+urban_rain: TRUE # boolean TRUE of FALSE - in case of FALSE: no precipitation on urban areas and no storm drains.
 dir_name: "" # add additional name to folder structure - usefull when making multiple simulations in same setup
 inithcal: 1.0 # only in combination with run_type = 'cal'. Factor applied over the initial head of the whole catchment.
 cpu_cores: 8 # set number of cpu cores assigned to the produced OpenLISEM simulations
