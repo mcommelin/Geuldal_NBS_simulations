@@ -39,7 +39,8 @@ create_hpc_run <- function(subset = NULL,
                            run_type = "",
                            do_runfile = TRUE,
                            cpu_cores = 0,
-                           inith_cal = 1
+                           inith_cal = 1,
+                           urban_rain = TRUE
                            ) {
   
   # check if a subset is done of the Geul, otherwise make everything

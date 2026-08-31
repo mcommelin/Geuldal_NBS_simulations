@@ -494,14 +494,14 @@ repeat {
   cat("\n-- Precipitation on urban areas --\n")
   cat("In some cases, removing precipitation from urban areas can be usefull \n")
   cat("For example to couple the output with other models. \n")
-  cat("Without precipitation, storm drains will also be switched off \n")
+  cat("Without precipitation, storm drains will also be switched off. \n")
   default_urain <- as.character(config$urban_rain)
   
   repeat {
     raw  <- .ask(sprintf("  Include urban rain? TRUE or FALSE [%s]: ",
                          default_urain),
                  default = default_urain)
-    urban_rain <- suppressWarnings(as.integer(trimws(raw)))
+    urban_rain <- as.character(trimws(raw))
     if (is.na(urban_rain)) { cat("  Invalid - please enter TRUE or FALSE.\n"); next }
     break
   }
@@ -568,6 +568,7 @@ repeat {
     cat(sprintf("  NBS_num (scenario): %d\n", NBS_num))
     cat(sprintf("  lu_classes       : %s\n", lu_classes))
   }
+  cat(sprintf("  Urban rain       : %s\n", urban_rain))
   cat(sprintf("  CPU cores        : %d\n", ncpu))
   if (run_mode_label == "cal") {
     cat(sprintf("  inith_cal        : %.4f\n", inith_cal))
@@ -683,7 +684,8 @@ repeat {
             run_type    = "base",
             do_runfile  = TRUE,
             NBS_num     = nbs_ids[k],
-            cpu_cores   = ncpu
+            cpu_cores   = ncpu,
+            urban_rain  = urban_rain
           )
         }
       }
