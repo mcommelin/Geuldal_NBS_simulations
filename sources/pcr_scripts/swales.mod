@@ -18,16 +18,23 @@ buffers = buffermask.map;
 swale_dep = ${1}; # [m]
 # the width of the ditch
 swale_width = ${2}; #[m]
+# single nbs (1) or scenario with multiple measures (0)? 
+single = ${3};
 
 #adjusted dem
 sw_dem = sw_dem.map; # set to dem.map in final code
+sw_ditch = swale_ditch.map; # boolean map of location of swale ditches
 
 initial
 # some aux maps
 area = dem * 0 + 1;
 
+# in maps based on the single measures (by Stroming) swales have value 2.
+# in input maps with the full scenarios, swales get their lu_nr which is 17.
+swale_num = if(single eq 1, 2, 17); 
+
 # change swale map to 1 and 0
-swales = scalar(if(swales eq 2, 1, 0));
+swales = scalar(if(swales eq swale_num, 1, 0));
 
 # swale volume
 # we assume a triangle ditch so vol = (w*d) / 2
@@ -56,7 +63,7 @@ ditch_west = scalar(if(shift(dem, 0, -1) < dem and swales eq 0 and shift(swales,
 ditch_east = scalar(if(shift(dem, 0, 1) < dem and swales eq 0 and shift(swales, 0, 1) eq 1, shift(sw_mean_h, 0, 1),0));
 
 # combine to 1 
-sw_ditch = boolean(if(ditch_north + ditch_south + ditch_west + ditch_east > 0, 1, 0) * area);
+report sw_ditch = boolean(if(ditch_north + ditch_south + ditch_west + ditch_east > 0, 1, 0) * area);
 
 # make swale ditch height
 sw_ditch_h = max(ditch_north, ditch_south, ditch_west, ditch_east);

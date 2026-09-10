@@ -1,12 +1,14 @@
 # configuration
 
+configuration <- function(file = "config.yaml") {
+
 if (exists("do_hpc")) {
 if (do_hpc == TRUE) {
   config <- ini
 }} else {
   if (!require("yaml")) install.packages("yaml", repos='https://cloud.r-project.org')
   library(yaml)
-config <- yaml.load_file("config.yaml")
+config <- yaml.load_file(file)
 }
 ins <- config$install_packages
 
@@ -17,7 +19,7 @@ if (!require("gdalUtilities")) install.packages("gdalUtilities", repos='https://
 if (!require("terra")) install.packages("terra", repos='https://cloud.r-project.org')
 if (!require("remotes")) install.packages("remotes", repos='https://cloud.r-project.org')
 if (!require("RSAGA")) install.packages("RSAGA", repos='https://cloud.r-project.org')
-#if (!require("raster")) install.packages("raster", repos='https://cloud.r-project.org')
+if (!require("raster")) install.packages("raster", repos='https://cloud.r-project.org')
 #if (!require("cowplot")) install.packages("cowplot", repos='https://cloud.r-project.org')
 if (!require("sf")) install.packages("sf", repos='https://cloud.r-project.org')
 if (!require("conflicted")) install.packages("conflicted", repos='https://cloud.r-project.org')
@@ -32,7 +34,7 @@ if (!require("reticulate")) install.packages("reticulate", repos='https://cloud.
   use_condaenv(condaenv = conda_path, required = T)
 if(!require("rosettaPTF")) remotes::install_github("ncss-tech/rosettaPTF@8e81f4e98d6e1e0758e5b076a1c7321ea26ea676")
 # install known working version of rosetta-soil
-  py_install("rosetta-soil==0.1.2", pip = TRUE)
+  py_install(c("numpy==2.4.2", "rosetta-soil==0.1.2"), pip = TRUE)
 } else {
   print("Make sure all packages required are installed, see 'sources/r_scripts/configuration.R'")
   Sys.sleep(1)
@@ -54,13 +56,19 @@ library(rosettaPTF)
 
 
 # load configuration
-DEBUGm = if (config$debug_messages == "Y") {TRUE} else {FALSE}
+DEBUGm = if(config$debug_messages == "Y") {TRUE} else {FALSE}
+assign("DEBUGm", DEBUGm,envir=parent.env(environment()))
+
 
 # make global choices for conflicting functions
 conflict_prefer("filter", "dplyr")
 conflict_prefer("select", "dplyr")
+conflicts_prefer(dplyr::mutate)
+conflicts_prefer(dplyr::summarise)
+conflicts_prefer(dplyr::arrange)
+conflicts_prefer(dplyr::rename)
 
-# unload RSAGA gives function confilcts
+# unload RSAGA gives function conflicts
 unloadNamespace("RSAGA")
 unloadNamespace("plyr")
 
@@ -76,13 +84,17 @@ source("sources/r_scripts/aux_functions.R")
 
 #! Always load the following data - adjust if needed for custom settings
 points_id <- config$subcatchments 
+assign("points_id", points_id,envir=parent.env(environment()))
 reso <- config$resolution
+assign("reso", reso,envir=parent.env(environment()))
 
 # load subcatchment points csv file
 points <- read_csv("sources/setup/outpoints_description.csv", show_col_types = FALSE)
+assign("points", points,envir=parent.env(environment()))
 
 # swatre file
 swatre_file <- "cal_OM_swatre.csv"
+assign("swatre_file", swatre_file, envir=parent.env(environment()))
 
 # cpu cores
 #TODO this doesn't work well - solve
@@ -90,6 +102,6 @@ ncpu <- config$cpu_cores
 if (ncpu == -1) {
   ncpu <- floor(num_cores() / 2)
 }
- 
-
+assign("ncpu", ncpu,envir=parent.env(environment()))
+}
 
