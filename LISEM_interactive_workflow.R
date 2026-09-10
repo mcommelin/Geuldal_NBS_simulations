@@ -113,7 +113,7 @@ cat("-- Step 1: Package installation --\n")
 inst_choice <- .menu(
   choices = c("Y - automatically install required packages",
               "N - skip (make sure packages are already installed)"),
-  title   = "Do you want to automatically install required packages?"
+  title   = "Q1: Do you want to automatically install required packages?"
 )
 install_packages <- if (inst_choice == 2) "N" else "Y"
 template_lines   <- .set_scalar(template_lines, "install_packages", install_packages)
@@ -123,16 +123,16 @@ cat("\n-- Step 2: Debug messages --\n")
 debug_choice <- .menu(
   choices = c("Y - show debug messages during execution",
               "N - nu messages - less output on the console"),
-  title   = "Do you want debug messages during execution of functions?"
+  title   = "Q2: Do you want debug messages during execution of functions?"
 )
 debug_messages <- if (debug_choice == 2) "N" else "Y"
 template_lines <- .set_scalar(template_lines, "debug_messages", debug_messages)
 
 # --- Q3: Miniconda path -----------------------------------------------------
-cat("\n-- Step 3: Miniconda path --\n")
+cat("\n-- Step 3: (mini)conda path --\n")
 default_miniconda <- config$miniconda_path
 miniconda_path    <- .ask(
-  sprintf("  Path to your local Miniconda installation [%s]: ", default_miniconda),
+  sprintf("Q3:  Path to your local (mini)conda installation [%s]: ", default_miniconda),
   default = default_miniconda
 )
 template_lines <- .set_scalar(template_lines, "miniconda_path", miniconda_path)
@@ -141,7 +141,7 @@ template_lines <- .set_scalar(template_lines, "miniconda_path", miniconda_path)
 cat("\n-- Step 4: Conda environment --\n")
 default_conda <- config$conda_env
 conda_env     <- .ask(
-  sprintf("  Name of the conda environment where PCRaster is installed [%s]: ",
+  sprintf("  Q4: Name of the conda environment where PCRaster is installed [%s]: ",
           default_conda),
   default = default_conda
 )
@@ -289,7 +289,7 @@ repeat {
       "NBS/base run           (simulations of single NBS, or base run)",
       "NBS scenario run       (simulations of scenarios of NBS)"
     ),
-    title = "What type of LISEM simulation do you want to prepare"
+    title = "Q5: What type of LISEM simulation do you want to prepare"
   )
 
   if (run_mode == 0) stop("No selection made - aborting.")

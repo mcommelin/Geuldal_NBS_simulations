@@ -574,7 +574,7 @@ create_lisem_run <- function(
   
   # create the correct ID.map, depends on:
   # if run_type == "base' set to 1
-  # if uraban_rain == FALSE set bua to -1
+  # if urban_rain == FALSE set bua to -1
   # always save as ID.map
   rtype <- ifelse(run_type == "base", 1, 0)
   urain <- ifelse(urban_rain == TRUE, 1, 0)
