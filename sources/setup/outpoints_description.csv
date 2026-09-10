@@ -50,7 +50,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 197527.54,316290.93,21,10,Simpelveld,Simpelveld,Simpelveld,11.H.227
 188511.616,309012.18,22,10,Slenaken,Slenaken,Gulp,13.H.25
 189620.437,307386.242,23,10,Teuven,Teuven,Gulp,13.H.159
-197388.74,303269.99,51,10,LeverBach,LandEX exploration catchment,LeverBach,
+197388.74,303269.99,51,10,Leverbach,LandEX exploration catchment,LeverBach,
 189080.13,312415.68,52,10,Pesaken,NBS exploration catchment,Pesaken,
 192437.42,311351.15,53,10,Landeus,LandEX exploration catchment,Landeus,
 198600.03,313424.19,54,10,Bocholtz,NBS exploration catchment,Bocholtz,
@@ -78,7 +78,7 @@ x,y,point,cell_size,name,description,subcatch_name,code
 197518.61,316292.25,21,20,Simpelveld,Simpelveld,Simpelveld,11.H.227
 188511.616,309012.18,22,20,Slenaken,Slenaken,Gulp,13.H.25
 189620.437,307386.242,23,20,Teuven,Teuven,Gulp,13.H.159
-197378.98,303268.59,51,20,LeverBach,LandEX exploration catchment,LeverBach,
+197378.98,303268.59,51,20,Leverbach,LandEX exploration catchment,LeverBach,
 189080.13,312415.68,52,20,Pesaken,LandEX exploration catchment,Pesaken,
 192437.42,311351.15,53,20,Landeus,LandEX exploration catchment,Landeus,
 198600.03,313424.19,54,20,Bocholtz,LandEX exploration catchment,Bocholtz,

@@ -39,7 +39,7 @@ setwd("../")
 
 # load and set configured settings from config.yaml
 source("sources/r_scripts/configuration.R")
-
+configuration()
 
 # Data preparation -------------------------------------------------------------
 if (ini$do_data_preparation == TRUE) {
@@ -80,6 +80,14 @@ runtype <- ini$run_type
 # Make base databases ----------------------------------------------------------
 if (ini$do_base_db == TRUE) {
 
+  # check if NBS_num > 100, then scenario
+  if (ini$NBS_num > 100) {
+    source("sources/r_scripts/source_to_base_maps.R")
+    load_scenario_maps(scen_num = ini$NBS_num,
+                       lu_classes = ini$lu_class,
+                       res = reso)
+  }
+  
 # cut all the subcatchments from the Geul
 source("sources/r_scripts/create_subcatch_db.R")
 for (i in seq_along(subnums)) {
@@ -108,6 +116,7 @@ soil_landuse_to_swatre(file = "sources/setup/swatre/UBC_texture.csv",
                        repo_dir = ini$repository_dir
 )
 
+
 # make the actual run databases for the hpc
 # choices are:
 # include NBS: set a number, 0 = no nbs
@@ -121,6 +130,7 @@ create_hpc_run(subset = subnums,
                run_type = runtype,
                do_runfile = TRUE,
                cpu_cores = ini$cpu_cores,
-               inith_cal = ini$inithcal)
+               inith_cal = ini$inithcal,
+               urban_rain = ini$urban_rain)
 
 }
