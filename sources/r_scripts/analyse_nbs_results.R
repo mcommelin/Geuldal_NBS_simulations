@@ -195,12 +195,19 @@ style_ft <- function(ft) {
 
 # desired order of conditions
 cond_order <- c(
-  "T10_wet", "T10_dry",
-  "T25_wet", "T25_dry",
-  "T100_wet", "T100_dry",
-  "T500_wet", "T500_dry"
+  "T10_nat", "T10_droog",
+  "T25_nat", "T25_droog",
+  "T100_nat", "T100_droog",
+  "T500_nat", "T500_droog"
 )
 
+# desired order of NBS measures
+nbs_order <- c(
+  "structuurrijk_grasland", "natuurlijk_hooiland", "productie_grasland", 
+  "ruigtebaan_droogdal",
+  "voedselbos", "natuurlijk_bos", "omvorming_naaldbos", 
+  "contourgreppels", "graften", "infiltratiestroken", "waterbuffer_droogdal"
+  )
 
 # colors
 pal6 <- c(
@@ -230,8 +237,11 @@ fixed_color_scale <- scale_color_manual(
 
 ## 3.1 Organise hydrographs ----------------------------------------------------
 
+# change some descriptions to Dutch and correct order
 # summary all NBS 
 all <- all_hy %>%
+  mutate(cond = str_replace(cond, "wet", "nat"),
+         cond = str_replace(cond, "dry", "droog")) %>%
   group_by(scen, cond) %>%
   mutate( t_min = Time * 24 * 60,                 # minutes since start
           t_bin = floor(t_min / 2) * 2) %>%     
@@ -257,6 +267,8 @@ scen_hy <- all %>%
 
 ### 3.1.1. Calculate peak time change ------------------------------------------
 all_10 <- all_hy %>%
+  mutate(cond = str_replace(cond, "wet", "nat"),
+         cond = str_replace(cond, "dry", "droog")) %>%
   group_by(scen, cond) %>%
   mutate( t_min = Time * 24 * 60,                 # minutes since start
           t_bin = floor(t_min / 10) * 10) %>%     
@@ -574,7 +586,8 @@ ggsave(paste0("images/results/nbs_base_hydrographs/", c, "_", o, ".png"), width 
 ### Figure xx: Results - NBS effects comparison ---------------------------------  
 
 dat <- scen_all_rel %>%
-  mutate(catch = str_remove(catch, "_10m"))
+  mutate(catch = str_remove(catch, "_10m"),
+         description = factor(description, levels = nbs_order))
 
 
 ggplot(
@@ -659,8 +672,9 @@ ggsave(
 
 
 dat <- scen_all_rel %>%
-  mutate(catch = str_remove(catch, "_10m")) %>%
-  filter(lu == 17) # filter(lu != 17 & lu != 21)
+  mutate(catch = str_remove(catch, "_10m"),
+         description = factor(description, levels = nbs_order)) %>%
+  filter(lu == 20) # filter(lu != 17 & lu != 21)
   
 # for 17 = contourgreppels
 # and 21 = waterbuffer droogdal
@@ -669,7 +683,7 @@ dat <- scen_all_rel %>%
 # cal 17 = Q_area_diff / 200
 # cal 21 = Q_area_diff / 1500
 
-# y title = "Berging per aangelegd volume (m3 per m3 NBS)"
+# y title = "Berging per aangelegd \nvolume (m³ per m³ NBS)"
 # y title org: "Genormaliseerde reductie (mm per m² NBS)"
 
 
@@ -677,7 +691,7 @@ ggplot(
   dat,
   aes(
     x = factor(cond, levels = cond_order),
-    y = Q_area_diff / 200 * -1,
+    y = Q_area_diff * -1,
     color = catch
   )
 ) +
@@ -686,7 +700,7 @@ ggplot(
   theme_bw(base_size = 9) +
   labs(
     x = NULL,
-    y = "Berging per aangelegd \nvolume (m3 per m3 NBS)",   # or "Qmm_base - Qmm (mm)"
+    y = "Genormaliseerde reductie \n(mm per oppervlak NBS)",   # or "Qmm_base - Qmm (mm)"
     color = "Deelgebied"
   ) +
   guides(
@@ -712,11 +726,11 @@ ggplot(
     legend.spacing.x = unit(0.1, "cm"),
     strip.text = element_text(size = 8)
   ) +
-  fixed_color_scale #+ ylim(c(0,16))
+  fixed_color_scale #+ ylim(c(0,10))
 
 
 ggsave(
-  "images/results/nbs_report/nbs_effects_contourgreppels_corrected.png",
+  "images/results/nbs_report/nbs_effects_normalised_infiltratiestroken.png",
   width = 3, height = 3.5, dpi = 300)
 
 ### Figure xx: Results - compare NBS - base hydrographs ------------------------
@@ -821,11 +835,21 @@ base_qmax <- base_all |>
   rename("Qmax_base" = "Qmax")
 
 
+nbs_order_2 <- c(
+  "structuurrijk_grasland", "natuurlijk_hooiland", "productie_grasland", 
+  "ruigtebaan_droogdal",
+  "voedselbos", "natuurlijk_bos", "omvorming_naaldbos", 
+  "contourgreppels", "graften ¹", "infiltratiestroken", "waterbuffer_droogdal"
+)
+
+
 dat <- scen_all_rel |>
   left_join(base_qmax, by = c("catch", "cond")) |>
   mutate(catch = str_remove(catch, "_10m"),
          Qpeak_red = (1 - (Qmax / Qmax_base)) * 100,
-         description = if_else(description == "graften", "graften ¹", description))
+         description = if_else(description == "graften", "graften ¹", description),
+         description = factor(description, levels = nbs_order_2))
+
 
 
 ggplot(
@@ -908,7 +932,9 @@ ggsave(
 ### Figure xx: Results - QPeak time change -------------------------------------
 dat <- peak_10_scen |>
   mutate(catch = str_remove(catch, "_10m"),
-         description = str_extract(scen, "(?<=10m_).*"))
+         description = str_extract(scen, "(?<=10m_).*"),
+         description = factor(description, levels = nbs_order),
+         )
 
 
 ggplot(
@@ -934,7 +960,7 @@ ggplot(
   ) +
   labs(
     x = NULL,
-    y = "Relatieve afname piek afstroming (%)"
+    y = "Verschuiving van piek afvoer moment (minuten)"
   ) +
   scale_color_manual(
     name = "Deelgebied",
