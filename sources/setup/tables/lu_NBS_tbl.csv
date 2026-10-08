@@ -1,28 +1,26 @@
 lu_nr,description,rr,n_res,n_veg,om,smax_eq,od,cover,n,notes,do_LE
 1,akker,0.1,0.01,0.01,2.53,1,10,0.7,0.018,DO NOT CHANGE fixed during calibration,F
-2,loofbos,0.07,0.06,0.09,7.75,6,20,0.9,0.1417,DO NOT CHANGE fixed during calibration,F
+2,loofbos,0.14,0.06,0.09,7.75,6,20,0.9,0.1417,DO NOT CHANGE fixed during calibration,F
 3,(productie) grasland,0.13,0.02,0.03,6,8,10,0.7,0.0423,DO NOT CHANGE fixed during calibration,F
-4,natuurlijk grasland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,DO NOT CHANGE fixed during calibration,F
+4,natuurlijk grasland,0.12,0.01,0.06,6.55,8,10,0.8,0.0588,DO NOT CHANGE fixed during calibration,F
 5,verhard,0.05,0.05,0,0.9,8,5,0.05,0.0505,DO NOT CHANGE fixed during calibration,F
 6,water bodies,0,0.1,0,0,0,1,0,0.1,DO NOT CHANGE fixed during calibration,F
-7,naaldbos,0.07,0.05,0.08,9.5,3,20,0.9,0.1227,DO NOT CHANGE fixed during calibration,F
+7,naaldbos,0.105,0.05,0.08,9.5,3,20,0.9,0.1227,DO NOT CHANGE fixed during calibration,F
 11,structuurrijk_grasland,0.13,0.02,0.03,6.975,8,10,0.7,0.0647,,F
-12,natuurlijk_hooiland,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,,F
+12,natuurlijk_hooiland,0.12,0.01,0.06,6.55,8,10,0.8,0.0588,,F
 13,productie_grasland,0.13,0.02,0.03,6,8,10,0.7,0.0423,,F
-14,voedselbos,0.07,0.06,0.09,6.975,6,20,0.9,0.09919,,F
-15,natuurlijk_bos,0.07,0.06,0.09,7.75,6,20,0.9,0.1417,,F
-16,omvorming_naaldbos,0.07,0.06,0.09,7.75,6,20,0.9,0.1417,,F
-17,contourgreppels,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,,T
-18,ruigtebaan_droogdal,0.08,0.02,0.03,6.55,8,10,0.9,0.09919,,F
+14,voedselbos,0.14,0.06,0.09,6.975,6,20,0.9,0.09919,,F
+15,natuurlijk_bos,0.14,0.06,0.09,7.75,6,20,0.9,0.1417,,F
+16,omvorming_naaldbos,0.14,0.06,0.09,7.75,6,20,0.9,0.1417,,F
+17,contourgreppels,0.12,0.01,0.06,6.55,8,10,0.8,0.0588,,T
+18,ruigtebaan_droogdal,0.12,0.02,0.03,6.55,8,10,0.9,0.09919,,F
 19,graften,0.13,0.02,0.03,6.975,8,15,0.8,0.0647,,T
-20,infiltratiestroken,0.07,0.06,0.09,7.75,6,20,0.9,0.1417,,T
-21,waterbuffer_droogdal,0.08,0.01,0.06,6.55,8,10,0.8,0.0588,,T
-22,afgestemd teeltplan,-,,,,,,,,,
-23,verhogen organische stof,-,,,,,,,,,
-24,ploegen langs contour,-,,,,,,,,,
-25,heggen,-,,,,,,,,,
-26,structuurrijk grasland + natuurlijk bos,-,,,,,,,,,
-27,organische stof + ploegen contour + afgestemd teeltplan,-,,,,,,,,,
-28,countourbewerkinh + organische stof,-,,,,,,,,,
-29,tijdelijke overstromingsgebieden,-,,,,,,,,,
-
+20,infiltratiestroken,0.14,0.06,0.09,7.75,6,20,0.9,0.1417,,T
+21,waterbuffer_droogdal,0.12,0.01,0.06,6.55,8,10,0.8,0.0588,,T
+22,afgestemd_teeltplan,,,,,,,,,,
+23,organische_stof,0.1,0.01,0.01,4.25,1,10,0.7,0.018,,F
+24,contourploegen,0.25,0.01,0.01,2.53,1,10,0.7,0.018,,F
+25,heggen,0.14,0.06,0.09,7.75,6,20,0.9,0.1417,,F
+26,structuurrijk_grasland_natuurlijk_bos,0.135,0.04,0.06,7.3625,6,15,0.8,0.1032,,F
+27,organische_stof_ploegen_contour_afgestemd_teeltplan,0.25,0.01,0.01,4.25,1,10,0.7,,,F
+28,countourbewerking_organische_stof,0.25,0.01,0.01,4.25,1,10,0.7,0.018,,F
