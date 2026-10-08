@@ -414,7 +414,7 @@ create_lisem_run(
   swatre_file = swatre_nbs_file,
   run_type = "base",
   do_runfile = T,
-  NBS_num = 101,
+  NBS_num = 122,
   cpu_cores = 8
 )
 

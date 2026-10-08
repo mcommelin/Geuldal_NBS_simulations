@@ -57,10 +57,9 @@ make_runfile_lisem <- function(work_dir = NULL,
   if (run_type == "cal") {
     rain_file <- paste0("rain_5min_", evdate, ".txt")
   } else {
-    rain_file <- paste0("rain_",evdate, ".txt")
-    # set ID map to 1 zone
-    #run_temp <- str_replace_all(run_temp, "ID=ID.map",
-     #                           paste0("ID=one.map"))  # moved to create_lisem_run() adjust ID.map based on several settings
+    rain_name <- str_remove(evdate, "_(wet|dry)")
+    rain_file <- paste0("rain_",rain_name, ".txt")
+    # set ID map to 1 zone --> moved to create_lisem_run() adjust ID.map based on several settings
     
     # set to event based
     run_temp <- str_replace_all(run_temp, "Event based=0",
@@ -90,7 +89,7 @@ make_runfile_lisem <- function(work_dir = NULL,
   if (run_type == "cal") {
     if (theta_cal > 90) {
       # use precalculated initial head values, heterogeneous over the catchment
-      # can stille be calibrated with an homogeneous factor.
+      # can still be calibrated with an homogeneous factor.
       # set correct inithead for event
       ih_ev <- str_remove(runname, "^\\d\\d")
       
@@ -687,12 +686,14 @@ create_lisem_run <- function(
   if (run_type == "base") {
     if (do_runfile == TRUE) {
       # loop over standard events in stead of dates
-      rains <- c("T10", "T25", "T100", "T500")
+      # TODO adjust rainfall type selection now hardcoded!
+      
+      rains <- c("T5", "T10", "T25")
       initheads <- c("wet", "dry")
       standard_ev <- expand_grid(rains, initheads) %>%
-        mutate(ev = paste0(rains, "_", initheads))
+        mutate(ev = paste0(rains, "_landex_", initheads))
       standard_ev <- standard_ev$ev
-      
+
       #make an additional results directory for each standard event
       dirs <- paste0("res_", standard_ev)
       for (dir in dirs) {

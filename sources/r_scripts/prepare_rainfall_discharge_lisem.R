@@ -248,8 +248,9 @@ for (k in seq_along(events$ts_start)) {
 
 ## 1.5 Baseline rainfall -------------------------------------------------------
 
-# load timeseries from WRL
-rain_in <- read_csv("data/data_wl/Buien_LISEM.csv")
+# load timeseries with different recurrence times
+# add additional columns to create different rainfall events.
+rain_in <- read_csv("data/data_landex/Buien_LISEM.csv")
 
 # adjust time format
 rain <- rain_in %>%
