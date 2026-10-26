@@ -202,6 +202,24 @@ valid_nbs <- if (!is.null(nbs_options_tbl)) nbs_options_tbl$lu_nr else NULL
   }
 }
 
+# Load condition settings (rainfall / inithead conditions) for "base" runs.
+conditions_tbl <- tryCatch(
+  read.csv("sources/setup/tables/conditions_settings.csv", stringsAsFactors = FALSE),
+  error = function(e) NULL
+)
+valid_con <- if (!is.null(conditions_tbl)) unique(conditions_tbl$con) else c("wrl1")
+
+.show_con_list <- function() {
+  if (!is.null(conditions_tbl)) {
+    cat("  Available condition types:\n")
+    for (ct in unique(conditions_tbl$con)) {
+      cat(sprintf("    %s\n", ct))
+    }
+  } else {
+    cat("  (conditions_settings.csv not found - only 'wrl1' is available)\n")
+  }
+}
+
 # ---------------------------------------------------------------------------- #
 # 4. Data preparation (runs once per session)                                  #
 # ---------------------------------------------------------------------------- #
@@ -490,7 +508,35 @@ repeat {
 
   template_lines <- .set_list(template_lines, "NBS_num", NBS_num)
 
-  # ---- Q9: Urban rain ------------------------------------------------------- 
+  # ---- Q9: Simulation conditions (con_type) ---------------------------------
+  # For "base" runs (NBS run or NBS scenario run) the rainfall events and
+  # initial heads used are determined by con_type. See
+  # sources/setup/tables/conditions_settings.csv and manual.pdf.
+  con_type <- if (!is.null(config$con_type)) config$con_type else "wrl1"
+
+  if (run_mode_label %in% c("nbs", "scenario")) {
+    cat("\n-- Simulation conditions (con_type) --\n")
+    cat("Select the type of conditions (rainfall events & initial heads) to simulate.\n")
+    cat("See manual.pdf / sources/setup/tables/conditions_settings.csv for details.\n")
+    default_con <- if (!is.null(config$con_type)) config$con_type else "wrl1"
+
+    repeat {
+      raw <- .ask(
+        sprintf("  Enter condition type, or type 'list' for options [%s]: ", default_con),
+        default = default_con
+      )
+      if (tolower(trimws(raw)) == "list") { .show_con_list(); next }
+      con_type <- trimws(raw)
+      if (!is.null(valid_con) && !con_type %in% valid_con) {
+        cat(sprintf("  Unknown condition type '%s'. Type 'list' to see valid options.\n",
+                    con_type)); next
+      }
+      break
+    }
+  }
+  template_lines <- .set_scalar(template_lines, "con_type", con_type)
+
+  # ---- Q10: Urban rain ------------------------------------------------------- 
   cat("\n-- Precipitation on urban areas --\n")
   cat("In some cases, removing precipitation from urban areas can be usefull \n")
   cat("For example to couple the output with other models. \n")
@@ -510,7 +556,7 @@ repeat {
   
   
   
-  # ---- Q10: CPU cores ------------------------------------------------------- 
+  # ---- Q11: CPU cores ------------------------------------------------------- 
   cat("\n-- CPU cores for LISEM --\n")
   default_cpu <- as.character(config$cpu_cores)
 
@@ -524,7 +570,7 @@ repeat {
   }
   template_lines <- .set_scalar(template_lines, "cpu_cores", ncpu)
 
-  # ---- Q11: inith_cal (calibration runs only) ------------------------------ 
+  # ---- Q12: inith_cal (calibration runs only) ------------------------------ 
   inith_cal <- as.numeric(config$inithcal)
 
   if (run_mode_label == "cal") {
@@ -567,6 +613,9 @@ repeat {
   if (run_mode_label == "scenario") {
     cat(sprintf("  NBS_num (scenario): %d\n", NBS_num))
     cat(sprintf("  lu_classes       : %s\n", lu_classes))
+  }
+  if (run_mode_label %in% c("nbs", "scenario")) {
+    cat(sprintf("  Conditions       : %s\n", con_type))
   }
   cat(sprintf("  Urban rain       : %s\n", urban_rain))
   cat(sprintf("  CPU cores        : %d\n", ncpu))
@@ -684,6 +733,7 @@ repeat {
             run_type    = "base",
             do_runfile  = TRUE,
             NBS_num     = nbs_ids[k],
+            con_type    = con_type,
             cpu_cores   = ncpu,
             urban_rain  = urban_rain
           )

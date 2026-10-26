@@ -339,7 +339,8 @@ for (i in seq_along(points_id)) {
       do_runfile = T,
       NBS_num = nbs_ids[k], # number corresponding to NBS in landuse table 0 = base simulation
       cpu_cores = ncpu, # number of cpu cores used by lisem (defaults to 50%)
-      urban_rain = FALSE
+      urban_rain = FALSE,
+      con_type = "landex1"
     )
   }
 }
@@ -413,6 +414,7 @@ create_lisem_run(
   catch_num = 52,
   swatre_file = swatre_nbs_file,
   run_type = "base",
+  con_type = "landex1"
   do_runfile = T,
   NBS_num = 122,
   cpu_cores = 8

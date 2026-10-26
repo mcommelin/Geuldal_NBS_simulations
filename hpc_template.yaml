@@ -21,6 +21,7 @@ do_base_db: TRUE # boolean TRUE or FALSE - needs prepared data at #1!
 subset: [120, 125, 128, 130, 131, 140] # All subcatchmnets (= -1) or numbers of subset [xx, yy, zz, ..]
 resolution: 10 # 1 of 5, 10, 20 - only if prepared at #1!
 run_type: base # 'cal' = date specific simulations or 'base' = standard events for scenarios
+con_type: "wrl1" # if run_type = base, select the type of conditions to simulate, see the manual for explanation
 do_lisem_run: TRUE # boolean TRUE or FALSE - needs prepared data and base bd's! Makes actual OpenLisem runs
 NBS_num: 0 # 0 = no nbs, 11 - 99 -> add NBS according to landuse code in  /sources/setup/tables/lu_NBS_tbl.csv
            # NBS_num > 100 add combined scenarios - check documentation ./manual.pdf for details

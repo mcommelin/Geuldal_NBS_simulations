@@ -23,6 +23,10 @@
 #' maps and rainfall events. base = standard conditions for scenario testing
 #' @param inith_cal Calibration factor multiplying inithead for the whole 
 #' catchment. Only used in hpc setup.
+#' @param con_type default = wrl1. When run_type == base different conditions in terms of 
+#' rainfall events and initial heads can be simulated. The rainfall files must be manually
+#' prepared and the correct conditions must be added to:
+#' './sources/setup/tables/condition_settings.csv' see manual.pdf for explanation 
 #' @param urban_rain default = TRUE. For special cases, simulations without precipitation
 #' on urban areas can be activated use urban_rain = FALSE to exclude rain from urban areas
 #' This will also switch of the storm drain which are simulated below the streets in 
@@ -40,6 +44,7 @@ create_hpc_run <- function(subset = NULL,
                            do_runfile = TRUE,
                            cpu_cores = 0,
                            inith_cal = 1,
+                           con_type = "wrl1",
                            urban_rain = TRUE
                            ) {
   
@@ -59,7 +64,7 @@ create_hpc_run <- function(subset = NULL,
   for (i in seq_along(subnums)) {
     create_lisem_run(resolution = resolution, catch_num = subnums[i], swatre_file = swatre_file,
                      run_type = run_type, do_hpc = TRUE, cpu_cores = cpu_cores, NBS_num = NBS_num,
-                     dir_name = dir_name, inith_cal = inith_cal, urban_rain = urban_rain)
+                     dir_name = dir_name, inith_cal = inith_cal, con_type = con_type, urban_rain = urban_rain)
   }
   
   # check if it is a base run, or simulation a NBS
