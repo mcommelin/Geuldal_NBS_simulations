@@ -42,16 +42,21 @@ cpu_cores: [2]
 # "base" = standard events for NBS scenario simulations
 run_type: "cal"
 
-# 9. NBS land-use number to include in the run.
+# 9. Simulation conditions.
+# if run_type = base, select the type of conditions to simulate
+# see the manual for explanation
+con_type: "wrl1"
+
+# 10. NBS land-use number to include in the run.
 # 0 = no NBS (base run); other values correspond to entries in
 # sources/setup/tables/lu_NBS_tbl.csv
 NBS_num: 0
 
-# 10. Initial soil moisture calibration factor.
+# 11. Initial soil moisture calibration factor.
 # Only meaningful when run_type = "cal".
 # Factor applied over the initial hydraulic head of the whole catchment.
 inithcal: 1.0
 
-# 11. Exclude precipitation urban areas?
+# 12. Exclude precipitation urban areas?
 # boolean TRUE of FALSE - in case of FALSE: no precipitation on urban areas and no storm drains.
 urban_rain: TRUE 

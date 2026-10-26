@@ -708,9 +708,9 @@ create_lisem_run <- function(
       # load the condition settings
       cons <- read_csv("sources/setup/tables/conditions_settings.csv") |> 
         filter(con == con_type) |> 
-        pivot_wider(names_from = "var", values_from = "val")
+        pivot_wider(names_from = "var", values_from = "val", values_fn = list)
       
-      if (nrow(cons) == 0) {message("Error: condition type not present in conditions_settings.csv\n check manual.pdf for more info")}
+      if (nrow(cons) == 0) {stop("condition type not present in conditions_settings.csv\n check manual.pdf for more info")}
       
       # loop over standard events in stead of dates
       
