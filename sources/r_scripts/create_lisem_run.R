@@ -57,7 +57,13 @@ make_runfile_lisem <- function(work_dir = NULL,
   if (run_type == "cal") {
     rain_file <- paste0("rain_5min_", evdate, ".txt")
   } else {
-    rain_file <- paste0("rain_",evdate, ".txt")
+    #special case for wrl1
+    if (str_detect(evdate, "wrl1")) {
+        rain_file <- paste0("rain_",evdate, ".txt")
+    } else {
+      rain_name <- str_remove(evdate, "_ih.*$")
+      rain_file <- paste0("rain_", rain_name, ".txt")
+    }
     # set ID map to 1 zone
     #run_temp <- str_replace_all(run_temp, "ID=ID.map",
      #                           paste0("ID=one.map"))  # moved to create_lisem_run() adjust ID.map based on several settings
@@ -108,13 +114,21 @@ make_runfile_lisem <- function(work_dir = NULL,
     }
   } else {
     # run with standard rain
-    
-    # in the standard runs we use a homogeneous inithead:
-    # -50 = wet and -100 = dry
     run_temp <- str_replace_all(run_temp, "<<ih>>", 
                                 paste0("ih"))
+    #special case for wrl1
+    if (str_detect(evdate, "wrl1")) {
+    # in the standard runs we use a homogeneous inithead:
+    # -50 = wet and -100 = dry
+
     #set homogeneous init head
     inihead <- ifelse(str_detect(evdate, "wet"), -50, -100)
+    } else {
+      # find inithead from the evdate
+      inihead <- paste0("-", str_extract(evdate, "\\d*$"))
+    }
+    
+    
     
     run_temp <- str_replace_all(run_temp, "Use one matrix potential=0", 
                                 paste0("Use one matrix potential=1"))
@@ -216,6 +230,10 @@ make_runfile_lisem <- function(work_dir = NULL,
 #' When you want to use the precalculated initial head instead of a homogeneous value,
 #' Add 100 to the calibration factor, so 100 + 1.05 = 101.05. The code will adjust this back.
 #' Also make sure that the precalculated values are available as maps in ./spatial_data
+#' @param con_type default = wrl1. When run_type == base different conditions in terms of 
+#' rainfall events and initial heads can be simulated. The rainfall files must be manually
+#' prepared and the correct conditions must be added to:
+#' './sources/setup/tables/condition_settings.csv' see manual.pdf for explanation 
 #' @param urban_rain default = TRUE. For special cases, simulations without precipitation
 #' on urban areas can be activated use urban_rain = FALSE to exclude rain from urban areas
 #' This will also switch of the storm drain which are simulated below the streets in 
@@ -235,6 +253,7 @@ create_lisem_run <- function(
     do_hpc = FALSE,
     dir_name = "",
     inith_cal = NULL,
+    con_type = "wrl1",
     urban_rain = TRUE) 
 {
   
@@ -686,11 +705,23 @@ create_lisem_run <- function(
   
   if (run_type == "base") {
     if (do_runfile == TRUE) {
+      # load the condition settings
+      cons <- read_csv("sources/setup/tables/conditions_settings.csv") |> 
+        filter(con == con_type) |> 
+        pivot_wider(names_from = "var", values_from = "val")
+      
+      if (nrow(cons) == 0) {message("Error: condition type not present in conditions_settings.csv\n check manual.pdf for more info")}
+      
       # loop over standard events in stead of dates
-      rains <- c("T10", "T25", "T100", "T500")
-      initheads <- c("wet", "dry")
+      
+      #special case for wrl1 for backward compatibility
+      rains <- unlist(cons$rain)
+      initheads <- unlist(cons$inith)
+      if (con_type == "wrl1") {
+        initheads <- c("wet", "dry")
+      }
       standard_ev <- expand_grid(rains, initheads) %>%
-        mutate(ev = paste0(rains, "_", initheads))
+        mutate(ev = paste0(con_type, "_", rains, "_", initheads))
       standard_ev <- standard_ev$ev
       
       #make an additional results directory for each standard event

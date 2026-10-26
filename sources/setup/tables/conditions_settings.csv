@@ -1,0 +1,12 @@
+con,var,val
+wrl1,rain,T10
+wrl1,rain,T25
+wrl1,rain,T100
+wrl1,rain,T500
+wrl1,inith,ih50
+wrl1,inith,ih100
+landex1,rain,T5
+landex1,rain,T10
+landex1,rain,T25
+landex1,inith,ih50
+landex1,inith,ih100
