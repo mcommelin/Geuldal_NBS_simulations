@@ -249,13 +249,13 @@ for (k in seq_along(events$ts_start)) {
 ## 1.5 Baseline rainfall -------------------------------------------------------
 
 # load timeseries from WRL
-rain_in <- read_csv("data/data_wl/Buien_LISEM.csv")
+rain_in <- read_csv("sources/setup/Buien_LISEM.csv")
 
 # adjust time format
 rain <- rain_in %>%
   mutate(mins = (min10 - 1) * 10) %>%
   select(-min10) %>%
-  pivot_longer(cols = starts_with("T"), names_to = "type", values_to = "P") %>%
+  pivot_longer(cols = -mins, names_to = "type", values_to = "P") %>%
   mutate(P = P * 6) # from mm/10 min to mm/h
 
 # save to separate files
@@ -268,16 +268,22 @@ for (i in seq_along(types)) {
                     "\n2\ntime\ngauge1"),
              rain_file)
   
-  # add 2 row with 0 rain at end of rainfiles for better simulations
-  precip_end <- tibble(
-    t_str = c("000:0720", "000:1440"),
-    P = c(0.0, 0.0)
-  )
+
   # make the rain table 
   precip <- rain %>%
     filter(type == types[i]) %>%
     select(-type) %>%
     arrange(mins) %>%
+    filter(!is.na(P)) 
+  
+  # add 2 row with 0 rain at end of rainfiles for better simulations
+  max_time <- str_pad(max(precip$mins) + 10, side = "left", pad = "0", width = 4)
+  precip_end <- tibble(
+    t_str = c(paste0("000:", max_time), "000:1440"),
+    P = c(0.0, 0.0)
+  )
+  
+  precip <- precip %>%
     mutate(t_str = str_pad(as.character(mins), width = 4,
                            side = "left", pad = "0"),
            t_str = paste0("000:", t_str)) %>%
