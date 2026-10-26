@@ -615,7 +615,7 @@ repeat {
     cat(sprintf("  lu_classes       : %s\n", lu_classes))
   }
   if (run_mode_label %in% c("nbs", "scenario")) {
-    cat(sprintf("  Conditions (con_type): %s\n", con_type))
+    cat(sprintf("  Conditions       : %s\n", con_type))
   }
   cat(sprintf("  Urban rain       : %s\n", urban_rain))
   cat(sprintf("  CPU cores        : %d\n", ncpu))
