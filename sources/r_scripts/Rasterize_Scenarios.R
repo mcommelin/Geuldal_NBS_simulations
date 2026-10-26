@@ -1,3 +1,9 @@
+#' This script is meant as preprocessing before the actual workflow which
+#' is available in this repository.
+#' The goal is to prepare raster data for NBS scenarios from vector layers
+#' 
+
+# 1. package and functions -----------------------------------------------------
 library(terra)
 
 
@@ -60,6 +66,12 @@ rasterize_NBS_measures <- function(vectors, mask){
   return(combined_clipped)
 }
 
+# 2. preprosessing scripts -----------------------------------------------------
+
+# swales and graften need to be filled in on the polygons assigned.
+
+
+# 3. make raster of scenario ---------------------------------------------------
 # load 5m mask of Geul catchment
 mask <- rast("E:/GitHub/Geuldal_NBS_simulations/spatial_data/mask_5m.map") # point to wherever 5m mask layer is stored
 mask[mask == 1] <- 0
