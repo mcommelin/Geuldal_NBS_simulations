@@ -262,6 +262,7 @@ rain <- rain_in %>%
 # save to separate files
 types <- unique(rain$type)
 for (i in seq_along(types)) {
+  # TODO change this location to ./spatial_data/prepared/rain ??
   rain_file <- paste0("LISEM_runs/rain/rain_", types[i], ".txt")
 
   # write the header

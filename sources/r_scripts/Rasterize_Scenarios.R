@@ -73,10 +73,13 @@ rasterize_NBS_measures <- function(vectors, mask){
 
 # 3. make raster of scenario ---------------------------------------------------
 # load 5m mask of Geul catchment
-mask <- rast("E:/GitHub/Geuldal_NBS_simulations/spatial_data/mask_5m.map") # point to wherever 5m mask layer is stored
+# example path: "E:/GitHub/Geuldal_NBS_simulations/spatial_data/mask_5m.map"
+mask <- rast("spatial_data/mask_5m.map") # point to wherever 5m mask layer is stored
 mask[mask == 1] <- 0
+
 # function to load NBS shapefiles and add to list sorted by priority
-folder_path = "E:/Work/WUR/LandEX/GIS/Pesakerdal_Snelweg_2"
+#example path: "E:/Work/WUR/LandEX/GIS/Pesakerdal_Snelweg_2"
+folder_path <- "data/data_landex/Bocholtz_Middenweg_2/"
 
 vectorlist <- load_NBS_files(folder_path)
 final_raster <- rasterize_NBS_measures(vectorlist, mask)
