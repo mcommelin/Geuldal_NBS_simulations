@@ -51,6 +51,17 @@ rasterize_NBS_measures <- function(vectors, mask){
   # add mask raster to list at the end. This will make sure the entire geul catchment is covered.
   rasters <- c(rasters, list(mask))
   
+  # for swales and graften the area assigned must be updated to show the actual line elements
+  i = 2
+  nbs_num <- unique(rasters[[i]]$NBS_ID)
+  
+  # swales - 17
+  #' 1- execute pcraster script and update raster
+  
+  # graften - 19
+  
+  
+  
   # combine rasters 1 by 1 using cover function, first raster in list goes first.
   # cover function only fills NA cells of the first supplied raster with values from the second supplied raster.
   # So most inportant layer has to go first!
